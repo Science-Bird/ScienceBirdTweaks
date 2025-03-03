@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace ScienceBirdTweaks.Patches
 {
-    [HarmonyPatch(typeof(MineshaftElevatorController))]
+    [HarmonyPatch]
     public class ElevatorJinglePatch
     {
         internal static System.Random clipRandom;
@@ -26,7 +26,7 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
-        [HarmonyPatch("Update")]
+        [HarmonyPatch(typeof(MineshaftElevatorController), nameof(MineshaftElevatorController.Update))]
         [HarmonyPrefix]
         private static void SetJingleClip(MineshaftElevatorController __instance)
         {
@@ -48,7 +48,7 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
-        [HarmonyPatch("OnEnable")]
+        [HarmonyPatch(typeof(MineshaftElevatorController), nameof(MineshaftElevatorController.OnEnable))]
         [HarmonyPrefix]
         private static void SetJingleRandom(MineshaftElevatorController __instance)
         {
