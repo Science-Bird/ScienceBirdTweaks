@@ -18,6 +18,7 @@ namespace ScienceBirdTweaks.Patches
             if (levelText.Contains("DustClouds"))
             {
                 levelText = levelText.Replace("DustClouds", "Dust Clouds");
+                levelText = levelText.Replace("DustyClouds", "Dusty Clouds");
                 __instance.screenLevelDescription.text = levelText;
             }
         }
@@ -35,6 +36,7 @@ namespace ScienceBirdTweaks.Patches
             if (__instance.currentText.Contains("DustClouds"))
             {
                 __instance.currentText = __instance.currentText.Replace("DustClouds", "Dust Clouds");
+                __instance.currentText = __instance.currentText.Replace("DustyClouds", "Dusty Clouds");
                 __instance.screenText.text = __instance.currentText;
             }
         }
