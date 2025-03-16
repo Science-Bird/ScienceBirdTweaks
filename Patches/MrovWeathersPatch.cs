@@ -72,7 +72,7 @@ namespace ScienceBirdTweaks.Patches
                     {
                         ScienceBirdTweaks.Logger.LogDebug("Null transform!");
                     }
-                    if (parent != null && !lightObjects.Contains(parent))
+                    if (parent != null && !lightObjects.Contains(parent) && parent.name != "BlackoutIgnore")
                     {
                         lightObjects.Add(parent);
                     }

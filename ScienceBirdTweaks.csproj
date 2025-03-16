@@ -43,13 +43,17 @@
       <None Remove="Diversity Remastered.dll" />
     </ItemGroup>
 
+	<Target Name="NetcodePatch" AfterTargets="PostBuildEvent">
+		<Exec Command="netcode-patch -nv 1.5.2 &quot;$(TargetPath)&quot; @(ReferencePathWithRefAssemblies->'&quot;%(Identity)&quot;', ' ')" />
+	</Target>
+	
     <!-- Primary Package References -->
     <ItemGroup>
         <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
         <PackageReference Include="BepInEx.Core" Version="5.*" PrivateAssets="all" />
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" PrivateAssets="all" />
-        <PackageReference Include="LethalCompany.GameLibs.Steam" Version="*-*" PrivateAssets="all" />
-        <PackageReference Include="UnityEngine.Modules" Version="2022.3.9" IncludeAssets="compile" PrivateAssets="all" />
+        <PackageReference Include="LethalCompany.GameLibs.Steam" Version="*-*" Publicize="true" PrivateAssets="all" />
+        <PackageReference Include="UnityEngine.Modules" Version="2022.3.9" IncludeAssets="compile" Publicize="true" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
@@ -57,8 +61,23 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="WeatherRegistry" Publicize="true" PrivateAssets="all">
+      <Reference Include="JLL">
+        <HintPath>JLL.dll</HintPath>
+      </Reference>
+      <Reference Include="JLLEditorModule">
+        <HintPath>JLLEditorModule.dll</HintPath>
+      </Reference>
+      <Reference Include="JLLItemsModule">
+        <HintPath>JLLItemsModule.dll</HintPath>
+      </Reference>
+      <Reference Include="SelfSortingStorage">
+        <HintPath>SelfSortingStorage.dll</HintPath>
+      </Reference>
+      <Reference Include="WeatherRegistry">
         <HintPath>WeatherRegistry.dll</HintPath>
+      </Reference>
+      <Reference Include="WesleyMoonScripts">
+        <HintPath>WesleyMoonScripts.dll</HintPath>
       </Reference>
     </ItemGroup>
 </Project>
