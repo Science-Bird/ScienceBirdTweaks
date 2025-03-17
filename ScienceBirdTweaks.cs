@@ -60,6 +60,7 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<int> CentipedeSecondChanceThreshold;
         public static ConfigEntry<bool> DebugMode;
 
+        public static bool doLobbyCompat = false;
         public static bool mrovPresent1 = false;
         public static bool mrovPresent2 = false;
         public static bool mrovPresent3 = false;
@@ -139,6 +140,11 @@ namespace ScienceBirdTweaks
 
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
+                if (assembly.GetName().Name == "BMX.LobbyCompatibility")
+                {
+                    Logger.LogDebug("Found BMX!");
+                    doLobbyCompat = true;
+                }
                 if (assembly.GetName().Name == "MrovWeathers")
                 {
                     Logger.LogDebug("Found mrov1!");
@@ -174,6 +180,11 @@ namespace ScienceBirdTweaks
                     Logger.LogDebug("Found batby!");
                     batbyPresent = true;
                 }
+            }
+
+            if (doLobbyCompat)
+            {
+                LobbyCompatibility.RegisterCompatibility();
             }
 
             if (mrovPresent1 && mrovPresent2 && TrueBlackout.Value)
