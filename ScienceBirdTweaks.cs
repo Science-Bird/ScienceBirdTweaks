@@ -5,7 +5,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using ScienceBirdTweaks.Patches;
+using ScienceBirdTweaks.ModPatches;
 using UnityEngine;
 
 namespace ScienceBirdTweaks
@@ -23,7 +23,7 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<bool> BegoneBottomCollision;
         public static ConfigEntry<bool> LargerLeverCollision;
         public static ConfigEntry<bool> FixedShipObjects;
-        //public static ConfigEntry<bool> FixedTeleporterButton;
+        public static ConfigEntry<bool> OnlyFixDefault;
         public static ConfigEntry<bool> FixedSuitRack;
         public static ConfigEntry<bool> RemoveClipboard;
         public static ConfigEntry<bool> RemoveStickyNote;
@@ -49,6 +49,9 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<float> DustCloudsThickness;
         public static ConfigEntry<bool> DustCloudsNoise;
         public static ConfigEntry<bool> SSSTerminalStock;
+        public static ConfigEntry<bool> JLLNoisemakerFix;
+        public static ConfigEntry<bool> LLLUnlockSyncing;
+        public static ConfigEntry<bool> VideoTapeInsertFix;
         public static ConfigEntry<bool> VideoTapeSkip;
         public static ConfigEntry<bool> TrueBlackout;
         public static ConfigEntry<bool> DiversityComputerBegone;
@@ -56,6 +59,14 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<float> CentipedeFixedDamage;
         public static ConfigEntry<int> CentipedeSecondChanceThreshold;
         public static ConfigEntry<bool> DebugMode;
+
+        public static bool mrovPresent1 = false;
+        public static bool mrovPresent2 = false;
+        public static bool mrovPresent3 = false;
+        public static bool zigzagPresent = false;
+        public static bool wesleyPresent = false;
+        public static bool jacobPresent = false;
+        public static bool batbyPresent = false;
 
         public static Vector3 ConfigTeleporterSize;
 
@@ -67,7 +78,7 @@ namespace ScienceBirdTweaks
             Instance = this;
 
             FixedShipObjects = base.Config.Bind("Ship Tweaks", "Fixed Ship Objects", true, "Stops all furniture/unlockable hitboxes from drifting/jittering players on takeoff and landing by properly parenting them to the ship (including teleporter button, welcome mat, etc.).");
-            //FixedTeleporterButton = base.Config.Bind("Ship Tweaks", "Fixed Teleporter Button", true, "Fixes the teleporter button's hitbox on takeoff or landing by properly parenting it to the ship.");
+            OnlyFixDefault = base.Config.Bind("Ship Tweaks", "Only Fix Vanilla Objects", true, "Only applies the ship object parenting to fix to all the vanilla furniture it's relevant to. You can disable this if you want all furniture to be fixed, but doing so may cause some errors in the console and a bit of lag when loading in.");
             FixedSuitRack = base.Config.Bind("Ship Tweaks", "Fixed Suit Rack", true, "Stops suits' hitboxes from drifting on takeoff and landing by properly parenting them to the ship.");
             ConsistentCatwalkCollision = base.Config.Bind("Ship Tweaks", "Consistent Catwalk Collision", true, "Ship catwalk has consistent collision outside its railing, so you can always jump and stand on the edge of the catwalk (not compatible with Wider Ship Mod).");
             TinyTeleporterCollision = base.Config.Bind("Ship Tweaks", "Tiny Teleporter Collision", true, "Shrinks the teleporter and inverse teleporter placement colliders (i.e. just their hitboxes) so they can be put next to all walls and in small nooks of the ship (customizable in Collider Sizes config section).");
@@ -96,6 +107,9 @@ namespace ScienceBirdTweaks
             ThickDustClouds = base.Config.Bind("Better Dust Clouds", "Thick Dust Clouds", false, "Makes Dust Clouds visually thicker and more obscuring, in addition to various other internal changes to how the weather is handled, completely replacing vanilla behaviour (note this weather is unused in vanilla, will only be present with certain modded content).");
             DustCloudsThickness = base.Config.Bind("Better Dust Clouds", "Dust Clouds Thickness", 8f, new ConfigDescription("How far you should be able to see in Dust Clouds (lower means thicker clouds). Vanilla value is 17.", new AcceptableValueRange<float>(0.05f, 40f)));
             DustCloudsNoise = base.Config.Bind("Better Dust Clouds", "Dust Clouds Noise", false, "Adds howling wind noise during Dust Clouds weather, the same you hear on blizzard moons like Rend and Dine (note this weather is unused in vanilla, will only be present with certain modded content).");
+            JLLNoisemakerFix = base.Config.Bind("Mod Tweaks", "JLL Noisemaker Fix", true, "Fixes an inconsistent issue where JLL spawners wouldn't initialize items correctly, resulting in errors and the item not functioning correctly (for example: Wesley's Moons audio logs not playing when used).");
+            LLLUnlockSyncing = base.Config.Bind("Mod Tweaks", "LLL Unlock Syncing", false, "Sends the host's unlocked moons to the clients after they load in, so any moons unlocked by the host will be unlocked by the client as well.");
+            VideoTapeInsertFix = base.Config.Bind("Mod Tweaks", "Wesley Moons Tape Insert Fix", false, "EXPERIMENTAL - For Wesley's Moons: attempts to fix an issue where clients are unable to insert cassette tapes into the projector (might also fix issues with registering story log items).");
             VideoTapeSkip = base.Config.Bind("Mod Tweaks", "Wesley Moons Video Tape Skip", false, "For Wesley's Moons: after inserting a casette tape on Galetry, you can interact with the cassette player again to skip the video and unlock the moon immediately.");
             SSSTerminalStock = base.Config.Bind("Mod Tweaks", "Smart Cupboard Mrov Terminal Stock", true, "If you are using both Self Sorting Storage (which adds the 'smart cupboard') and mrov's TerminalFormatter (which shows a count of items on the ship), items in the cupboard will be counted on the terminal display.");
             TrueBlackout = base.Config.Bind("Mod Tweaks", "MrovWeathers True Blackout", false, "EXPERIMENTAL - Blacks out emissive materials during a blackout, so no white spots are leftover from removed lights (does nothing if MrovWeathers isn't installed).");
@@ -123,11 +137,6 @@ namespace ScienceBirdTweaks
 
             Logger.LogDebug("Patching...");
 
-            bool mrovPresent1 = false;
-            bool mrovPresent2 = false;
-            bool mrovPresent3 = false;
-            bool zigzagPresent = false;
-            bool wesleyPresent = false;
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 if (assembly.GetName().Name == "MrovWeathers")
@@ -155,6 +164,16 @@ namespace ScienceBirdTweaks
                     Logger.LogDebug("Found wesley!");
                     wesleyPresent = true;
                 }
+                else if (assembly.GetName().Name == "JLLItemsModule")
+                {
+                    Logger.LogDebug("Found jacob!");
+                    jacobPresent = true;
+                }
+                else if (assembly.GetName().Name == "LethalLevelLoader")
+                {
+                    Logger.LogDebug("Found batby!");
+                    batbyPresent = true;
+                }
             }
 
             if (mrovPresent1 && mrovPresent2 && TrueBlackout.Value)
@@ -165,9 +184,17 @@ namespace ScienceBirdTweaks
             {
                 SSSPatch.DoPatching();
             }
-            if (wesleyPresent && VideoTapeSkip.Value)
+            if (wesleyPresent && (VideoTapeSkip.Value || VideoTapeInsertFix.Value))
             {
                 WesleyPatches.DoPatching();
+            }
+            if (batbyPresent && LLLUnlockSyncing.Value)
+            {
+                LLLPatches.DoPatching();
+            }
+            if (jacobPresent && JLLNoisemakerFix.Value)
+            {
+                JLLPatches.DoPatching();
             }
 
             Harmony.PatchAll();
@@ -194,6 +221,30 @@ namespace ScienceBirdTweaks
                 var methods = type.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
                 foreach (var method in methods)
                 {
+                    if (method.Name.Contains("CheckUnlocksClientRpc") && !batbyPresent)
+                    {
+                        continue;
+                    }
+                    if (method.Name.Contains("CollectDataServerRpc") && !zigzagPresent)
+                    {
+                        continue;
+                    }
+                    if (method.Name.Contains("SendDataClientRpc") && !zigzagPresent)
+                    {
+                        continue;
+                    }
+                    if (method.Name.Contains("ResetDictClientRpc") && !zigzagPresent)
+                    {
+                        continue;
+                    }
+                    if (method.Name.Contains("StopTapeServerRpc") && !wesleyPresent)
+                    {
+                        continue;
+                    }
+                    if (method.Name.Contains("StopTapeClientRpc") && !wesleyPresent)
+                    {
+                        continue;
+                    }
                     var attributes = method.GetCustomAttributes(typeof(RuntimeInitializeOnLoadMethodAttribute), false);
                     if (attributes.Length > 0)
                     {

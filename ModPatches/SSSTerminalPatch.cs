@@ -9,7 +9,7 @@ using System.Reflection;
 using BepInEx;
 
 
-namespace ScienceBirdTweaks.Patches
+namespace ScienceBirdTweaks.ModPatches
 {
 
     public class SSSPatch
@@ -137,7 +137,7 @@ namespace ScienceBirdTweaks.Patches
                         }
                     }
                 }
-                terminal.currentText = String.Join("\n", lines);
+                terminal.currentText = string.Join("\n", lines);
                 terminal.screenText.text = terminal.currentText;
             }
         }

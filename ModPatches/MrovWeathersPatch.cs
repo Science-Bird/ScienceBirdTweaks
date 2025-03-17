@@ -10,7 +10,7 @@ using BepInEx;
 using UnityEngine.UIElements;
 
 
-namespace ScienceBirdTweaks.Patches
+namespace ScienceBirdTweaks.ModPatches
 {
     public class MrovWeathersPatch
     {
@@ -48,7 +48,7 @@ namespace ScienceBirdTweaks.Patches
                 Light[] childLights = obj.GetComponentsInChildren<Light>(true);
                 foreach (Light light in childLights)
                 {
-                    if (light.bakingOutput.lightmapBakeType ==  LightmapBakeType.Baked)
+                    if (light.bakingOutput.lightmapBakeType == LightmapBakeType.Baked)
                     {
                         if (light.transform != null && light.transform.parent != null)
                         {
@@ -112,7 +112,7 @@ namespace ScienceBirdTweaks.Patches
                     {
                         if (rMaterials[i] != null)
                         {
-                            if (renderer.materials[i].HasProperty("_EmissionMap") || (renderer.materials[i].HasProperty("_UseEmissiveIntensity") && renderer.materials[i].GetFloat("_UseEmissiveIntensity") == 1f) || renderer.materials[i].IsKeywordEnabled("_EMISSIVE_COLOR_MAP"))
+                            if (renderer.materials[i].HasProperty("_EmissionMap") || renderer.materials[i].HasProperty("_UseEmissiveIntensity") && renderer.materials[i].GetFloat("_UseEmissiveIntensity") == 1f || renderer.materials[i].IsKeywordEnabled("_EMISSIVE_COLOR_MAP"))
                             {
                                 if (!hierarchyString.IsNullOrWhiteSpace())
                                 {

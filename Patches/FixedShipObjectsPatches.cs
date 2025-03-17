@@ -6,6 +6,7 @@ using Unity.Netcode;
 using System.Collections;
 using GameNetcodeStuff;
 using static Unity.Collections.Unicode;
+using System.Collections.Generic;
 
 namespace ScienceBirdTweaks.Patches
 {
@@ -14,6 +15,8 @@ namespace ScienceBirdTweaks.Patches
     {
         static bool destroyCord = false;
         public static GameObject furniturePrefab;
+        public static List<int> idBlacklist = new List<int>();
+        public static int[] vanillaIDs = [5, 6, 9, 10, 12, 13, 14, 17, 18, 19, 20, 21, 22, 23];
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.PositionSuitsOnRack))]
         [HarmonyPostfix]
@@ -109,6 +112,15 @@ namespace ScienceBirdTweaks.Patches
             PlaceableShipObject[] furnitureObjects = UnityEngine.Object.FindObjectsOfType<PlaceableShipObject>();
             foreach (PlaceableShipObject obj in furnitureObjects)
             {
+                if (ScienceBirdTweaks.OnlyFixDefault.Value && Array.IndexOf(vanillaIDs,obj.unlockableID) == -1)
+                {
+                    ScienceBirdTweaks.Logger.LogDebug($"Skipping non-default ID... {obj.unlockableID}");
+                    continue;
+                }
+                if (idBlacklist.Contains(obj.unlockableID))
+                {
+                    continue;
+                }
                 UnlockableItem unlockable = round.unlockablesList.unlockables[obj.unlockableID];
                 if (unlockable != null && unlockable.spawnPrefab)
                 {
@@ -138,6 +150,10 @@ namespace ScienceBirdTweaks.Patches
                             else
                             {
                                 ScienceBirdTweaks.Logger.LogError($"Failed to parent {gameObj.name}!");
+                                if (!idBlacklist.Contains(obj.unlockableID))
+                                {
+                                    idBlacklist.Add(obj.unlockableID);
+                                }
                             }
                         }
                     }

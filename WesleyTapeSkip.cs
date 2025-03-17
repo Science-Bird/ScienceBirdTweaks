@@ -1,7 +1,7 @@
 using WesleyMoonScripts.Components;
 using Unity.Netcode;
-using ScienceBirdTweaks.Patches;
 using System.Reflection;
+using ScienceBirdTweaks.ModPatches;
 
 namespace ScienceBirdTweaks
 {
