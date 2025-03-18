@@ -7,7 +7,14 @@ namespace ScienceBirdTweaks
     {
         public static void RegisterCompatibility()
         {
-            PluginHelper.RegisterPlugin(MyPluginInfo.PLUGIN_GUID, System.Version.Parse(MyPluginInfo.PLUGIN_VERSION), CompatibilityLevel.Everyone, VersionStrictness.None);
+            if (ScienceBirdTweaks.ClientsideMode.Value)
+            {
+                PluginHelper.RegisterPlugin(MyPluginInfo.PLUGIN_GUID, System.Version.Parse(MyPluginInfo.PLUGIN_VERSION), CompatibilityLevel.ClientOnly, VersionStrictness.None);
+            }
+            else
+            {
+                PluginHelper.RegisterPlugin(MyPluginInfo.PLUGIN_GUID, System.Version.Parse(MyPluginInfo.PLUGIN_VERSION), CompatibilityLevel.Everyone, VersionStrictness.None);
+            }
         }
     }
 }

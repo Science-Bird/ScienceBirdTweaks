@@ -60,9 +60,12 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         public static void InitializePrefab()
         {
-            ScienceBirdTweaks.Logger.LogDebug("Initializing furniture holder!");
-            furniturePrefab = (GameObject)ScienceBirdTweaks.TweaksAssets.LoadAsset("Furniture");
-            NetworkManager.Singleton.AddNetworkPrefab(furniturePrefab);
+            if (!ScienceBirdTweaks.ClientsideMode.Value)
+            {
+                ScienceBirdTweaks.Logger.LogDebug("Initializing furniture holder!");
+                furniturePrefab = (GameObject)ScienceBirdTweaks.TweaksAssets.LoadAsset("Furniture");
+                NetworkManager.Singleton.AddNetworkPrefab(furniturePrefab);
+            }
         }
 
         public static void SetupFurniture(StartOfRound round)
@@ -71,24 +74,28 @@ namespace ScienceBirdTweaks.Patches
             GameObject hangarShip = GameObject.Find("/Environment/HangarShip");
             if (hangarShip == null) { return; }
 
-            GameObject furniture = UnityEngine.Object.Instantiate(furniturePrefab, Vector3.zero, Quaternion.identity);
-            if (furniture != null && !furniture.GetComponent<NetworkObject>().IsSpawned)
+            if (!ScienceBirdTweaks.ClientsideMode.Value)
             {
-                furniture.GetComponent<NetworkObject>().Spawn();
-                GameObject newFurniture = GameObject.Find("Furniture(Clone)");
-                if (newFurniture.GetComponent<NetworkObject>().TrySetParent(hangarShip.transform, worldPositionStays: true))
+                GameObject furniture = UnityEngine.Object.Instantiate(furniturePrefab, Vector3.zero, Quaternion.identity);
+                if (furniture != null && !furniture.GetComponent<NetworkObject>().IsSpawned)
                 {
-                    ScienceBirdTweaks.Logger.LogDebug("Parented furniture holder to ship!");
+                    furniture.GetComponent<NetworkObject>().Spawn();
+                    GameObject newFurniture = GameObject.Find("Furniture(Clone)");
+                    if (newFurniture.GetComponent<NetworkObject>().TrySetParent(hangarShip.transform, worldPositionStays: true))
+                    {
+                        ScienceBirdTweaks.Logger.LogDebug("Parented furniture holder to ship!");
+                    }
+                    else
+                    {
+                        ScienceBirdTweaks.Logger.LogError("Failed parenting furniture holder!");
+                    }
                 }
                 else
                 {
-                    ScienceBirdTweaks.Logger.LogError("Failed parenting furniture holder!");
+                    ScienceBirdTweaks.Logger.LogDebug("Furniture network already spawned!");
                 }
             }
-            else
-            {
-                ScienceBirdTweaks.Logger.LogDebug("Furniture network already spawned!");
-            }
+
         }
 
         static void ParentFurniture(StartOfRound round)
@@ -97,62 +104,118 @@ namespace ScienceBirdTweaks.Patches
             GameObject hangarShip = GameObject.Find("/Environment/HangarShip");
             if (hangarShip == null) { return; }
 
-            GameObject furniture = GameObject.Find("/Environment/HangarShip/Furniture(Clone)");
-            if (furniture == null)
+            if (ScienceBirdTweaks.ClientsideMode.Value)
             {
-                SetupFurniture(round);
-            }
-            furniture = GameObject.Find("/Environment/HangarShip/Furniture(Clone)");
-            if (furniture == null)
-            {
-                ScienceBirdTweaks.Logger.LogError("Unable to resolve null furniture object!");
-                return;
-            }
-
-            PlaceableShipObject[] furnitureObjects = UnityEngine.Object.FindObjectsOfType<PlaceableShipObject>();
-            foreach (PlaceableShipObject obj in furnitureObjects)
-            {
-                if (ScienceBirdTweaks.OnlyFixDefault.Value && Array.IndexOf(vanillaIDs,obj.unlockableID) == -1)
+                PlaceableShipObject[] furnitureObjects = UnityEngine.Object.FindObjectsOfType<PlaceableShipObject>();
+                foreach (PlaceableShipObject obj in furnitureObjects)
                 {
-                    ScienceBirdTweaks.Logger.LogDebug($"Skipping non-default ID... {obj.unlockableID}");
-                    continue;
-                }
-                if (idBlacklist.Contains(obj.unlockableID))
-                {
-                    continue;
-                }
-                UnlockableItem unlockable = round.unlockablesList.unlockables[obj.unlockableID];
-                if (unlockable != null && unlockable.spawnPrefab)
-                {
-                    if (obj.gameObject.GetComponentInParent<AutoParentToShip>())
+                    if (ScienceBirdTweaks.OnlyFixDefault.Value && Array.IndexOf(vanillaIDs, obj.unlockableID) == -1)
                     {
-                        GameObject gameObj = obj.GetComponentInParent<AutoParentToShip>().gameObject;
-                        if (gameObj.transform.parent != null && gameObj.transform.parent == furniture.transform)
+                        ScienceBirdTweaks.Logger.LogDebug($"Skipping non-default ID... {obj.unlockableID}");
+                        continue;
+                    }
+                    if (idBlacklist.Contains(obj.unlockableID))
+                    {
+                        continue;
+                    }
+                    UnlockableItem unlockable = round.unlockablesList.unlockables[obj.unlockableID];
+                    if (unlockable != null && unlockable.spawnPrefab)
+                    {
+                        if (obj.gameObject.GetComponentInParent<AutoParentToShip>())
                         {
-                            continue;
-                        }
-                        NetworkObject[] networkObjs = gameObj.GetComponentsInChildren<NetworkObject>();
-                        foreach (NetworkObject networkObj in networkObjs)
-                        {
-                            if (!networkObj.IsSpawned)
+                            GameObject gameObj = obj.GetComponentInParent<AutoParentToShip>().gameObject;
+                            if (gameObj.transform.parent != null && gameObj.transform.parent == hangarShip.transform)
                             {
-                                ScienceBirdTweaks.Logger.LogError($"Network object not spawned yet, failing to parent! ({gameObj.name})");
                                 continue;
                             }
-                        }
-                        NetworkObject networkedObj = gameObj.GetComponent<NetworkObject>();
-                        if (networkedObj != null && networkedObj.IsSpawned && round.IsServer)
-                        {
-                            if (networkedObj.TrySetParent(furniture.transform, worldPositionStays: true))
+                            NetworkObject[] networkObjs = gameObj.GetComponentsInChildren<NetworkObject>();
+                            foreach (NetworkObject networkObj in networkObjs)
                             {
-                                ScienceBirdTweaks.Logger.LogDebug($"Parented furniture object {gameObj.name}!");
-                            }
-                            else
-                            {
-                                ScienceBirdTweaks.Logger.LogError($"Failed to parent {gameObj.name}!");
-                                if (!idBlacklist.Contains(obj.unlockableID))
+                                if (!networkObj.IsSpawned)
                                 {
-                                    idBlacklist.Add(obj.unlockableID);
+                                    ScienceBirdTweaks.Logger.LogError($"Network object not spawned yet, failing to parent! ({gameObj.name})");
+                                    continue;
+                                }
+                            }
+                            NetworkObject networkedObj = gameObj.GetComponent<NetworkObject>();
+                            if (networkedObj != null && networkedObj.IsSpawned)
+                            {
+                                if (networkedObj.TrySetParent(hangarShip.transform, worldPositionStays: true))
+                                {
+                                    ScienceBirdTweaks.Logger.LogDebug($"Parented furniture object {gameObj.name}!");
+                                }
+                                else
+                                {
+                                    ScienceBirdTweaks.Logger.LogError($"Failed to parent {gameObj.name}!");
+                                    if (!idBlacklist.Contains(obj.unlockableID))
+                                    {
+                                        idBlacklist.Add(obj.unlockableID);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                GameObject furniture = GameObject.Find("/Environment/HangarShip/Furniture(Clone)");
+                if (furniture == null)
+                {
+                    SetupFurniture(round);
+                }
+                furniture = GameObject.Find("/Environment/HangarShip/Furniture(Clone)");
+                if (furniture == null)
+                {
+                    ScienceBirdTweaks.Logger.LogError("Unable to resolve null furniture object!");
+                    return;
+                }
+
+                PlaceableShipObject[] furnitureObjects = UnityEngine.Object.FindObjectsOfType<PlaceableShipObject>();
+                foreach (PlaceableShipObject obj in furnitureObjects)
+                {
+                    if (ScienceBirdTweaks.OnlyFixDefault.Value && Array.IndexOf(vanillaIDs, obj.unlockableID) == -1)
+                    {
+                        ScienceBirdTweaks.Logger.LogDebug($"Skipping non-default ID... {obj.unlockableID}");
+                        continue;
+                    }
+                    if (idBlacklist.Contains(obj.unlockableID))
+                    {
+                        continue;
+                    }
+                    UnlockableItem unlockable = round.unlockablesList.unlockables[obj.unlockableID];
+                    if (unlockable != null && unlockable.spawnPrefab)
+                    {
+                        if (obj.gameObject.GetComponentInParent<AutoParentToShip>())
+                        {
+                            GameObject gameObj = obj.GetComponentInParent<AutoParentToShip>().gameObject;
+                            if (gameObj.transform.parent != null && gameObj.transform.parent == furniture.transform)
+                            {
+                                continue;
+                            }
+                            NetworkObject[] networkObjs = gameObj.GetComponentsInChildren<NetworkObject>();
+                            foreach (NetworkObject networkObj in networkObjs)
+                            {
+                                if (!networkObj.IsSpawned)
+                                {
+                                    ScienceBirdTweaks.Logger.LogError($"Network object not spawned yet, failing to parent! ({gameObj.name})");
+                                    continue;
+                                }
+                            }
+                            NetworkObject networkedObj = gameObj.GetComponent<NetworkObject>();
+                            if (networkedObj != null && networkedObj.IsSpawned && round.IsServer)
+                            {
+                                if (networkedObj.TrySetParent(furniture.transform, worldPositionStays: true))
+                                {
+                                    ScienceBirdTweaks.Logger.LogDebug($"Parented furniture object {gameObj.name}!");
+                                }
+                                else
+                                {
+                                    ScienceBirdTweaks.Logger.LogError($"Failed to parent {gameObj.name}!");
+                                    if (!idBlacklist.Contains(obj.unlockableID))
+                                    {
+                                        idBlacklist.Add(obj.unlockableID);
+                                    }
                                 }
                             }
                         }
@@ -209,7 +272,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         static void ResetParentedObjects(StartOfRound __instance)
         {
-            if (!ScienceBirdTweaks.FixedShipObjects.Value || !__instance.IsServer)
+            if (!ScienceBirdTweaks.FixedShipObjects.Value || !__instance.IsServer || ScienceBirdTweaks.ClientsideMode.Value)
             {
                 return;
             }

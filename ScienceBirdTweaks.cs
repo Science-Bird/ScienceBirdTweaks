@@ -18,13 +18,14 @@ namespace ScienceBirdTweaks
         internal static Harmony? Harmony { get; set; }
 
         public static AssetBundle TweaksAssets;
+        public static ConfigEntry<bool> ClientsideMode;
+        public static ConfigEntry<bool> FixedShipObjects;
+        public static ConfigEntry<bool> OnlyFixDefault;
+        public static ConfigEntry<bool> FixedSuitRack;
         public static ConfigEntry<bool> ConsistentCatwalkCollision;
         public static ConfigEntry<bool> TinyTeleporterCollision;
         public static ConfigEntry<bool> BegoneBottomCollision;
         public static ConfigEntry<bool> LargerLeverCollision;
-        public static ConfigEntry<bool> FixedShipObjects;
-        public static ConfigEntry<bool> OnlyFixDefault;
-        public static ConfigEntry<bool> FixedSuitRack;
         public static ConfigEntry<bool> RemoveClipboard;
         public static ConfigEntry<bool> RemoveStickyNote;
         public static ConfigEntry<bool> RemoveTeleporterCord;
@@ -78,6 +79,7 @@ namespace ScienceBirdTweaks
             Logger = base.Logger;
             Instance = this;
 
+            ClientsideMode = base.Config.Bind("Clientside", "Client-side Mode", false, "EXPERIMENTAL - Enable this if you want to use the mod client-side (i.e. if other players don't have the mod).");
             FixedShipObjects = base.Config.Bind("Ship Tweaks", "Fixed Ship Objects", true, "Stops all furniture/unlockable hitboxes from drifting/jittering players on takeoff and landing by properly parenting them to the ship (including teleporter button, welcome mat, etc.).");
             OnlyFixDefault = base.Config.Bind("Ship Tweaks", "Only Fix Vanilla Objects", true, "Only applies the ship object parenting to fix to all the vanilla furniture it's relevant to. You can disable this if you want all furniture to be fixed, but doing so may cause some errors in the console and a bit of lag when loading in.");
             FixedSuitRack = base.Config.Bind("Ship Tweaks", "Fixed Suit Rack", true, "Stops suits' hitboxes from drifting on takeoff and landing by properly parenting them to the ship.");
@@ -226,6 +228,7 @@ namespace ScienceBirdTweaks
 
         private static void NetcodePatcher()
         {
+            if (ClientsideMode.Value) { return; }
             var types = Assembly.GetExecutingAssembly().GetTypes();
             foreach (var type in types)
             {
