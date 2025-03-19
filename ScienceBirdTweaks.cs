@@ -21,6 +21,7 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<bool> ClientsideMode;
         public static ConfigEntry<bool> FixedShipObjects;
         public static ConfigEntry<bool> OnlyFixDefault;
+        public static ConfigEntry<bool> AlternateFixLogic;
         public static ConfigEntry<bool> FixedSuitRack;
         public static ConfigEntry<bool> ConsistentCatwalkCollision;
         public static ConfigEntry<bool> TinyTeleporterCollision;
@@ -82,6 +83,7 @@ namespace ScienceBirdTweaks
             ClientsideMode = base.Config.Bind("Clientside", "Client-side Mode", false, "EXPERIMENTAL - Enable this if you want to use the mod client-side (i.e. if other players don't have the mod).");
             FixedShipObjects = base.Config.Bind("Ship Tweaks", "Fixed Ship Objects", true, "Stops all furniture/unlockable hitboxes from drifting/jittering players on takeoff and landing by properly parenting them to the ship (including teleporter button, welcome mat, etc.).");
             OnlyFixDefault = base.Config.Bind("Ship Tweaks", "Only Fix Vanilla Objects", true, "Only applies the ship object parenting to fix to all the vanilla furniture it's relevant to. You can disable this if you want all furniture to be fixed, but doing so may cause some errors in the console and a bit of lag when loading in.");
+            AlternateFixLogic = base.Config.Bind("Ship Tweaks", "Alternate Fix Logic", false, "EXPERIMENTAL - Simplifies parenting fix code. Try this if you're having any unexpected issues with ship objects/furniture (this is automatically used when in client-side mode).");
             FixedSuitRack = base.Config.Bind("Ship Tweaks", "Fixed Suit Rack", true, "Stops suits' hitboxes from drifting on takeoff and landing by properly parenting them to the ship.");
             ConsistentCatwalkCollision = base.Config.Bind("Ship Tweaks", "Consistent Catwalk Collision", true, "Ship catwalk has consistent collision outside its railing, so you can always jump and stand on the edge of the catwalk (not compatible with Wider Ship Mod).");
             TinyTeleporterCollision = base.Config.Bind("Ship Tweaks", "Tiny Teleporter Collision", true, "Shrinks the teleporter and inverse teleporter placement colliders (i.e. just their hitboxes) so they can be put next to all walls and in small nooks of the ship (customizable in Collider Sizes config section).");
@@ -104,7 +106,7 @@ namespace ScienceBirdTweaks
             LargerLeverSizeY = base.Config.Bind("Ship Tweaks Collider Sizes", "Larger Lever Size Y", 1.75f, "(Height) Vanilla: 1");
             LargerLeverSizeZ = base.Config.Bind("Ship Tweaks Collider Sizes", "Larger Lever Size Z", 1.65f, "(Width, e.g. left to right edge of monitor) Vanilla: 1");
             BigScrew = base.Config.Bind("General Tweaks", "Big Screw", true, "'Big bolt' is accurately renamed to 'Big screw'.");
-            FallingRotationFix = base.Config.Bind("General Tweaks", "Falling Rotation Fix", true, "Normally, if you ever drop an object from really high up, its rotation takes so long to change that it's still rotating when it hits the ground. This tweak properly scales the rotation so objects land normally.");
+            FallingRotationFix = base.Config.Bind("General Tweaks", "Falling Rotation Fix", false, "Normally, if you ever drop an object from really high up, its rotation takes so long to change that it's still rotating when it hits the ground. This tweak properly scales the rotation so objects land normally.");
             OldHalloweenElevatorMusic = base.Config.Bind("General Tweaks", "Old Halloween Elevator Music", false, "Restores mineshaft elevator to its old Halloween behaviour, playing a random selection of groovy tracks (disabled if ButteryStancakes' HalloweenElevator is installed).");
             DustSpaceClouds = base.Config.Bind("Better Dust Clouds", "Dust Space Clouds", true, "Adds a space to the 'DustClouds' weather whenever it's displayed, making it 'Dust Clouds' (note this weather is unused in vanilla, will only be present with certain modded content).");
             ThickDustClouds = base.Config.Bind("Better Dust Clouds", "Thick Dust Clouds", false, "Makes Dust Clouds visually thicker and more obscuring, in addition to various other internal changes to how the weather is handled, completely replacing vanilla behaviour (note this weather is unused in vanilla, will only be present with certain modded content).");

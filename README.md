@@ -25,6 +25,9 @@ All this tweak does is ensure all ship furniture/unlockables will be parented to
 - **Only Fix Vanilla Objects**: This is a setting to avoid any unwanted errors with attempting (or failing) to fix modded furniture items.
 >*Default: ON*
 
+- **Alternate Fix Logic (EXPERIMENTAL)**: If you end up having any unexpected issues with furniture while using this tweak, you can try this. It's not super thoroughly tested, but it should simplify the code a bit to reduce possible points of failure or incompatibilities with other mods.
+>*Default: OFF*
+
 ![FixedShipObjects](https://imgur.com/zgVE4My.png)
 
 ## Fixed Suit Rack
@@ -88,13 +91,15 @@ Under "Ship Tweaks Removals" in config, you will find a list of items you can re
 Changes the name of the "big bolt" to reflect what it actually is (a big screw).
 
 ## Falling Rotation Fix
->*Default: ON - Client-side*
+>*Default: OFF - Client-side*
 
 Normally, if you drop an object from high up, it will rotate much slower than the rate it falls. This means the object will hit the ground while its rotation is still being updated (and the game will still consider it in a "falling" state).
 
 The only immediate consequence of this bug is the visual effect of objects strangely spinning on the ground when you drop them from high up. This change may also end up making them set off mines on contact in more cases (rather than setting them off *only* after their rotation is finished).
 
 In any case, this tweak scales this rotation so it will finish while the object is still in the air and its falling state will end normally.
+
+*The default value of this tweak has been changed to OFF after some reports of issues (the fix is so small that it's really not worth risking). However, its code has remained unchanged for a long time and I've never encountered any issues nor recieved any other reports, making it likely a mod incompatibility. So, it should be safe to enable this in most cases, but if you do end up having issues please send the details to me.*
 
 ## Old Halloween Elevator Music
 >*Default: OFF - Client-side*

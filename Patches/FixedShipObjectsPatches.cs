@@ -60,7 +60,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         public static void InitializePrefab()
         {
-            if (!ScienceBirdTweaks.ClientsideMode.Value)
+            if (!ScienceBirdTweaks.ClientsideMode.Value && !ScienceBirdTweaks.AlternateFixLogic.Value)
             {
                 ScienceBirdTweaks.Logger.LogDebug("Initializing furniture holder!");
                 furniturePrefab = (GameObject)ScienceBirdTweaks.TweaksAssets.LoadAsset("Furniture");
@@ -74,7 +74,7 @@ namespace ScienceBirdTweaks.Patches
             GameObject hangarShip = GameObject.Find("/Environment/HangarShip");
             if (hangarShip == null) { return; }
 
-            if (!ScienceBirdTweaks.ClientsideMode.Value)
+            if (!ScienceBirdTweaks.ClientsideMode.Value && !ScienceBirdTweaks.AlternateFixLogic.Value)
             {
                 GameObject furniture = UnityEngine.Object.Instantiate(furniturePrefab, Vector3.zero, Quaternion.identity);
                 if (furniture != null && !furniture.GetComponent<NetworkObject>().IsSpawned)
@@ -104,7 +104,7 @@ namespace ScienceBirdTweaks.Patches
             GameObject hangarShip = GameObject.Find("/Environment/HangarShip");
             if (hangarShip == null) { return; }
 
-            if (ScienceBirdTweaks.ClientsideMode.Value)
+            if (ScienceBirdTweaks.ClientsideMode.Value || ScienceBirdTweaks.AlternateFixLogic.Value)
             {
                 PlaceableShipObject[] furnitureObjects = UnityEngine.Object.FindObjectsOfType<PlaceableShipObject>();
                 foreach (PlaceableShipObject obj in furnitureObjects)
@@ -272,7 +272,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         static void ResetParentedObjects(StartOfRound __instance)
         {
-            if (!ScienceBirdTweaks.FixedShipObjects.Value || !__instance.IsServer || ScienceBirdTweaks.ClientsideMode.Value)
+            if (!ScienceBirdTweaks.FixedShipObjects.Value || !__instance.IsServer || ScienceBirdTweaks.ClientsideMode.Value || ScienceBirdTweaks.AlternateFixLogic.Value)
             {
                 return;
             }
