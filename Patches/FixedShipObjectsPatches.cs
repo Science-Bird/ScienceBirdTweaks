@@ -48,7 +48,7 @@ namespace ScienceBirdTweaks.Patches
 
         static void DestroyCord()
         {
-            GameObject cord = GameObject.Find("/Teleporter(Clone)/ButtonContainer/LongCord") ?? GameObject.Find("/Environment/HangarShip/Furniture(Clone)/Teleporter(Clone)/ButtonContainer/LongCord");
+            GameObject cord = GameObject.Find("/Teleporter(Clone)/ButtonContainer/LongCord") ?? GameObject.Find("/Environment/HangarShip/Furniture(Clone)/Teleporter(Clone)/ButtonContainer/LongCord") ?? GameObject.Find("/Environment/HangarShip/Teleporter(Clone)/ButtonContainer/LongCord");
             if (cord != null)
             {
                 destroyCord = false;
