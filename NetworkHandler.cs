@@ -14,15 +14,9 @@ public class NetworkHandler : NetworkBehaviour
         {
             if (Instance != null)
             {
-                ScienceBirdTweaks.Logger.LogWarning("Despawning network object!.");
                 Instance.gameObject?.GetComponent<NetworkObject>()?.Despawn();
             }
-            else
-            {
-                ScienceBirdTweaks.Logger.LogWarning("Null instance! Network object despawn failed.");
-            }
         }
-        
             
         Instance = this;
 

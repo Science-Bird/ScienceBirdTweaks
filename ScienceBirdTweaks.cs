@@ -11,6 +11,16 @@ using UnityEngine;
 namespace ScienceBirdTweaks
 {
     [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+    [BepInDependency("BMX.LobbyCompatibility", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("mrov.WeatherRegistry", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("MrovWeathers", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("mrov.TerminalFormatter", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("zigzag.SelfSortingStorage", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("JacobG5.WesleyMoons", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("JacobG5.WesleyMoonScripts", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("JacobG5.JLLItemModule", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("imabatby.lethallevelloader", BepInDependency.DependencyFlags.SoftDependency)]
+
     public class ScienceBirdTweaks : BaseUnityPlugin
     {
         public static ScienceBirdTweaks Instance { get; private set; } = null!;

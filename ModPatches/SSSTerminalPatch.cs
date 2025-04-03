@@ -110,9 +110,20 @@ namespace ScienceBirdTweaks.ModPatches
                 string[] lines = terminal.currentText.Split('\n');
                 foreach (string line in lines)
                 {
-                    if (line.Split(" ").Length > 1)
+                    string[] spacedLine = line.Split(" ");
+                    if (spacedLine.Length > 2)
                     {
-                        string itemName = line.Split(" ")[1].ToLower();
+                        int spaceIndex = 2;
+                        string itemName = spacedLine[1].ToLower();
+                        while (!spacedLine[spaceIndex].IsNullOrWhiteSpace())
+                        {
+                            itemName += " " + spacedLine[spaceIndex].ToLower();
+                            spaceIndex++;
+                            if (spaceIndex >= spacedLine.Length)
+                            {
+                                break;
+                            }
+                        }
                         if (smartDict.TryGetValue(itemName, out int value))
                         {
                             string valueString = Match(line, "(?<!\\$|\\d)\\d+\\s+$").Value;

@@ -15,7 +15,6 @@ namespace ScienceBirdTweaks.ModPatches
 
     public class FixJLLRandom
     {
-
         public static void FixJNoisemakers(RoundManager __instance)
         {
             JNoisemakerProp[] jProps = GameObject.FindObjectsOfType<JNoisemakerProp>();
