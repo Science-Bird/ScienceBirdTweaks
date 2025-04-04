@@ -80,6 +80,9 @@
       <Reference Include="WeatherRegistry">
         <HintPath>WeatherRegistry.dll</HintPath>
       </Reference>
+      <Reference Include="MrovWeathers">
+        <HintPath>MrovWeathers.dll</HintPath>
+      </Reference>
       <Reference Include="WesleyMoonScripts">
         <HintPath>WesleyMoonScripts.dll</HintPath>
       </Reference>
