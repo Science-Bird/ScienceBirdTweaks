@@ -66,6 +66,7 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<bool> VideoTapeInsertFix;
         public static ConfigEntry<bool> VideoTapeSkip;
         public static ConfigEntry<bool> TrueBlackout;
+        public static ConfigEntry<bool> BlackoutOnApparatusRemoval;
         public static ConfigEntry<bool> DiversityComputerBegone;
         public static ConfigEntry<string> CentipedeMode;
         public static ConfigEntry<float> CentipedeFixedDamage;
@@ -127,11 +128,12 @@ namespace ScienceBirdTweaks
             VideoTapeInsertFix = base.Config.Bind("Mod Tweaks", "Wesley Moons Tape Insert Fix", false, "EXPERIMENTAL - For Wesley's Moons: attempts to fix an issue where clients are unable to insert cassette tapes into the projector (might also fix issues with registering story log items).");
             VideoTapeSkip = base.Config.Bind("Mod Tweaks", "Wesley Moons Video Tape Skip", false, "For Wesley's Moons: after inserting a casette tape on Galetry, you can interact with the cassette player again to skip the video and unlock the moon immediately.");
             SSSTerminalStock = base.Config.Bind("Mod Tweaks", "Smart Cupboard Mrov Terminal Stock", true, "If you are using both Self Sorting Storage (which adds the 'smart cupboard') and mrov's TerminalFormatter (which shows a count of items on the ship), items in the cupboard will be counted on the terminal display.");
-            TrueBlackout = base.Config.Bind("Mod Tweaks", "MrovWeathers True Blackout", false, "EXPERIMENTAL - Blacks out emissive materials during a blackout, so no white spots are leftover from removed lights (does nothing if MrovWeathers isn't installed).");
+            TrueBlackout = base.Config.Bind("Mod Tweaks", "MrovWeathers True Blackout", true, "Blacks out emissive materials during a blackout, so no white spots are leftover from removed lights (does nothing if MrovWeathers isn't installed).");            
             DiversityComputerBegone = base.Config.Bind("Mod Tweaks", "Diversity Computer Begone", false, "Removes the floppy reader computer from Diversity and any floppy disks that spawn (does nothing if Diversity isn't installed).");
             CentipedeMode = base.Config.Bind("Gameplay Tweaks", "Snare Flea Mode", "Vanilla", new ConfigDescription("'Vanilla': Unchanged. - 'Second Chance': Implements the singleplayer 'second chance' mechanic in multiplayer, giving each player a chance to escape once it damages them to low HP. - 'Fixed Damage': Will damage a player for an exact proportion of their maximum health (at the same speed as vanilla).", new AcceptableValueList<string>(["Vanilla","Second Chance","Fixed Damage"])));
             CentipedeFixedDamage = base.Config.Bind("Gameplay Tweaks", "Snare Flea Fixed Damage", 0.5f, new ConfigDescription("The proportion of a player's maximum health to take if using the 'Fixed Damage' mode. When set to 50% or above, this effectively gives the player a second chance only if they're above half health (the lower this is set, the more chances).", new AcceptableValueRange<float>(0f, 1f)));
             CentipedeSecondChanceThreshold = base.Config.Bind("Gameplay Tweaks", "Snare Flea Second Chance Threshold", 15, new ConfigDescription("At what threshold of health should the snare flea drop off the player if it's using the 'Second Chance' mode (vanilla value in singleplayer is 15 HP).", new AcceptableValueRange<int>(0, 100)));
+            BlackoutOnApparatusRemoval = base.Config.Bind("Gameplay Tweaks", "Blackout on Apparatus Removal", true, "Blacks out emissive materials and disables all lights when an apparatus is removed.");
             DebugMode = base.Config.Bind("Dev", "Debug Mode", false, "For testing certain interactions and resetting some variables. Do not enable unless you know what you're doing.");
 
             ConfigTeleporterSize = new Vector3(TinyTeleporterSizeX.Value, TinyTeleporterSizeY.Value, TinyTeleporterSizeZ.Value);
