@@ -6,6 +6,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using ScienceBirdTweaks.ModPatches;
+using ScienceBirdTweaks.Patches;
 using UnityEngine;
 
 namespace ScienceBirdTweaks
@@ -67,10 +68,14 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<bool> VideoTapeSkip;
         public static ConfigEntry<bool> TrueBlackout;
         public static ConfigEntry<bool> BlackoutOnApparatusRemoval;
+        public static ConfigEntry<bool> ZeroDespawnPreventedItems;
         public static ConfigEntry<bool> DiversityComputerBegone;
         public static ConfigEntry<string> CentipedeMode;
         public static ConfigEntry<float> CentipedeFixedDamage;
         public static ConfigEntry<int> CentipedeSecondChanceThreshold;
+        public static ConfigEntry<bool> PreventWorthlessDespawn;
+        public static ConfigEntry<string> PreventedDespawnList;
+        public static ConfigEntry<string> CustomWorthlessDisplayText;
         public static ConfigEntry<bool> DebugMode;
 
         public static bool doLobbyCompat = false;
@@ -134,10 +139,16 @@ namespace ScienceBirdTweaks
             CentipedeFixedDamage = base.Config.Bind("Gameplay Tweaks", "Snare Flea Fixed Damage", 0.5f, new ConfigDescription("The proportion of a player's maximum health to take if using the 'Fixed Damage' mode. When set to 50% or above, this effectively gives the player a second chance only if they're above half health (the lower this is set, the more chances).", new AcceptableValueRange<float>(0f, 1f)));
             CentipedeSecondChanceThreshold = base.Config.Bind("Gameplay Tweaks", "Snare Flea Second Chance Threshold", 15, new ConfigDescription("At what threshold of health should the snare flea drop off the player if it's using the 'Second Chance' mode (vanilla value in singleplayer is 15 HP).", new AcceptableValueRange<int>(0, 100)));
             BlackoutOnApparatusRemoval = base.Config.Bind("Gameplay Tweaks", "Blackout on Apparatus Removal", true, "Blacks out emissive materials and disables all lights when an apparatus is removed.");
+            PreventWorthlessDespawn = base.Config.Bind("Gameplay Tweaks", "Prevent worthless scrap removal", true, "Prevent despawning worthless scrap on full crew losses.");
+            PreventedDespawnList = base.Config.Bind("Gameplay Tweaks", "Prevent removal on team wipe", "Shotgun", "Prevents despawning a comma separated list of items (ie. Shotgun, Frieren).");
+            ZeroDespawnPreventedItems = base.Config.Bind("Gameplay Tweaks", "Zero the value of saved scrap", true, "When a piece of scrap is prevented from being despawned using the previous list, set its value to zero.");
+            CustomWorthlessDisplayText = base.Config.Bind("Gameplay Tweaks", "Worthless Scrap Display Text", "Value: Priceless", "The text displayed when scanning scrap items that have had their value zeroed. (Set to empty to skip)");
             DebugMode = base.Config.Bind("Dev", "Debug Mode", false, "For testing certain interactions and resetting some variables. Do not enable unless you know what you're doing.");
 
             ConfigTeleporterSize = new Vector3(TinyTeleporterSizeX.Value, TinyTeleporterSizeY.Value, TinyTeleporterSizeZ.Value);
             ConfigLeverSize = new Vector3(LargerLeverSizeX.Value, LargerLeverSizeY.Value, LargerLeverSizeZ.Value);
+
+            ProtectItemsPatch.Initialize();
 
             string sAssemblyLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
