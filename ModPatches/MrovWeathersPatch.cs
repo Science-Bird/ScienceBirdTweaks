@@ -31,6 +31,7 @@ namespace ScienceBirdTweaks.ModPatches
     {
         public static bool BlackoutOverridePrefix(object __instance)
         {
+            //Blackout blackout = __instance as Blackout;
             FullDark.DoFullDark(true);
 
             return false;

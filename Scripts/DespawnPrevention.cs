@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ScienceBirdTweaks.Patches
+namespace ScienceBirdTweaks.Scripts
 {
     public static class DespawnPrevention
     {

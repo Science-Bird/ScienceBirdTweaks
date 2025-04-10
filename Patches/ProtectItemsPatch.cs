@@ -1,9 +1,7 @@
 ﻿using HarmonyLib;
 using Unity.Netcode;
-using System.Collections.Generic;
 using System;
-using GameNetcodeStuff;
-using System.Linq;
+using ScienceBirdTweaks.Scripts;
 
 namespace ScienceBirdTweaks.Patches
 {
