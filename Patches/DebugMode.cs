@@ -1,12 +1,18 @@
 using HarmonyLib;
 using GameNetcodeStuff;
 using Dissonance.Config;
+using UnityEngine.EventSystems;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using Unity.Netcode;
+using System.Linq;
 
 namespace ScienceBirdTweaks.Patches
 {
     [HarmonyPatch]
     public class DebugMode
     {
+
         [HarmonyPatch(typeof(Terminal), nameof(Terminal.LoadNewNodeIfAffordable))]
         [HarmonyPostfix]
         static void OnTerminalBuy(Terminal __instance, TerminalNode node)
@@ -65,6 +71,15 @@ namespace ScienceBirdTweaks.Patches
                 return;
             }
         }
+
+        [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.BeginGrabObject))]
+        [HarmonyPostfix]
+        static void GrabDebug(PlayerControllerB __instance)
+        {
+            //ScienceBirdTweaks.Logger.LogInfo($"Zap Tutorial: {HUDManager.Instance.setTutorialArrow}");
+            //ScienceBirdTweaks.Logger.LogInfo($"Loaded game completions: {ES3.Load("FinishedShockMinigame", "LCGeneralSaveData", 0)}");
+        }
+
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SceneManager_OnLoadComplete1))]
         [HarmonyPostfix]

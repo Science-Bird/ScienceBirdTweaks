@@ -1,11 +1,7 @@
 using UnityEngine;
 using HarmonyLib;
 using System;
-using System.Linq;
 using Unity.Netcode;
-using System.Collections;
-using GameNetcodeStuff;
-using static Unity.Collections.Unicode;
 using System.Collections.Generic;
 
 namespace ScienceBirdTweaks.Patches
@@ -16,7 +12,7 @@ namespace ScienceBirdTweaks.Patches
         static bool destroyCord = false;
         public static GameObject furniturePrefab;
         public static List<int> idBlacklist = new List<int>();
-        public static int[] vanillaIDs = [5, 6, 9, 10, 12, 13, 14, 17, 18, 19, 20, 21, 22, 23];
+        public static int[] vanillaIDs = [5, 6, 9, 10, 12, 13, 14, 17, 18, 19, 20, 21, 22, 23];// most vanilla furniture items
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.PositionSuitsOnRack))]
         [HarmonyPostfix]
@@ -50,6 +46,7 @@ namespace ScienceBirdTweaks.Patches
 
         static void DestroyCord()
         {
+            // location of teleporter cord depends on whether fixed ship objects is being used, and whether its simplified logic is being used
             GameObject cord = GameObject.Find("/Teleporter(Clone)/ButtonContainer/LongCord") ?? GameObject.Find("/Environment/HangarShip/Furniture(Clone)/Teleporter(Clone)/ButtonContainer/LongCord") ?? GameObject.Find("/Environment/HangarShip/Teleporter(Clone)/ButtonContainer/LongCord");
             if (cord != null)
             {
@@ -76,7 +73,7 @@ namespace ScienceBirdTweaks.Patches
             GameObject hangarShip = GameObject.Find("/Environment/HangarShip");
             if (hangarShip == null) { return; }
 
-            if (!ScienceBirdTweaks.ClientsideMode.Value && !ScienceBirdTweaks.AlternateFixLogic.Value)
+            if (!ScienceBirdTweaks.ClientsideMode.Value && !ScienceBirdTweaks.AlternateFixLogic.Value)// regular fixed furniture logic involves setting up a network object to contain furniture (within the ship), and parenting any furniture to this object upon spawn
             {
                 GameObject furniture = UnityEngine.Object.Instantiate(furniturePrefab, Vector3.zero, Quaternion.identity);
                 if (furniture != null && !furniture.GetComponent<NetworkObject>().IsSpawned)
@@ -106,7 +103,7 @@ namespace ScienceBirdTweaks.Patches
             GameObject hangarShip = GameObject.Find("/Environment/HangarShip");
             if (hangarShip == null) { return; }
 
-            if (ScienceBirdTweaks.ClientsideMode.Value || ScienceBirdTweaks.AlternateFixLogic.Value)
+            if (ScienceBirdTweaks.ClientsideMode.Value || ScienceBirdTweaks.AlternateFixLogic.Value)// alternate/clientside logic just parents objects to the ship directly, without using the container object
             {
                 if (ScienceBirdTweaks.OnlyFixDefault.Value && Array.IndexOf(vanillaIDs, index) == -1)
                 {
@@ -144,7 +141,7 @@ namespace ScienceBirdTweaks.Patches
                         else
                         {
                             ScienceBirdTweaks.Logger.LogError($"Failed to parent {gameObj.name}!");
-                            if (!idBlacklist.Contains(index))
+                            if (!idBlacklist.Contains(index))// make sure we don't try to parent the same object again that already failed
                             {
                                 idBlacklist.Add(index);
                             }
@@ -152,7 +149,7 @@ namespace ScienceBirdTweaks.Patches
                     }
                 }
             }
-            else
+            else// same but for normal logic with the furniture container
             {
                 GameObject furniture = GameObject.Find("/Environment/HangarShip/Furniture(Clone)");
                 if (furniture == null)
@@ -217,7 +214,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void OnBuy(StartOfRound __instance, int unlockableID)
         {
-            if (unlockableID == 5 && !__instance.IsServer)
+            if (unlockableID == 5 && !__instance.IsServer)// clients detect purchase of a teleporter and defer destroying the code until after it's loaded
             {
                 destroyCord = true;
             }
@@ -235,7 +232,7 @@ namespace ScienceBirdTweaks.Patches
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SpawnUnlockable))]
         [HarmonyPostfix]
-        static void OnSpawn(StartOfRound __instance, int unlockableIndex)
+        static void OnSpawn(StartOfRound __instance, int unlockableIndex)// only runs on server/host
         {
             if (ScienceBirdTweaks.FixedShipObjects.Value)
             {
@@ -259,8 +256,8 @@ namespace ScienceBirdTweaks.Patches
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ResetShipFurniture))]
         [HarmonyPrefix]
-        static void ResetParentedObjects(StartOfRound __instance)
-        {
+        static void ResetParentedObjects(StartOfRound __instance)// if using the regular furniture fix logic, unparent all the furniture before a game over and reset. this should hopefully stop any issues with the game or other mods being confused about unlockables being in the wrong location
+        {// this is the only reason I use the furniture container object in the first place
             if (!ScienceBirdTweaks.FixedShipObjects.Value || !__instance.IsServer || ScienceBirdTweaks.ClientsideMode.Value || ScienceBirdTweaks.AlternateFixLogic.Value)
             {
                 return;

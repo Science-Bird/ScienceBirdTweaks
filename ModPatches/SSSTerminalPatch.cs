@@ -1,12 +1,11 @@
 using System.Collections.Generic;
 using HarmonyLib;
-
 using SelfSortingStorage.Cupboard;
-using static SelfSortingStorage.Cupboard.SmartMemory;
 using static System.Text.RegularExpressions.Regex;
 using System;
 using System.Reflection;
 using BepInEx;
+using ScienceBirdTweaks.Scripts;
 
 
 namespace ScienceBirdTweaks.ModPatches
@@ -43,7 +42,7 @@ namespace ScienceBirdTweaks.ModPatches
             SSSDataRequest dataScript = terminal.gameObject.GetComponent<SSSDataRequest>();
             if (dataScript != null)
             {
-                method.Invoke(dataScript, new object[] { });
+                method.Invoke(dataScript, new object[] { });// run data request script to give all clients latest items
             }
             else
             {
@@ -61,13 +60,13 @@ namespace ScienceBirdTweaks.ModPatches
             }
         }
 
-        public static void OnSmartStore(SmartCupboard __instance)
+        public static void OnSmartStore(SmartCupboard __instance)// when an item is stored
         {
             Terminal terminalScript = UnityEngine.Object.FindObjectOfType<Terminal>();
             UpdateDictionary(terminalScript);
         }
 
-        public static void OnSmartSpawn(SmartCupboard __instance)
+        public static void OnSmartSpawn(SmartCupboard __instance)// when the cupboard spawns an item
         {
             Terminal terminalScript = UnityEngine.Object.FindObjectOfType<Terminal>();
             UpdateDictionary(terminalScript);
@@ -85,7 +84,7 @@ namespace ScienceBirdTweaks.ModPatches
         {
             if (storeFlag)
             {
-                if (MathF.Abs(__instance.scrollBarVertical.value - previousScrollPos) > 0.01f)
+                if (MathF.Abs(__instance.scrollBarVertical.value - previousScrollPos) > 0.01f)// update terminal text as the player scrolls
                 {
                     TerminalStoreQuantityReplace(__instance);
                 }
@@ -111,11 +110,11 @@ namespace ScienceBirdTweaks.ModPatches
                 foreach (string line in lines)
                 {
                     string[] spacedLine = line.Split(" ");
-                    if (spacedLine.Length > 2)
+                    if (spacedLine.Length > 2)// should always be true for any normal valid terminal line
                     {
                         int spaceIndex = 2;
                         string itemName = spacedLine[1].ToLower();
-                        while (!spacedLine[spaceIndex].IsNullOrWhiteSpace())
+                        while (!spacedLine[spaceIndex].IsNullOrWhiteSpace())// to catch items with multi-word names, keep checking for additional words until none can be found
                         {
                             itemName += " " + spacedLine[spaceIndex].ToLower();
                             spaceIndex++;
@@ -124,9 +123,9 @@ namespace ScienceBirdTweaks.ModPatches
                                 break;
                             }
                         }
-                        if (smartDict.TryGetValue(itemName, out int value))
+                        if (smartDict.TryGetValue(itemName, out int value))// try to match item name found in terminal line with the dictionary
                         {
-                            string valueString = Match(line, "(?<!\\$|\\d)\\d+\\s+$").Value;
+                            string valueString = Match(line, "(?<!\\$|\\d)\\d+\\s+$").Value;// grabs a number at the end of the line which is not preceded by a $ (meaning it isn't the item's price)
                             int initialValue = 0;
                             if (!valueString.IsNullOrWhiteSpace())
                             {
@@ -140,15 +139,15 @@ namespace ScienceBirdTweaks.ModPatches
                                     initialValue = 0;
                                 }
                             }
-                            if (value > 0)
+                            if (value > 0)// if an item is stored in the cupboard, it will always display as "1 owned" on the terminal, this resets it back to zero for calculations
                             {
                                 value--;
                             }
-                            lines[Array.IndexOf(lines, line)] = Replace(line, "(?<!\\$|\\d)\\d+\\s+$", (initialValue + value).ToString("D2"));
+                            lines[Array.IndexOf(lines, line)] = Replace(line, "(?<!\\$|\\d)\\d+\\s+$", (initialValue + value).ToString("D2"));// same string check as before but now actually replaces the value with a new one
                         }
                     }
                 }
-                terminal.currentText = string.Join("\n", lines);
+                terminal.currentText = string.Join("\n", lines);// update terminal's actual text
                 terminal.screenText.text = terminal.currentText;
             }
         }

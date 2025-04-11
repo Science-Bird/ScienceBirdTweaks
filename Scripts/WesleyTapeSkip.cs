@@ -10,12 +10,12 @@ namespace ScienceBirdTweaks
         public void StopTape()
         {
             ScienceBirdTweaks.Logger.LogDebug("Stop tape called!");
-            LevelCassetteLoader loader = TapeSkipPatches.currentLoader;
+            LevelCassetteLoader loader = TapeSkipPatches.currentLoader;// get cassette loader from the patch class
             if (loader != null)
             {
                 StopTapeServerRpc();
             }
-            else
+            else// fallback logic
             {
                 ScienceBirdTweaks.Logger.LogWarning("Loader not obtained from patch, searching manually...");
                 loader = UnityEngine.Object.FindObjectOfType<LevelCassetteLoader>();
@@ -43,7 +43,7 @@ namespace ScienceBirdTweaks
             LevelCassetteLoader loader = TapeSkipPatches.currentLoader;
             if (loader != null)
             {
-                MethodInfo method = typeof(LevelCassetteLoader).GetMethod("TapeEnded", BindingFlags.NonPublic | BindingFlags.Instance);
+                MethodInfo method = typeof(LevelCassetteLoader).GetMethod("TapeEnded", BindingFlags.NonPublic | BindingFlags.Instance);// grabs the "end tape" method and runs it
                 method.Invoke(loader, new object[] { });
             }
         }

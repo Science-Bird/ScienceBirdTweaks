@@ -7,7 +7,7 @@ namespace ScienceBirdTweaks.Patches
     public class RemoveShipObjectsPatches
     {
 
-        static void DestroyObject(string objectString)
+        static void DestroyObject(string objectString)// general removal function
         {
             GameObject shipObject = GameObject.Find("/Environment/HangarShip/" + objectString);
             if (shipObject != null)

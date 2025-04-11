@@ -1,8 +1,5 @@
-using System.Data.Common;
 using System.Linq;
 using HarmonyLib;
-using SelfSortingStorage.Cupboard;
-using Unity.Netcode;
 using UnityEngine;
 
 namespace ScienceBirdTweaks.Patches
@@ -12,7 +9,7 @@ namespace ScienceBirdTweaks.Patches
     {
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.PlayerLoadedClientRpc))]
         [HarmonyPostfix]
-        static void FindScrewsOnLoad(StartOfRound __instance)
+        static void FindScrewsOnLoad(StartOfRound __instance)// client-side
         {
             if (!ScienceBirdTweaks.BigScrew.Value)
             {
@@ -29,7 +26,7 @@ namespace ScienceBirdTweaks.Patches
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.LoadShipGrabbableItems))]
         [HarmonyPostfix]
-        static void FindScrewsShip(StartOfRound __instance)
+        static void FindScrewsShip(StartOfRound __instance)// server-side
         {
             if (!ScienceBirdTweaks.BigScrew.Value)
             {
@@ -47,7 +44,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.SetScrapValue))]
         [HarmonyPostfix]
         [HarmonyBefore("zigzag.SelfSortingStorage")]
-        static void UpdateScrewName(GrabbableObject __instance)
+        static void UpdateScrewName(GrabbableObject __instance)// this should handle most cases, including weird ones like present spawning or modded storage stuff
         {
             if (!ScienceBirdTweaks.BigScrew.Value)
             {
@@ -68,7 +65,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         [HarmonyPriority(Priority.Last)]
         [HarmonyAfter("mrov.terminalformatter")]
-        static void AddScrewToTerminal(Terminal __instance)
+        static void AddScrewToTerminal(Terminal __instance)// probably not needed, but just in case
         {
             if (!ScienceBirdTweaks.BigScrew.Value)
             {

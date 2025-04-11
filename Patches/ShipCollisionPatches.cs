@@ -1,5 +1,4 @@
 using HarmonyLib;
-using Unity.Netcode;
 using UnityEngine;
 
 namespace ScienceBirdTweaks.Patches
@@ -15,7 +14,7 @@ namespace ScienceBirdTweaks.Patches
             {
                 return;
             }
-            if (sceneName != "SampleSceneRelay" && sceneName != "MainMenu")
+            if (sceneName != "SampleSceneRelay" && sceneName != "MainMenu")// if loading into a moon
             {
                 GameObject catwalk = GameObject.Find("CatwalkShip");
                 if (catwalk != null)
@@ -64,7 +63,7 @@ namespace ScienceBirdTweaks.Patches
             {
                 return;
             }
-            if (sceneName != "SampleSceneRelay" && sceneName != "MainMenu")
+            if (sceneName != "SampleSceneRelay" && sceneName != "MainMenu")// if loading into a moon
             {
                 GameObject bottom = GameObject.Find("Environment/HangarShip/ShipBottomColliders");
                 if (bottom != null)
@@ -76,7 +75,7 @@ namespace ScienceBirdTweaks.Patches
                         collider.enabled = false;
                     }
                 }
-                GameObject cube = GameObject.Find("Environment/HangarShip/Cube");
+                GameObject cube = GameObject.Find("Environment/HangarShip/Cube");// stray bottom collider which is not in the correct location
                 if (cube != null)
                 {
                     BoxCollider cubeCollider = cube.GetComponent<BoxCollider>();
@@ -90,8 +89,8 @@ namespace ScienceBirdTweaks.Patches
 
         static void TeleporterBuildCollision()
         {
-            GameObject teleportObj = GameObject.Find("/Teleporter(Clone)/AnimContainer/PlacementCollider");
-            GameObject inverseTeleportObj = GameObject.Find("/InverseTeleporter(Clone)/AnimContainer/PlacementCollider");
+            GameObject teleportObj = GameObject.Find("Teleporter(Clone)/AnimContainer/PlacementCollider");
+            GameObject inverseTeleportObj = GameObject.Find("InverseTeleporter(Clone)/AnimContainer/PlacementCollider");
             if (teleportObj != null)
             {
                 ScienceBirdTweaks.Logger.LogDebug("Fixing teleporter build collision...");

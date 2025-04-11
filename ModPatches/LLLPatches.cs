@@ -1,6 +1,7 @@
 using HarmonyLib;
 using UnityEngine;
 using Unity.Netcode;
+using ScienceBirdTweaks.Scripts;
 
 namespace ScienceBirdTweaks.ModPatches
 {
@@ -36,7 +37,7 @@ namespace ScienceBirdTweaks.ModPatches
                     syncObj.GetComponent<NetworkObject>().Spawn();
                 }
                 LLLUnlockSync syncScript = syncObj.GetComponent<LLLUnlockSync>();
-                syncScript.CheckUnlocks();
+                syncScript.CheckUnlocks();// everything done by attached network behaviour
             }
         }
     }

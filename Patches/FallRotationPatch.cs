@@ -22,12 +22,12 @@ namespace ScienceBirdTweaks.Patches
             try
             {
                 if (__instance.itemProperties.name == "WitheredRobotToy" || __instance.itemProperties.name == "WitheredPhone" || __instance.itemProperties.name == "WitheredDentures" || !ScienceBirdTweaks.FallingRotationFix.Value)
-                {
+                {// Wither has its own rotation fix for these items
                     return;
                 }
-                if (__instance.startFallingPosition.y - __instance.targetFloorPosition.y > 5f)
+                if (__instance.startFallingPosition.y - __instance.targetFloorPosition.y > 5f)// this is when fall calculations start being different, for "long falls"
                 {
-                    float curveVal = Mathf.Clamp(StartOfRound.Instance.objectFallToGroundCurveNoBounce.Evaluate(__instance.fallTime), 0f, 1f);
+                    float curveVal = Mathf.Clamp(StartOfRound.Instance.objectFallToGroundCurveNoBounce.Evaluate(__instance.fallTime), 0f, 1f);// this is the curve normally used for position, now adapted for rotation
                     if (curveVal < 1f)
                     {
                         if (__instance.floorYRot == -1)
@@ -39,7 +39,7 @@ namespace ScienceBirdTweaks.Patches
                             __instance.transform.rotation = Quaternion.Lerp(__instance.transform.rotation, Quaternion.Euler(__instance.itemProperties.restingRotation.x, __instance.floorYRot + __instance.itemProperties.floorYOffset + 90f, __instance.itemProperties.restingRotation.z), curveVal * 0.3f);
                         }
                     }
-                    else
+                    else// end fall immediately after we reach the end of our curve
                     {
                         ScienceBirdTweaks.Logger.LogDebug("Fall complete!");
                         __instance.fallTime = 1.02f;

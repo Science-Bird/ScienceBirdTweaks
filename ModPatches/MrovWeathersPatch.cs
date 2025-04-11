@@ -1,12 +1,6 @@
 using System.Reflection;
 using HarmonyLib;
-using UnityEngine;
-using System.Collections.Generic;
-using MrovWeathers;
 using ScienceBirdTweaks.Scripts;
-using System.Linq;
-using System;
-
 
 namespace ScienceBirdTweaks.ModPatches
 {
@@ -29,11 +23,9 @@ namespace ScienceBirdTweaks.ModPatches
 
     public static class TrueBlackoutPatch
     {
-        public static bool BlackoutOverridePrefix(object __instance)
+        public static bool BlackoutOverridePrefix(object __instance)// replace existing blackout method
         {
-            //Blackout blackout = __instance as Blackout;
-            FullDark.DoFullDark(true);
-
+            TrueBlackout.DoBlackout(true);
             return false;
         }
     }

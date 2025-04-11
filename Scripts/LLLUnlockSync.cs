@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using LethalLevelLoader;
 
-namespace ScienceBirdTweaks
+namespace ScienceBirdTweaks.Scripts
 {
     public class LLLUnlockSync : NetworkBehaviour
     {
@@ -9,14 +9,14 @@ namespace ScienceBirdTweaks
         {
             foreach (ExtendedLevel level in PatchedContent.ExtendedLevels)
             {
-                CheckUnlocksClientRpc(level.UniqueIdentificationName, level.IsRouteHidden, level.IsRouteLocked);
+                CheckUnlocksClientRpc(level.UniqueIdentificationName, level.IsRouteHidden, level.IsRouteLocked);// pass the name and hidden/locked booleans onto clients so they can sync their own values
             }
         }
 
         [ClientRpc]
         public void CheckUnlocksClientRpc(string uniqueName, bool hidden, bool locked)
         {
-            if (base.IsServer) { return; }
+            if (IsServer) { return; }
             ExtendedLevel target = PatchedContent.ExtendedLevels.Find(x => x.UniqueIdentificationName == uniqueName);
             if (target != null && (target.IsRouteHidden != hidden || target.IsRouteLocked != locked))
             {

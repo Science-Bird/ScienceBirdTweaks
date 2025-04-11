@@ -1,7 +1,6 @@
 using System.Reflection;
 using System;
 using HarmonyLib;
-using UnityEngine;
 
 namespace ScienceBirdTweaks.Patches
 {
@@ -14,7 +13,7 @@ namespace ScienceBirdTweaks.Patches
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SceneManager_OnLoadComplete1))]
         [HarmonyPostfix]
-        static void CheckButtery(StartOfRound __instance)
+        static void CheckButtery(StartOfRound __instance)// check if HalloweenElevator present, then do not run patches
         {
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
@@ -34,7 +33,7 @@ namespace ScienceBirdTweaks.Patches
             {
                 return;
             }
-            if (__instance.playMusic && !__instance.elevatorJingleMusic.isPlaying)
+            if (__instance.playMusic && !__instance.elevatorJingleMusic.isPlaying)// halloween clips still exist and are even loaded onto elevator object, they just normally aren't used
             {
                 int clipIndex = clipRandom.Next(0, __instance.elevatorHalloweenClips.Length);
                 if (__instance.elevatorMovingDown)

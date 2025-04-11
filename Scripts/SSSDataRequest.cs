@@ -3,7 +3,7 @@ using SelfSortingStorage.Cupboard;
 using static SelfSortingStorage.Cupboard.SmartMemory;
 using System.Collections.Generic;
 
-namespace ScienceBirdTweaks
+namespace ScienceBirdTweaks.Scripts
 {
     public class SSSDataRequest : NetworkBehaviour
     {
@@ -12,7 +12,7 @@ namespace ScienceBirdTweaks
         [ServerRpc(RequireOwnership = false)]
         public void CollectDataServerRpc()
         {
-            SmartCupboard cupboard = UnityEngine.Object.FindObjectOfType<SmartCupboard>();
+            SmartCupboard cupboard = FindObjectOfType<SmartCupboard>();
             if (Instance != null && cupboard != null)
             {
                 storedDict = new Dictionary<string, int>();
@@ -22,10 +22,10 @@ namespace ScienceBirdTweaks
                 {
                     foreach (Data item in rowList)
                     {
-                        string[] splitName = item.Id.Split("/");
+                        string[] splitName = item.Id.Split("/");// ids take form "modname/itemname", and are "INVALID" otherwise
                         if (splitName.Length > 1)
                         {
-                            if (storedDict.TryAdd(splitName[1].ToLower(), item.Quantity))
+                            if (storedDict.TryAdd(splitName[1].ToLower(), item.Quantity))// server adds item then sends item info to clients to add to their own dictionaries
                             {
                                 ScienceBirdTweaks.Logger.LogDebug($"SERVER: Added {item.Quantity} {splitName[1].ToLower()} to dictionary!");
                                 SendDataClientRpc(splitName[1].ToLower(), item.Quantity);
@@ -39,7 +39,7 @@ namespace ScienceBirdTweaks
         [ClientRpc]
         public void SendDataClientRpc(string name, int count)
         {
-            if (!base.IsServer)
+            if (!IsServer)
             {
                 if (storedDict.TryAdd(name, count))
                 {
@@ -55,7 +55,7 @@ namespace ScienceBirdTweaks
         [ClientRpc]
         public void ResetDictClientRpc()
         {
-            if (!base.IsServer)
+            if (!IsServer)
             {
                 storedDict = new Dictionary<string, int>();
             }

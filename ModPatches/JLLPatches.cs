@@ -18,13 +18,13 @@ namespace ScienceBirdTweaks.ModPatches
         public static void FixJNoisemakers(RoundManager __instance)
         {
             JNoisemakerProp[] jProps = GameObject.FindObjectsOfType<JNoisemakerProp>();
-            FieldInfo randomField = AccessTools.Field(typeof(JNoisemakerProp), "noisemakerRandom");
+            FieldInfo randomField = AccessTools.Field(typeof(JNoisemakerProp), "noisemakerRandom");// access private field
             foreach (JNoisemakerProp jProp in jProps)
             {
                 if (randomField.GetValue(jProp) == null)
                 {
                     ScienceBirdTweaks.Logger.LogInfo("Found JNoisemakerProp with null random! Fixing...");
-                    randomField.SetValue(jProp, new System.Random(StartOfRound.Instance.randomMapSeed + 85));
+                    randomField.SetValue(jProp, new System.Random(StartOfRound.Instance.randomMapSeed + 85));// re-run initialization if null
                 }
             }
         }

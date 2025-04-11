@@ -7,11 +7,10 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
-using static MrovWeathers.Blackout;
 
 namespace ScienceBirdTweaks.Scripts
 {
-    public class FullDark : MonoBehaviour
+    public class TrueBlackout : MonoBehaviour
     {
         private static readonly int emissionColorID = Shader.PropertyToID("_EmissionColor");
         private static readonly int emissiveColorID = Shader.PropertyToID("_EmissiveColor");
@@ -21,28 +20,43 @@ namespace ScienceBirdTweaks.Scripts
         private const string emissiveColorMapKeyword = "_EMISSIVE_COLOR_MAP";
         private const string useEmissiveIntensityID = "_EMISSION";
         private static Boolean extraLogs = false;
+        private static int blacklistLength;
 
-        public static void DoFullDark(Boolean? disableSun)
+        static bool FastContains(string path, string keyword) =>
+            path.IndexOf(keyword, StringComparison.Ordinal) >= 0;
+
+        static bool BlacklistContains(string path, string[] blacklist)
+        {
+            for (int i = 0; i < blacklistLength; i++)
+            {
+                if (FastContains(path, blacklist[i]))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static void DoBlackout(Boolean? disableSun)
         {
             var totalStopwatch = Stopwatch.StartNew();
 
-            ScienceBirdTweaks.Logger.LogInfo("Doing FullDark");
+            ScienceBirdTweaks.Logger.LogInfo("Doing blackout!");
             Scene scene = SceneManager.GetActiveScene();
 
             if (!scene.isLoaded)
             {
-                ScienceBirdTweaks.Logger.LogWarning($"Scene is not loaded! Aborting!");
+                ScienceBirdTweaks.Logger.LogWarning($"Scene is not loaded. Aborting!");
                 totalStopwatch.Stop();
-                ScienceBirdTweaks.Logger.LogDebug($"[TIMER] TOTAL FullDark execution time (aborted): {totalStopwatch.ElapsedMilliseconds}ms");
+                ScienceBirdTweaks.Logger.LogDebug($"[TIMER] TOTAL blackout execution time (aborted): {totalStopwatch.ElapsedMilliseconds}ms");
                 return;
             }
 
-            FullDark fullDarkInstance = GameObject.FindObjectOfType<FullDark>();
-            if (fullDarkInstance == null)
+            TrueBlackout trueBlackoutInstance = GameObject.FindObjectOfType<TrueBlackout>();
+            if (trueBlackoutInstance == null)
             {
-                GameObject darkObject = new GameObject("FullDarkManager");
-                fullDarkInstance = darkObject.AddComponent<FullDark>();
-                ScienceBirdTweaks.Logger.LogInfo("Created new FullDark instance");
+                GameObject blackoutHandler = new GameObject("BlackoutManager");
+                trueBlackoutInstance = blackoutHandler.AddComponent<TrueBlackout>();
             }
 
             List<Light> allLights;
@@ -64,7 +78,7 @@ namespace ScienceBirdTweaks.Scripts
             {
                 ScienceBirdTweaks.Logger.LogWarning("No lights found in scene!");
                 totalStopwatch.Stop();
-                ScienceBirdTweaks.Logger.LogDebug($"[TIMER] TOTAL FullDark execution time (no lights found): {totalStopwatch.ElapsedMilliseconds}ms");
+                ScienceBirdTweaks.Logger.LogDebug($"[TIMER] TOTAL TrueBlackout execution time (no lights found): {totalStopwatch.ElapsedMilliseconds}ms");
                 return;
             }
 
@@ -77,12 +91,12 @@ namespace ScienceBirdTweaks.Scripts
 
             List<HDAdditionalLightData> Floodlights = new List<HDAdditionalLightData>();
             Transform ShipLightsPost = GameObject.Find("ShipLightsPost").GetComponent<Transform>();
-            List<Light> ShipPostLights = LightUtils.GetLightsUnderParent(ShipLightsPost);
+            List<Light> ShipPostLights = GetLightsInParent(ShipLightsPost);
 
             ScienceBirdTweaks.Logger.LogInfo($"Found {ShipPostLights.Count} floodlights in scene");
 
-            static bool FastContains(string path, string keyword) =>
-                path.IndexOf(keyword, StringComparison.Ordinal) >= 0;
+            string[] hierarchyBlacklist = ScienceBirdTweaks.TrueBlackoutBlacklist.Value.Replace(" ", "").Split(",");
+            blacklistLength = hierarchyBlacklist.Length;
 
             foreach (Light light in allLights)
             {
@@ -106,14 +120,7 @@ namespace ScienceBirdTweaks.Scripts
 
                 string path = GetObjectPath(parent.gameObject);
 
-                // TODO: pull these from a config file
-                if ((FastContains(path, "HangarShip")) ||
-                    FastContains(path, "PlayersContainer") ||
-                    FastContains(path, "MaskMesh") ||
-                    FastContains(path, "EyesFilled") ||
-                    FastContains(path, "GunBody") ||
-                    FastContains(path, "Landmine") ||
-                    FastContains(path, "Trap"))
+                if (BlacklistContains(path, hierarchyBlacklist))
                 {
                     lightObjectsBlacklist.Add(parent.gameObject);
 
@@ -159,7 +166,7 @@ namespace ScienceBirdTweaks.Scripts
             {
                 ScienceBirdTweaks.Logger.LogInfo("Found no lights!");
                 totalStopwatch.Stop();
-                ScienceBirdTweaks.Logger.LogDebug($"[TIMER] TOTAL FullDark execution time (no lights found): {totalStopwatch.ElapsedMilliseconds}ms");
+                ScienceBirdTweaks.Logger.LogDebug($"[TIMER] TOTAL Blackout execution time (no lights found): {totalStopwatch.ElapsedMilliseconds}ms");
                 return;
             }
 
@@ -215,8 +222,7 @@ namespace ScienceBirdTweaks.Scripts
                             {
                                 FloodlightData.SetIntensity(floodLightIntensity);
                                 FloodlightData.SetSpotAngle(floodLightAngle);
-                                FloodlightData.SetRange(floodLightRange);
-                                    
+                                FloodlightData.SetRange(floodLightRange);  
                             }
                             else
                             {
@@ -224,7 +230,6 @@ namespace ScienceBirdTweaks.Scripts
                                 FloodlightData.SetSpotAngle(0);
                                 FloodlightData.SetRange(0);
                             }
-
                             Floodlights.Add(FloodlightData);
                         }
                     }
@@ -235,7 +240,7 @@ namespace ScienceBirdTweaks.Scripts
                 }
             }
 
-            fullDarkInstance.StartCoroutine(fullDarkInstance.DisableLightsOverFrames(lightObjects));
+            trueBlackoutInstance.StartCoroutine(trueBlackoutInstance.DisableLightsOverFrames(lightObjects));
 
             totalStopwatch.Stop();
             ScienceBirdTweaks.Logger.LogDebug($"[TIMER] Material Assignment finished at {totalStopwatch.ElapsedMilliseconds}ms");
@@ -366,6 +371,18 @@ namespace ScienceBirdTweaks.Scripts
             }
 
             return false;
+        }
+        
+        public static List<Light> GetLightsInParent(Transform parent, bool includeInactive = true)
+        {
+            List<Light> lights = [];
+            if (parent == null)
+                return lights;
+
+            Light[] childLights = parent.GetComponentsInChildren<Light>(includeInactive);
+            lights.AddRange(childLights);
+
+            return lights;
         }
 
         public static List<Light> GetSceneLights(string sceneName)

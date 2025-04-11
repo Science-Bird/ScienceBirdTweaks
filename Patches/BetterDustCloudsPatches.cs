@@ -1,4 +1,3 @@
-using GameNetcodeStuff;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.Rendering.HighDefinition;
@@ -78,7 +77,7 @@ namespace ScienceBirdTweaks.Patches
                 __instance.effects[0].effectEnabled = enableBuffer;
                 __instance.effects[0].transitioning = transitionBuffer;
                 transitionOverride = true;
-                if (initialSet)
+                if (initialSet)// one-time setup of cloud thickness and audio
                 {
                     enableBuffer = true;
                     __instance.effects[0].lerpPosition = false;
@@ -110,7 +109,7 @@ namespace ScienceBirdTweaks.Patches
                     }
                     initialSet = false;
                 }
-                if (__instance.effects[0].effectEnabled)
+                if (__instance.effects[0].effectEnabled)// essentially a replacement of existing SetWeatherEffects logic for Dust Clouds
                 {
                     __instance.effects[0].transitioning = false;
                     if (__instance.effects[0].effectObject != null)
@@ -125,7 +124,7 @@ namespace ScienceBirdTweaks.Patches
                     transitionOverride = false;
                 }
             }
-            else if (dustClouds != null)
+            else if (dustClouds != null && dustClouds.activeInHierarchy)// case for Experimentation dust clouds, which aren't an actual weather. they use all the vanilla values/logic
             {
                 AudioSource cloudsAudio = dustClouds.GetComponentInChildren<AudioSource>();
                 if (cloudsAudio != null)
@@ -158,7 +157,7 @@ namespace ScienceBirdTweaks.Patches
             if (levelText.Contains("DustClouds"))
             {
                 levelText = levelText.Replace("DustClouds", "Dust Clouds");
-                levelText = levelText.Replace("DustyClouds", "Dusty Clouds");
+                levelText = levelText.Replace("DustyClouds", "Dusty Clouds");// I saw some map descriptions used this
                 __instance.screenLevelDescription.text = levelText;
             }
         }
