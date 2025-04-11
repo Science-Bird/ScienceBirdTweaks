@@ -117,7 +117,8 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<int> FloodLightIntensity;
         public static ConfigEntry<int> FloodLightAngle;
         public static ConfigEntry<int> FloodLightRange;
-        public static ConfigEntry<string> TrueBlackoutBlacklist;
+        public static ConfigEntry<string> TrueBlackoutNameBlacklist;
+        public static ConfigEntry<string> TrueBlackoutHierarchyBlacklist;
         public static ConfigEntry<bool> SSSTerminalStock;
         public static ConfigEntry<bool> DiversityComputerBegone;
 
@@ -215,7 +216,8 @@ namespace ScienceBirdTweaks
             BlackoutOnApparatusRemoval = base.Config.Bind("Blackout", "Apparatus True Blackout", false, "Triggers a more comprehensive blackout on apparatus removal, affecting all lights inside and out, along with any emissive materials (does not affects sun).");
             DisableTrapsOnApparatusRemoval = base.Config.Bind("Blackout", "Apparatus Hazard Blackout", false, "Also disables all traps/hazards on the map after removing the apparatus.");
             TrueBlackout = base.Config.Bind("Blackout", "MrovWeathers True Blackout", true, "Revamps MrovWeathers' blackout so emissive materials are also darkened (no white spots left over), more lights are included, and problematic ones are excluded (like map hazards and outdoor apparatuses).");
-            TrueBlackoutBlacklist = base.Config.Bind("Blackout", "MrovWeathers True Blackout Blacklist", "HangarShip, PlayersContainer, MaskMesh, EyesFilled, GunBody, Landmine, Trap", "A blacklist of objects to leave untouched during a blackout. If a light object is found anywhere underneath these names in the hierarchy, it will be skipped. This must be a comma-separated list and is case-sensitive. It is highly recommended you do not remove any of the default values unless you really know what you're doing.");
+            TrueBlackoutNameBlacklist = base.Config.Bind("Blackout", "MrovWeathers True Blackout Name Blacklist", "GunBarrelPos, BulletParticleFlare, LightSphere, Landmine, AnimContainer, BlackoutIgnore, ItemShip, ThrusterContainer", "A blacklist of object names to leave untouched during a blackout. If a light object's parent has the same name as one of these names, it will be skipped. This must be a comma-separated list and is case-sensitive. It is highly recommended you do not remove any of the default values unless you really know what you're doing.");
+            TrueBlackoutHierarchyBlacklist = base.Config.Bind("Blackout", "MrovWeathers True Blackout Hierarchy Blacklist", "", "A blacklist of objects to leave untouched during a blackout. If a light object is found anywhere underneath these names in the hierarchy, it will be skipped. This must be a comma-separated list and is case-sensitive. It is recommended to use Name Blacklist whenever possible for performance reasons.");
             FloodLightIntensity = base.Config.Bind("Blackout", "Ship Floodlight Intensity (Lumen)", 30000, "Lumen value of the ship's floodlights during MrovWeathers' blackout (vanilla is 2275 Lumens). Set to 0 to disable floodlights during blackouts.");
             FloodLightAngle = base.Config.Bind("Blackout", "Ship Floodlight Angle (degrees)", 120, "Light angle of the ship's floodlights during MrovWeathers' blackout (vanilla is 1 degree).");
             FloodLightRange = base.Config.Bind("Blackout", "Ship Floodlight Range (m)", 600, "Light range of the ship's floodlights during MrovWeathers' blackout (vanilla is 44m).");

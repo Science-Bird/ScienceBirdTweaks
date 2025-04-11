@@ -19,17 +19,46 @@ namespace ScienceBirdTweaks.Scripts
         private static readonly int surfaceTypeID = Shader.PropertyToID("_SurfaceType");
         private const string emissiveColorMapKeyword = "_EMISSIVE_COLOR_MAP";
         private const string useEmissiveIntensityID = "_EMISSION";
-        private static Boolean extraLogs = false;
-        private static int blacklistLength;
+        private static readonly Boolean extraLogs = false;
+        private static string[] nameBlacklist = InitializeBlacklist(ScienceBirdTweaks.TrueBlackoutNameBlacklist.Value);
+        private static readonly int nameBlacklistLength = nameBlacklist.Length;
+        private static string[] hierarchyBlacklist = InitializeBlacklist(ScienceBirdTweaks.TrueBlackoutHierarchyBlacklist.Value);
+        private static readonly int hierarchyBlacklistLength = hierarchyBlacklist.Length;
+        private static readonly Boolean doContainsCheck = hierarchyBlacklistLength > 0;
+
+        private static string[] InitializeBlacklist(string configValue)
+        {
+            if (string.IsNullOrWhiteSpace(configValue))
+                return Array.Empty<string>();
+
+            string cleanedValue = configValue.Replace(" ", "");
+
+            if (string.IsNullOrEmpty(cleanedValue))
+                return Array.Empty<string>();
+
+            return cleanedValue.Split(',').Where(s => !string.IsNullOrEmpty(s)).ToArray();
+        }
 
         static bool FastContains(string path, string keyword) =>
             path.IndexOf(keyword, StringComparison.Ordinal) >= 0;
 
-        static bool BlacklistContains(string path, string[] blacklist)
+        static bool BlacklistIsSame(string name)
         {
-            for (int i = 0; i < blacklistLength; i++)
+            for (int i = 0; i < nameBlacklistLength; i++)
             {
-                if (FastContains(path, blacklist[i]))
+                if (name == nameBlacklist[i])
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        static bool BlacklistContains(string path)
+        {
+            for (int i = 0; i < hierarchyBlacklistLength; i++)
+            {
+                if (FastContains(path, hierarchyBlacklist[i]))
                 {
                     return true;
                 }
@@ -95,9 +124,6 @@ namespace ScienceBirdTweaks.Scripts
 
             ScienceBirdTweaks.Logger.LogInfo($"Found {ShipPostLights.Count} floodlights in scene");
 
-            string[] hierarchyBlacklist = ScienceBirdTweaks.TrueBlackoutBlacklist.Value.Replace(" ", "").Split(",");
-            blacklistLength = hierarchyBlacklist.Length;
-
             foreach (Light light in allLights)
             {
                 if (extraLogs)
@@ -111,16 +137,9 @@ namespace ScienceBirdTweaks.Scripts
                 if (lightObjectsBlacklist.Contains(parent.gameObject))
                     continue;
 
-                //if (floodLightIntensity <= 0 && ShipPostLights.Contains(light))
-                //{
-                //    ScienceBirdTweaks.Logger.LogDebug($"Floodlight intensity is 0, adding floodlight {light.name} to whitelist");
-                //    lightObjects.Add(parent.gameObject);
-                //    continue;
-                //}
-
                 string path = GetObjectPath(parent.gameObject);
 
-                if (BlacklistContains(path, hierarchyBlacklist))
+                if (BlacklistIsSame(parent.gameObject.name) || (doContainsCheck && BlacklistContains(path)))
                 {
                     lightObjectsBlacklist.Add(parent.gameObject);
 
@@ -134,11 +153,11 @@ namespace ScienceBirdTweaks.Scripts
                 }
 
                 if (light.bakingOutput.lightmapBakeType == LightmapBakeType.Baked ||
-                    parent.name == "BlackoutIgnore" ||
                     HasParentWithInteractTrigger(light.gameObject) ||
                     parent.GetComponentInChildren<LungProp>(true) != null)
                 {
                     lightObjectsBlacklist.Add(parent.gameObject);
+                    
                     if (extraLogs)
                         ScienceBirdTweaks.Logger.LogDebug($"Skipping light object {parent.gameObject.name} with path {path} due to baked lightmap or interact trigger");
 
@@ -147,6 +166,9 @@ namespace ScienceBirdTweaks.Scripts
 
                     continue;
                 }
+
+                if (extraLogs)
+                    ScienceBirdTweaks.Logger.LogDebug($"Adding light object {parent.gameObject.name} with path {path} to processing list");
 
                 lightObjects.Add(parent.gameObject);
             }
@@ -237,6 +259,26 @@ namespace ScienceBirdTweaks.Scripts
                 catch (Exception arg)
                 {
                     ScienceBirdTweaks.Logger.LogWarning($"Error while trying to modify floodlights: {arg}");
+                }
+
+                GameObject spriteObject = GameObject.Find("LightBehindDoor");
+
+                if (spriteObject != null)
+                {
+                    SpriteRenderer spriteRenderer = spriteObject.GetComponent<SpriteRenderer>();
+                    ScienceBirdTweaks.Logger.LogDebug($"Found sprite object {spriteObject.name} with path {GetObjectPath(spriteObject)}");
+
+                    if (spriteRenderer != null)
+                    {
+                        spriteRenderer.color = Color.black;
+                        ScienceBirdTweaks.Logger.LogDebug($"Set color of sprite object {spriteObject.name} to black with path {GetObjectPath(spriteObject)}");
+                    }
+                    else
+                        ScienceBirdTweaks.Logger.LogWarning($"SpriteRenderer not found on {spriteObject.name} with path {GetObjectPath(spriteObject)}");
+                }
+                else
+                {
+                    ScienceBirdTweaks.Logger.LogWarning($"Sprite object not found in scene");
                 }
             }
 
