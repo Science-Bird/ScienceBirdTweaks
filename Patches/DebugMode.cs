@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Netcode;
 using System.Linq;
+using UnityEngine.UI;
 
 namespace ScienceBirdTweaks.Patches
 {
@@ -76,6 +77,21 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void GrabDebug(PlayerControllerB __instance)
         {
+            ScienceBirdTweaks.Logger.LogDebug($"player: {__instance.transform.position}");
+            HauntedMaskItem[] masks = Object.FindObjectsOfType<HauntedMaskItem>();
+            foreach (HauntedMaskItem mask in masks)
+            {
+                ScienceBirdTweaks.Logger.LogDebug($"{mask.gameObject.transform.position}");
+            }
+            RandomPeriodicAudioPlayer[] audios = Object.FindObjectsOfType<RandomPeriodicAudioPlayer>();
+            foreach (RandomPeriodicAudioPlayer audio in audios)
+            {
+                Transform mask = audio.gameObject.transform.Find("Mesh");
+                if (mask != null)
+                {
+                    ScienceBirdTweaks.Logger.LogDebug($"HEAD {mask.position}");
+                }
+            }
             //ScienceBirdTweaks.Logger.LogInfo($"Zap Tutorial: {HUDManager.Instance.setTutorialArrow}");
             //ScienceBirdTweaks.Logger.LogInfo($"Loaded game completions: {ES3.Load("FinishedShockMinigame", "LCGeneralSaveData", 0)}");
         }

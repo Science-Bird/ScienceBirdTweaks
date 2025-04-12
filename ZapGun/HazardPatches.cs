@@ -6,6 +6,7 @@ using System.Collections;
 using DigitalRuby.ThunderAndLightning;
 using Unity.Netcode;
 using static UnityEngine.ParticleSystem.PlaybackState;
+using ScienceBirdTweaks.Patches;
 
 namespace ScienceBirdTweaks.ZapGun
 {
@@ -19,7 +20,9 @@ namespace ScienceBirdTweaks.ZapGun
         public static Color mineRedIndirect = new Color(1f, 0.6470588f, 0.6470588f, 1f);
         public static AudioClip disabledBeep;
         public static Material disabledMat;
+        public static Material offMat;
         public static RuntimeAnimatorController newController;
+        public static bool extraTrigger = false;
 
         [HarmonyPatch(typeof(GameNetworkManager), nameof(GameNetworkManager.Start))]
         [HarmonyPostfix]
@@ -29,7 +32,8 @@ namespace ScienceBirdTweaks.ZapGun
 
             doorPrefab = (GameObject)ScienceBirdTweaks.TweaksAssets.LoadAsset("DoorKillTrigger");
             disabledMat = (Material)ScienceBirdTweaks.TweaksAssets.LoadAsset("SpikeRoofTrapDisabledMat");
-            disabledBeep = (AudioClip)ScienceBirdTweaks.TweaksAssets.LoadAsset("RapidBeep");
+            offMat = (Material)ScienceBirdTweaks.TweaksAssets.LoadAsset("SpikeRoofTrapOffMat");
+            disabledBeep = (AudioClip)ScienceBirdTweaks.TweaksAssets.LoadAsset("SingleBeep");
             newController = (RuntimeAnimatorController)ScienceBirdTweaks.TweaksAssets.LoadAsset("landmineAltController");
         }
 
@@ -95,14 +99,24 @@ namespace ScienceBirdTweaks.ZapGun
             {
                 if (!enabled)
                 {
-                    ScienceBirdTweaks.Logger.LogDebug($"STARTING SPIKES SPECIAL ANIM");
-                    zapper.light.intensity = 2f;
-                    zapper.light.colorTemperature = 6580f;
-                    zapper.light.color = mineGreen;
-                    Material[] mats = zapper.supportLights.GetComponent<MeshRenderer>().materials;
-                    mats[0] = disabledMat;
-                    zapper.supportLights.GetComponent<MeshRenderer>().materials = mats;
-                    zapper.startRoutine = true;
+                    if (ApparatusRemovalPatch.doingHazardShutdown)
+                    {
+                        zapper.light.intensity = 0f;
+                        Material[] materials = zapper.supportLights.GetComponent<MeshRenderer>().materials;
+                        materials[0] = offMat;
+                        zapper.supportLights.GetComponent<MeshRenderer>().materials = materials;
+                    }
+                    else
+                    {
+                        ScienceBirdTweaks.Logger.LogDebug($"STARTING SPIKES SPECIAL ANIM");
+                        zapper.light.intensity = 2f;
+                        zapper.light.colorTemperature = 6580f;
+                        zapper.light.color = mineGreen;
+                        Material[] mats = zapper.supportLights.GetComponent<MeshRenderer>().materials;
+                        mats[0] = disabledMat;
+                        zapper.supportLights.GetComponent<MeshRenderer>().materials = mats;
+                        zapper.startRoutine = true;
+                    }
                 }
                 else
                 {
@@ -135,26 +149,39 @@ namespace ScienceBirdTweaks.ZapGun
             {
                 if (!enabled)
                 {
-                    ScienceBirdTweaks.Logger.LogDebug($"STARTING LANDMINE SPECIAL ANIM");
-                    __instance.mineAnimator.SetTrigger("disable");
-                    __instance.mineAudio.clip = disabledBeep;
-                    __instance.mineAudio.loop = true;
-                    __instance.mineAudio.Play();
-                    zapper.light1.intensity = 227.6638f;
-                    zapper.light2.intensity = 227.6638f;
-                    zapper.indirectLight.intensity = 436.6049f;
-                    zapper.light1.colorTemperature = 6580f;
-                    zapper.light2.colorTemperature = 6580f;
-                    zapper.indirectLight.colorTemperature = 6580f;
-                    zapper.light1.color = mineGreen;
-                    zapper.light2.color = mineGreen;
-                    zapper.indirectLight.color = mineGreenIndirect;
-                    zapper.startRoutine = true;
+                    if (ApparatusRemovalPatch.doingHazardShutdown)
+                    {
+                        __instance.mineAudio.Stop();
+                        __instance.mineAudio.volume = 0f;
+                        zapper.light1.intensity = 0f;
+                        zapper.light2.intensity = 0f;
+                        zapper.indirectLight.intensity = 0f;
+                    }
+                    else
+                    {
+                        ScienceBirdTweaks.Logger.LogDebug($"STARTING LANDMINE SPECIAL ANIM");
+                        __instance.mineAnimator.SetBool("disabled", true);
+                        ScienceBirdTweaks.Logger.LogDebug(__instance.mineAnimator.GetBoolString("disabled"));
+                        //__instance.mineAudio.clip = disabledBeep;
+                        //__instance.mineAudio.loop = true;
+                        //__instance.mineAudio.Play();
+                        zapper.light1.intensity = 227.6638f;
+                        zapper.light2.intensity = 227.6638f;
+                        zapper.indirectLight.intensity = 436.6049f;
+                        //zapper.light1.colorTemperature = 6580f;
+                        //zapper.light2.colorTemperature = 6580f;
+                        //zapper.indirectLight.colorTemperature = 6580f;
+                        //zapper.light1.color = mineGreen;
+                        //zapper.light2.color = mineGreen;
+                        //zapper.indirectLight.color = mineGreenIndirect;
+                        zapper.startRoutine = true;
+                        extraTrigger = true;
+                    }
                 }
                 else
                 {
                     ScienceBirdTweaks.Logger.LogDebug($"ENDING LANDMINE SPECIAL ANIM");
-                    __instance.mineAnimator.SetTrigger("startIdle");
+                    __instance.mineAnimator.SetBool("disabled", false);
                     __instance.mineAudio.Stop();
                     __instance.mineAudio.loop = false;
                     __instance.mineAudio.clip = null;
@@ -164,11 +191,33 @@ namespace ScienceBirdTweaks.ZapGun
                     zapper.light1.color = mineRed;
                     zapper.light2.color = mineRed;
                     zapper.indirectLight.color = mineRedIndirect;
+                    extraTrigger = false;
                 }
             }
             else if (zapper != null)
             {
                 ScienceBirdTweaks.Logger.LogDebug($"MINE TEMPSTUN: {zapper.tempStun}");
+            }
+        }
+
+        [HarmonyPatch(typeof(Landmine), nameof(Landmine.Update))]
+        [HarmonyPostfix]
+        public static void MineCooldownCheck(Landmine __instance)
+        {
+            if ((ScienceBirdTweaks.MineDisableAnimation.Value || ScienceBirdTweaks.ZapGunRework.Value) && !__instance.hasExploded && !__instance.sendingExplosionRPC)
+            {
+                if (extraTrigger)
+                {
+                    ScienceBirdTweaks.Logger.LogDebug($"{__instance.mineAnimator.GetBoolString("disabled")}, {__instance.mineAudio.isPlaying}, {__instance.mineAudio.clip}");
+                    //__instance.mineAnimator.SetTrigger("disable");
+                    //__instance.mineAudio.clip = disabledBeep;
+                    //__instance.mineAudio.loop = true;
+                    if (!__instance.mineAudio.isPlaying)
+                    {
+                        //__instance.mineAudio.Play();
+                    }
+                    //extraTrigger = false;
+                }
             }
         }
     }

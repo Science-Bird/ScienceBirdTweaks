@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using ScienceBirdTweaks.Scripts;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace ScienceBirdTweaks.Patches
 {
@@ -9,24 +10,13 @@ namespace ScienceBirdTweaks.Patches
     {
         public static bool doingHazardShutdown = false;
 
-        [HarmonyPatch(typeof(LungProp), nameof(LungProp.DisconnectFromMachinery))]
+        [HarmonyPatch(typeof(LungProp), nameof(LungProp.EquipItem))]
         [HarmonyPrefix]
         static void OnDisconnectTest1(LungProp __instance)
         {
-            ScienceBirdTweaks.Logger.LogDebug("Appy prefix!");
-            if (ScienceBirdTweaks.DisableTrapsOnApparatusRemoval.Value)
+            if (ScienceBirdTweaks.DisableTrapsOnApparatusRemoval.Value && __instance.isLungDocked)
             {
-                doingHazardShutdown = true;
-            }
-        }
-
-        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.TurnOnAllLights))]
-        [HarmonyPostfix]
-        static void OnDisconnectTest2(RoundManager __instance, bool on)
-        {
-            if (ScienceBirdTweaks.DisableTrapsOnApparatusRemoval.Value && !on)
-            {
-                ScienceBirdTweaks.Logger.LogDebug("Turning off lights!");
+                ScienceBirdTweaks.Logger.LogDebug("Appy detected!");
                 doingHazardShutdown = true;
             }
         }
@@ -37,6 +27,8 @@ namespace ScienceBirdTweaks.Patches
         {
             if (!ScienceBirdTweaks.BlackoutOnApparatusRemoval.Value)
                 return;
+
+            doingHazardShutdown = false;
 
             if (__instance == null)
             {
@@ -57,19 +49,43 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
+        [HarmonyPatch(typeof(TerminalAccessibleObject), nameof(TerminalAccessibleObject.Start))]
+        [HarmonyPostfix]
+        public static void SetPowerSwitchable(TerminalAccessibleObject __instance)
+        {
+            if (!__instance.isBigDoor)
+            {
+                PowerSwitchable powerSwitch = __instance.gameObject.AddComponent<PowerSwitchable>();
+                OnSwitchPowerEvent switchEvent = new OnSwitchPowerEvent();
+                switchEvent.AddListener(__instance.OnPowerSwitch);
+                powerSwitch.powerSwitchEvent = switchEvent;
+            }
+        }
+
 
         [HarmonyPatch(typeof(TerminalAccessibleObject), nameof(TerminalAccessibleObject.OnPowerSwitch))]
-        [HarmonyPostfix]
-        public static void HazardShutdown(TerminalAccessibleObject __instance)// this doesn't work yet lol
+        [HarmonyPrefix]
+        public static bool PowerSwitchPrefix(TerminalAccessibleObject __instance, bool switchedOn)
         {
-            if (doingHazardShutdown && ScienceBirdTweaks.DisableTrapsOnApparatusRemoval.Value && !__instance.isBigDoor)
+            if (__instance.isBigDoor)
+            {
+                return true;
+            }
+            HazardShutdown(__instance, switchedOn);
+            return false;
+        }
+
+        public static void HazardShutdown(TerminalAccessibleObject terminalObj, bool switchedOn)
+        {
+            ScienceBirdTweaks.Logger.LogDebug($"Terminal obj power switch! {terminalObj.isBigDoor}");
+            if (!switchedOn && doingHazardShutdown && ScienceBirdTweaks.DisableTrapsOnApparatusRemoval.Value && !terminalObj.isBigDoor)
             {
                 ScienceBirdTweaks.Logger.LogDebug("Hazard shutdown!");
-                Landmine mine = __instance.gameObject.GetComponent<Landmine>();
-                Turret turret = __instance.gameObject.GetComponent<Turret>();
-                SpikeRoofTrap spikes = __instance.gameObject.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>();
-                __instance.mapRadarText.color = Color.gray;
-                __instance.mapRadarBox.color = Color.gray;
+                Landmine mine = terminalObj.gameObject.GetComponent<Landmine>();
+                Turret turret = terminalObj.gameObject.GetComponent<Turret>();
+                SpikeRoofTrap spikes = terminalObj.gameObject.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>();
+                terminalObj.mapRadarText.color = Color.gray;
+                terminalObj.mapRadarBox.color = Color.gray;
                 if (mine != null)
                 {
                     mine.ToggleMine(false);
@@ -82,7 +98,7 @@ namespace ScienceBirdTweaks.Patches
                 {
                     spikes.ToggleSpikesEnabled(false);
                 }
-                __instance.inCooldown = true;
+                terminalObj.inCooldown = true;
             }
         }
     }
