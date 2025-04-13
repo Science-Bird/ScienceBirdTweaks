@@ -7,6 +7,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
+using ScienceBirdTweaks.Scripts;
 
 namespace ScienceBirdTweaks.Scripts
 {
@@ -173,14 +174,6 @@ namespace ScienceBirdTweaks.Scripts
                 lightObjects.Add(parent.gameObject);
             }
 
-            if (floodLightIntensity <= 0)
-            {
-                foreach (Light light in ShipPostLights)
-                {
-                    lightObjects.Add(light.transform.parent.gameObject);
-                }
-            }
-
             ScienceBirdTweaks.Logger.LogDebug($"[TIMER] Light processing finished at {totalStopwatch.ElapsedMilliseconds}ms");
             ScienceBirdTweaks.Logger.LogDebug($"Found {lightObjects.Count} light objects to process");
 
@@ -232,28 +225,24 @@ namespace ScienceBirdTweaks.Scripts
                 {
                     ScienceBirdTweaks.Logger.LogWarning($"Error disabling sun: {ex.Message}");
                 }
+
                 try
                 {
-                    foreach (Light light in ShipPostLights)
-                    {
-                        light.gameObject.TryGetComponent<HDAdditionalLightData>(out var FloodlightData);
+                    ScienceBirdTweaks.Logger.LogDebug($"Setting spotlight lighting for Blackout");
 
-                        if (FloodlightData != null)
-                        {
-                            if (floodLightIntensity > 0)
-                            {
-                                FloodlightData.SetIntensity(floodLightIntensity);
-                                FloodlightData.SetSpotAngle(floodLightAngle);
-                                FloodlightData.SetRange(floodLightRange);  
-                            }
-                            else
-                            {
-                                FloodlightData.SetIntensity(0);
-                                FloodlightData.SetSpotAngle(0);
-                                FloodlightData.SetRange(0);
-                            }
-                            Floodlights.Add(FloodlightData);
-                        }
+                    ShipFloodlightController shipFloodlightController = GameObject.FindObjectOfType<ShipFloodlightController>();
+
+                    if (shipFloodlightController != null)
+                    {
+                        shipFloodlightController.SetFloodlightData(
+                            ScienceBirdTweaks.BlackoutFloodLightIntensity.Value,
+                            ScienceBirdTweaks.BlackoutFloodLightAngle.Value,
+                            ScienceBirdTweaks.BlackoutFloodLightRange.Value
+                        );
+                    }
+                    else
+                    {
+                        ScienceBirdTweaks.Logger.LogWarning("ShipFloodlightController instance not found in the scene.");
                     }
                 }
                 catch (Exception arg)
@@ -431,6 +420,7 @@ namespace ScienceBirdTweaks.Scripts
         {
             Scene scene = SceneManager.GetSceneByName(sceneName);
             var lights = new List<Light>();
+            var sceneRootObjects = scene.GetRootGameObjects();
 
             foreach (var rootObj in scene.GetRootGameObjects())
             {

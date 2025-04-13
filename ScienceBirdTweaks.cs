@@ -40,6 +40,11 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<bool> TinyTeleporterCollision;
         public static ConfigEntry<bool> BegoneBottomCollision;
         public static ConfigEntry<bool> LargerLeverCollision;
+        public static ConfigEntry<bool> FloodlightRotation;
+        public static ConfigEntry<int> FloodLightIntensity;
+        public static ConfigEntry<int> FloodLightAngle;
+        public static ConfigEntry<int> FloodLightRange;
+        public static ConfigEntry<float> FloodLightRotationSpeed;
 
         public static ConfigEntry<bool> RemoveClipboard;
         public static ConfigEntry<bool> RemoveStickyNote;
@@ -114,9 +119,9 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<bool> VideoTapeInsertFix;
         public static ConfigEntry<bool> VideoTapeSkip;
         public static ConfigEntry<bool> TrueBlackout;
-        public static ConfigEntry<int> FloodLightIntensity;
-        public static ConfigEntry<int> FloodLightAngle;
-        public static ConfigEntry<int> FloodLightRange;
+        public static ConfigEntry<int> BlackoutFloodLightIntensity;
+        public static ConfigEntry<int> BlackoutFloodLightAngle;
+        public static ConfigEntry<int> BlackoutFloodLightRange;
         public static ConfigEntry<string> TrueBlackoutNameBlacklist;
         public static ConfigEntry<string> TrueBlackoutHierarchyBlacklist;
         public static ConfigEntry<bool> SSSTerminalStock;
@@ -152,7 +157,12 @@ namespace ScienceBirdTweaks
             TinyTeleporterCollision = base.Config.Bind("Ship Tweaks", "Tiny Teleporter Collision", true, "Shrinks the teleporter and inverse teleporter placement colliders (i.e. just their hitboxes) so they can be put next to all walls and in small nooks of the ship (customizable in Collider Sizes config section).");
             BegoneBottomCollision = base.Config.Bind("Ship Tweaks", "Begone Bottom Collision", false, "Removes collision from components underneath the ship, making it easier to get underneath if you need to (still depending on the moon).");
             LargerLeverCollision = base.Config.Bind("Ship Tweaks", "Larger Lever Collision", false, "Makes the ship's start lever hitbox larger and thus easier to pull (customizable in Collider Sizes config section).");
-            
+            FloodlightRotation = base.Config.Bind("Ship Tweaks", "Do Floodlight Rotation", true, "Allow the ship's floodlight to rotate once landed.");
+            FloodLightRotationSpeed = base.Config.Bind("Ship Tweaks", "Ship Floodlight Rotation Speed", 45.0f, new ConfigDescription("Rotation speed of the ship's floodlights", new AcceptableValueRange<float>(0.0f, 360.0f)));
+            FloodLightIntensity = base.Config.Bind("Ship Tweaks", "Ship Floodlight Intensity in Lumen", 2275, new ConfigDescription("Lumen value of the ship's floodlights.", new AcceptableValueRange<int>(0, 60000)));
+            FloodLightAngle = base.Config.Bind("Ship Tweaks", "Ship Floodlight Angle in degrees", 115, new ConfigDescription("Light angle of the ship's floodlights.", new AcceptableValueRange<int>(0, 180)));
+            FloodLightRange = base.Config.Bind("Ship Tweaks", "Ship Floodlight Range in meters", 45, new ConfigDescription("Light range of the ship's floodlights.", new AcceptableValueRange<int>(0, 2000)));
+
             RemoveClipboard = base.Config.Bind("Ship Tweaks Removals", "Clipboard", false, "Removes the service manual clipboard.");
             RemoveStickyNote = base.Config.Bind("Ship Tweaks Removals", "Sticky Note", false, "Removes the 'ACCESS FILE: SIGURD' hint sticky note.");
             RemoveTeleporterCord = base.Config.Bind("Ship Tweaks Removals", "Teleporter Cord", false, "Removes the cord trailing off the teleporter button (which won't connect to the teleporter if you move it).");
@@ -218,9 +228,9 @@ namespace ScienceBirdTweaks
             TrueBlackout = base.Config.Bind("Blackout", "MrovWeathers True Blackout", true, "Revamps MrovWeathers' blackout so emissive materials are also darkened (no white spots left over), more lights are included, and problematic ones are excluded (like map hazards and outdoor apparatuses).");
             TrueBlackoutNameBlacklist = base.Config.Bind("Blackout", "MrovWeathers True Blackout Name Blacklist", "GunBarrelPos, BulletParticleFlare, LightSphere, Landmine, AnimContainer, BlackoutIgnore, ItemShip, ThrusterContainer", "A blacklist of object names to leave untouched during a blackout. If a light object's parent has the same name as one of these names, it will be skipped. This must be a comma-separated list and is case-sensitive. It is highly recommended you do not remove any of the default values unless you really know what you're doing.");
             TrueBlackoutHierarchyBlacklist = base.Config.Bind("Blackout", "MrovWeathers True Blackout Hierarchy Blacklist", "", "A blacklist of objects to leave untouched during a blackout. If a light object is found anywhere underneath these names in the hierarchy, it will be skipped. This must be a comma-separated list and is case-sensitive. It is recommended to use Name Blacklist whenever possible for performance reasons.");
-            FloodLightIntensity = base.Config.Bind("Blackout", "Ship Floodlight Intensity in Lumen", 30000, "Lumen value of the ship's floodlights during MrovWeathers' blackout (vanilla is 2275 Lumens). Set to 0 to disable floodlights during blackouts.");
-            FloodLightAngle = base.Config.Bind("Blackout", "Ship Floodlight Angle in degrees", 100, "Light angle of the ship's floodlights during MrovWeathers' blackout (vanilla is 1 degree).");
-            FloodLightRange = base.Config.Bind("Blackout", "Ship Floodlight Range in meters", 600, "Light range of the ship's floodlights during MrovWeathers' blackout (vanilla is 44m).");
+            BlackoutFloodLightIntensity = base.Config.Bind("Blackout", "Ship Floodlight Intensity in Lumen", 30000, new ConfigDescription("Lumen value of the ship's floodlights during MrovWeathers' blackout, (vanilla is 2275 Lumens). Set to 0 to disable floodlights during blackouts.", new AcceptableValueRange<int>(0, 60000)));
+            BlackoutFloodLightAngle = base.Config.Bind("Blackout", "Ship Floodlight Angle in degrees", 80, new ConfigDescription("Light angle of the ship's floodlights during MrovWeathers' blackout, (vanilla is 115 degrees).", new AcceptableValueRange<int>(0, 180)));
+            BlackoutFloodLightRange = base.Config.Bind("Blackout", "Ship Floodlight Range in meters", 600, new ConfigDescription("Light range of the ship's floodlights during MrovWeathers' blackout, (vanilla is 44m)", new AcceptableValueRange<int>(0, 2000)));
 
             CentipedeMode = base.Config.Bind("Gameplay Tweaks", "Snare Flea Mode", "Vanilla", new ConfigDescription("'Vanilla': Unchanged. - 'Second Chance': Implements the singleplayer 'second chance' mechanic in multiplayer, giving each player a chance to escape once it damages them to low HP. - 'Fixed Damage': Will damage a player for an exact proportion of their maximum health (at the same speed as vanilla).", new AcceptableValueList<string>(["Vanilla","Second Chance","Fixed Damage"])));
             CentipedeFixedDamage = base.Config.Bind("Gameplay Tweaks", "Snare Flea Fixed Damage", 0.5f, new ConfigDescription("The proportion of a player's maximum health to take if using the 'Fixed Damage' mode. When set to 50% or above, this effectively gives the player a second chance only if they're above half health (the lower this is set, the more chances).", new AcceptableValueRange<float>(0f, 1f)));

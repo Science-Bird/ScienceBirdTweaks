@@ -23,7 +23,7 @@ namespace ScienceBirdTweaks.ModPatches
 
     public static class TrueBlackoutPatch
     {
-        public static bool BlackoutOverridePrefix(object __instance)// replace existing blackout method
+        public static bool BlackoutOverridePrefix(object __instance) // replace existing blackout method
         {
             TrueBlackout.DoBlackout(true);
             return false;
