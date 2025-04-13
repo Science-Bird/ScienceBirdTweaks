@@ -5,6 +5,7 @@ using System.Collections;
 using DigitalRuby.ThunderAndLightning;
 using System;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 namespace ScienceBirdTweaks.ZapGun
 {
@@ -19,6 +20,11 @@ namespace ScienceBirdTweaks.ZapGun
         public static int tutorialCount = 2;
         public static Dictionary<int, int> layerDict;
         public static int layersLength;
+        public static RectTransform image1;
+        public static RectTransform image2;
+        public static PatcherTool currentZapInstance;
+        public static float tVal = 0f;
+        public static float bendInterpolate = 0f;
 
         [HarmonyPatch(typeof(Landmine), nameof(Landmine.Start))]
         [HarmonyPostfix]
@@ -27,6 +33,9 @@ namespace ScienceBirdTweaks.ZapGun
             if (ScienceBirdTweaks.ZapGunRework.Value || ScienceBirdTweaks.MineDisableAnimation.Value)
             {
                 __instance.gameObject.AddComponent<MineZapper>();
+                Scripts.MineAudio audioScript = __instance.gameObject.AddComponent<Scripts.MineAudio>();
+                audioScript.audioSource = __instance.gameObject.GetComponent<AudioSource>();
+                audioScript.beepClip = HazardPatches.disabledBeep;
             }
         }
 
@@ -143,35 +152,96 @@ namespace ScienceBirdTweaks.ZapGun
             {
                 doTutorialOverride = true;
             }
-            
 
-            ScienceBirdTweaks.Logger.LogInfo($"Updating controllers!");
-            RuntimeAnimatorController arrowController = (RuntimeAnimatorController)ScienceBirdTweaks.TweaksAssets.LoadAsset("ArrowRightAlt");
-            leftArrow = __instance.shockTutorialLeftAlpha.gameObject;
-            rightArrow = __instance.shockTutorialRightAlpha.gameObject;
-            leftArrow.GetComponent<Animator>().runtimeAnimatorController = arrowController;
-            rightArrow.GetComponent<Animator>().runtimeAnimatorController = arrowController;
+            if (ScienceBirdTweaks.ZapGunTutorialRevamp.Value)
+            {
+                ScienceBirdTweaks.Logger.LogInfo($"Updating controllers!");
+                RuntimeAnimatorController arrowController = (RuntimeAnimatorController)ScienceBirdTweaks.TweaksAssets.LoadAsset("ArrowRightAlt");
+                leftArrow = __instance.shockTutorialLeftAlpha.gameObject;
+                rightArrow = __instance.shockTutorialRightAlpha.gameObject;
+                leftArrow.GetComponent<Animator>().runtimeAnimatorController = arrowController;
+                rightArrow.GetComponent<Animator>().runtimeAnimatorController = arrowController;
+                image1 = leftArrow.transform.Find("Image (1)").gameObject.GetComponent<RectTransform>();
+                image2 = rightArrow.transform.Find("Image (1)").gameObject.GetComponent<RectTransform>();
+            }
         }
 
-        
+
+        [HarmonyPatch(typeof(PatcherTool), nameof(PatcherTool.BeginShockingAnomalyOnClient))]
+        [HarmonyPostfix]
+        static void StoreZapGunInstance(PatcherTool __instance)
+        {
+            if (__instance.IsOwner && ScienceBirdTweaks.ZapGunTutorialRevamp.Value)
+            {
+                currentZapInstance = __instance;
+            }
+        }
+
+        [HarmonyPatch(typeof(HUDManager), nameof(HUDManager.Update))]
+        [HarmonyPrefix]
+        static void TutorialGrabValues(HUDManager __instance, out HUDManager __state )
+        {
+            __state = __instance;
+        }
+
         [HarmonyPatch(typeof(HUDManager), nameof(HUDManager.Update))]
         [HarmonyPostfix]
-        static void TutorialAnimChange(HUDManager __instance)
+        static void TutorialAnimChange(HUDManager __instance, HUDManager __state)
         {
+            if (!ScienceBirdTweaks.ZapGunTutorialRevamp.Value) { return; }
+
             if (__instance.tutorialArrowState == 0 || !__instance.setTutorialArrow)
             {
-                __instance.shockTutorialLeftAlpha.alpha = Mathf.Lerp(__instance.shockTutorialLeftAlpha.alpha, 0f, 17f * Time.deltaTime);
-                __instance.shockTutorialRightAlpha.alpha = Mathf.Lerp(__instance.shockTutorialRightAlpha.alpha, 0f, 17f * Time.deltaTime);
+                __instance.shockTutorialLeftAlpha.alpha = Mathf.Lerp(__state.shockTutorialLeftAlpha.alpha, 0f, 17f * Time.deltaTime);
+                __instance.shockTutorialRightAlpha.alpha = Mathf.Lerp(__state.shockTutorialRightAlpha.alpha, 0f, 17f * Time.deltaTime);
             }
             else if (__instance.tutorialArrowState == 1)
             {
-                __instance.shockTutorialLeftAlpha.alpha = Mathf.Lerp(__instance.shockTutorialLeftAlpha.alpha, 1f, 17f * Time.deltaTime);
-                __instance.shockTutorialRightAlpha.alpha = Mathf.Lerp(__instance.shockTutorialRightAlpha.alpha, 0f, 17f * Time.deltaTime);
+                float targetInterpolate = Mathf.Clamp((Mathf.Abs(currentZapInstance.bendMultiplier) - 0.3f) / (1f - 0.3f), 0f, 1f);
+                if (bendInterpolate > targetInterpolate)
+                {
+                    bendInterpolate -= Time.deltaTime * 2;
+                }
+                if (bendInterpolate < targetInterpolate)
+                {
+                    bendInterpolate += Time.deltaTime * 2;
+                }
+                if (tVal > bendInterpolate)
+                {
+                    tVal -= Time.deltaTime;
+                }
+                if (tVal < bendInterpolate)
+                {
+                    tVal += Time.deltaTime;
+                }
+                ScienceBirdTweaks.Logger.LogDebug($"{currentZapInstance.bendMultiplier}, {image1.anchoredPosition.x}, {bendInterpolate}, {Mathf.Clamp(tVal, 0f, 1f)}");
+                image1.anchoredPosition = new Vector2(Mathf.Lerp(image1.anchoredPosition.x, 35 - 70 * bendInterpolate, Mathf.Clamp(tVal, 0f, 1f)), 4.2f);
+                __instance.shockTutorialLeftAlpha.alpha = Mathf.Lerp(__state.shockTutorialLeftAlpha.alpha, 1f, 17f * Time.deltaTime);
+                __instance.shockTutorialRightAlpha.alpha = Mathf.Lerp(__state.shockTutorialRightAlpha.alpha, 0f, 17f * Time.deltaTime);
             }
             else
             {
-                __instance.shockTutorialRightAlpha.alpha = Mathf.Lerp(__instance.shockTutorialRightAlpha.alpha, 1f, 17f * Time.deltaTime);
-                __instance.shockTutorialLeftAlpha.alpha = Mathf.Lerp(__instance.shockTutorialLeftAlpha.alpha, 0f, 17f * Time.deltaTime);
+                float targetInterpolate = Mathf.Clamp((Mathf.Abs(currentZapInstance.bendMultiplier) - 0.3f) / (1f - 0.3f), 0f, 1f);
+                if (bendInterpolate > targetInterpolate)
+                {
+                    bendInterpolate -= Time.deltaTime * 2;
+                }
+                if (bendInterpolate < targetInterpolate)
+                {
+                    bendInterpolate += Time.deltaTime * 2;
+                }
+                if (tVal > bendInterpolate)
+                {
+                    tVal -= Time.deltaTime;
+                }
+                if (tVal < bendInterpolate)
+                {
+                    tVal += Time.deltaTime;
+                }
+                ScienceBirdTweaks.Logger.LogDebug($"{currentZapInstance.bendMultiplier}, {image2.anchoredPosition.x}, {bendInterpolate}, {Mathf.Clamp(tVal, 0f, 1f)}");
+                image2.anchoredPosition = new Vector2(Mathf.Lerp(image1.anchoredPosition.x, 35 - 70 * bendInterpolate, Mathf.Clamp(tVal, 0f, 1f)), 4.2f);
+                __instance.shockTutorialRightAlpha.alpha = Mathf.Lerp(__state.shockTutorialRightAlpha.alpha, 1f, 17f * Time.deltaTime);
+                __instance.shockTutorialLeftAlpha.alpha = Mathf.Lerp(__state.shockTutorialLeftAlpha.alpha, 0f, 17f * Time.deltaTime);
             }
         }
         

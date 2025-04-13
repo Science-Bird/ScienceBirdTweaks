@@ -81,6 +81,7 @@ namespace ScienceBirdTweaks.ZapGun
             {
                 return;
             }
+            startRoutine = false;
             ScienceBirdTweaks.Logger.LogDebug("SHOCK1");
             light1.intensity = 0f;
             light2.intensity = 0f;

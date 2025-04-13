@@ -69,6 +69,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         static bool CheckDespawnPreventionPrefix(NetworkObject __instance)
         {
+            if (__instance.gameObject.GetComponent<GrabbableObject>() && (__instance.gameObject.GetComponent<GrabbableObject>().isInShipRoom || __instance.gameObject.GetComponent<GrabbableObject>().isInElevator))
             if (DespawnPrevention.IsBlacklistEmpty() && !ScienceBirdTweaks.PreventWorthlessDespawn.Value)
                 return true;
 
@@ -97,7 +98,7 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
-        [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.DiscardItem))]
+        [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.DiscardItemClientRpc))]
         [HarmonyPostfix]
         static void UpdateScannodeSubtextOnValueDiscard(GrabbableObject __instance)
         {

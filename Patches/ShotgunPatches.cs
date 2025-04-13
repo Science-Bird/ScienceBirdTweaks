@@ -14,6 +14,8 @@ namespace ScienceBirdTweaks.Patches
         public static string safetyOffText;
         public static bool unloadEnabled = false;
         public static bool showAmmo = true;
+        public static bool holdingDown = false;
+        public static float startTime;
 
         [HarmonyPatch(typeof(GameNetworkManager), nameof(GameNetworkManager.Start))]
         [HarmonyPostfix]
@@ -174,7 +176,7 @@ namespace ScienceBirdTweaks.Patches
                     else if (shotgun.shellsLoaded > 0)
                     {
                         ScienceBirdTweaks.Logger.LogDebug("Updating reload tip: EJECT");
-                        toolTips[1] = "Eject shells : [E]";
+                        toolTips[1] = "Eject shells : [Hold E]";
                     }
                     else// remove 2nd tooltip and shift 3rd one up
                     {
@@ -186,11 +188,79 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
+        [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.ItemInteractLeftRightOnClient))]
+        [HarmonyPrefix]
+        static bool InteractPrefix(GrabbableObject __instance, bool right)
+        {
+            if (!ScienceBirdTweaks.ShotgunMasterDisable.Value && unloadEnabled && __instance.GetComponent<ShotgunItem>() && right && __instance.GetComponent<ShotgunItem>().FindAmmoInInventory() == -1 && __instance.GetComponent<ShotgunItem>().shellsLoaded > 0)
+            {
+                if (__instance.IsOwner && __instance.isHeld && HUDManager.Instance.holdFillAmount <= 0f && __instance.playerHeldBy.cursorTip.text == "")
+                {
+                    ScienceBirdTweaks.Logger.LogDebug("Conditions met!");
+                    LocalInteract(__instance.GetComponent<ShotgunItem>(), right);
+                }
+                else
+                {
+                    ScienceBirdTweaks.Logger.LogDebug($"ABORTING HOLD {__instance.IsOwner}, {__instance.isHeld}, {HUDManager.Instance.holdFillAmount <= 0f}, {__instance.playerHeldBy.cursorTip.text == ""}, {__instance.GetComponent<ShotgunItem>().shellsLoaded > 0}");
+                }
+                return false;
+            }
+            ScienceBirdTweaks.Logger.LogDebug($"ABORTING HOLD {__instance.IsOwner}, {__instance.isHeld}, {HUDManager.Instance.holdFillAmount <= 0f}, {__instance.playerHeldBy.cursorTip.text == ""}, {__instance.GetComponent<ShotgunItem>().shellsLoaded > 0}");
+            return true;
+        }
+
+
+        static void LocalInteract(ShotgunItem shotgun, bool right)
+        {
+            if (unloadEnabled && shotgun.IsOwner && shotgun.isHeld && HUDManager.Instance.holdFillAmount <= 0f && shotgun.playerHeldBy.cursorTip.text == "" && right && shotgun.FindAmmoInInventory() == -1 && shotgun.shellsLoaded > 0)
+            {
+                holdingDown = true;
+                startTime = Time.realtimeSinceStartup;
+            }
+        }
+
+
+        [HarmonyPatch(typeof(ShotgunItem), nameof(ShotgunItem.Update))]
+        [HarmonyPostfix]
+        static void AttemptInteract(ShotgunItem __instance)
+        {
+            if (holdingDown)
+            { 
+                if (__instance.IsOwner && __instance.isHeld && HUDManager.Instance.holdFillAmount <= 0f && __instance.playerHeldBy.cursorTip.text == "" && __instance.shellsLoaded > 0)
+                {
+                    if (IngamePlayerSettings.Instance.playerInput.actions.FindAction("ItemTertiaryUse").IsPressed())
+                    {
+                        if (Time.realtimeSinceStartup - startTime > 1f)
+                        {
+                            ScienceBirdTweaks.Logger.LogDebug("COMPLETED HOLD");
+                            holdingDown = false;
+                            __instance.ItemInteractLeftRight(true);
+                            __instance.isSendingItemRPC++;
+                            __instance.InteractLeftRightServerRpc(true);
+                        }
+                    }
+                    else
+                    {
+                        ScienceBirdTweaks.Logger.LogDebug("STOPPING HOLD");
+                        holdingDown = false;
+                    }
+                }
+                else
+                {
+                    ScienceBirdTweaks.Logger.LogDebug($"STOPPING HOLD {__instance.IsOwner}, {__instance.isHeld}, {HUDManager.Instance.holdFillAmount <= 0f}, {__instance.playerHeldBy.cursorTip.text == ""}, {__instance.shellsLoaded > 0} ");
+                    holdingDown = false;
+                }
+            }
+        }
+
+
         [HarmonyPatch(typeof(ShotgunItem), nameof(ShotgunItem.ItemInteractLeftRight))]
         [HarmonyPostfix]
         static void ReloadInteract(ShotgunItem __instance, bool right)
         {
             if (ScienceBirdTweaks.ShotgunMasterDisable.Value) { return; }
+
+            ScienceBirdTweaks.Logger.LogDebug(__instance.playerHeldBy.isHoldingInteract);
             if (unloadEnabled && right && __instance.FindAmmoInInventory() == -1 && __instance.shellsLoaded > 0)
             {
                 ScienceBirdTweaks.Logger.LogDebug("Eject called!");
@@ -221,6 +291,19 @@ namespace ScienceBirdTweaks.Patches
                 __instance.shellsLoaded = 0;
                 TooltipUpdate(__instance);
             }
+        }
+
+        [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.Start))]
+        [HarmonyPostfix]
+        static void ShellRotationPatch(GrabbableObject __instance)
+        {
+            if (ScienceBirdTweaks.ShotgunMasterDisable.Value) { return; }
+            
+            if (__instance.gameObject.GetComponent<GunAmmo>())
+            {
+                __instance.floorYRot = Random.Range(0, 360);
+            }
+            
         }
     }
 }

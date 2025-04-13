@@ -71,6 +71,7 @@ namespace ScienceBirdTweaks.ZapGun
             {
                 return;
             }
+            startRoutine = false;
             ScienceBirdTweaks.Logger.LogDebug("SHOCK1");
             startTime = Time.realtimeSinceStartup;
             tempStun = true;
@@ -88,7 +89,7 @@ namespace ScienceBirdTweaks.ZapGun
             float elapsedTime = Time.realtimeSinceStartup - startTime;
             spikes.trapActive = true;
             spikes.ToggleSpikesEnabledLocalClient(false);
-            effectiveCooldown = cooldown * multiplier;
+            effectiveCooldown = cooldown * (elapsedTime * multiplier);
             cooldownTimer = effectiveCooldown;
             ScienceBirdTweaks.Logger.LogDebug($"Freezing for {cooldownTimer}s ({elapsedTime * multiplier}x normal)");
             StartCoroutine(spikesCoolDown());

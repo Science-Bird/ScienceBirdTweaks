@@ -72,6 +72,7 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<bool> MineDisableAnimation;
         public static ConfigEntry<bool> SpikeTrapDisableAnimation;
         public static ConfigEntry<string> ZapGunTutorialMode;
+        public static ConfigEntry<bool> ZapGunTutorialRevamp;
         public static ConfigEntry<int> ZapGunTutorialCount;
         public static ConfigEntry<bool> ZapGunRework;
         public static ConfigEntry<string> ZapScanPriority;
@@ -190,7 +191,8 @@ namespace ScienceBirdTweaks
             SpikeTrapDisableAnimation = base.Config.Bind("Zap Gun & Hazards", "Spike Trap Cooldown Animation", false, "Changes spike trap lights to reflect that it's been disabled (by terminal or otherwise). This is automatically enabled if using the zap gun rework.");
             ZapGunTutorialMode = base.Config.Bind("Zap Gun & Hazards", "Zap Gun Tutorial Mode", "Only First Time", new ConfigDescription("'Only First Time': All players will see the tutorial arrow their first few times using the zap gun and never again (I assume this is what's supposed to happen in vanilla). - 'Every Session': All players will see the tutorial arrow the first few times using the zap gun every time they restart the game. - 'Always': All players will always see the tutorial arrow whenever they use the zap gun. - 'Vanilla': Some players (generally the host) always see the tutorial arrow, while others never see it.", new AcceptableValueList<string>(["Only First Time", "Every Session", "Always", "Vanilla"])));
             ZapGunTutorialCount = base.Config.Bind("Zap Gun & Hazards", "Zap Gun Tutorial Count", 2, new ConfigDescription("How many times the tutorial arrow should be displayed (if using 'Only First Time' or 'Every Session' in above config. Vanilla is 2.", new AcceptableValueRange<int>(1, 15)));
-            ZapGunRework = base.Config.Bind("Zap Gun & Hazards", "Zap Gun Rework", false, "Activates all of the following config options, which allow the zap gun to temporarily disable various traps the same way the terminal does (depending on how long you zap them)");
+            ZapGunTutorialRevamp = base.Config.Bind("Zap Gun & Hazards", "Zap Gun Tutorial Revamp", false, "Changes the mouse graphic in the tutorial to be positioned relative to how much you need to correct the beam (instead of fixed swipes across the arrow).");
+            ZapGunRework = base.Config.Bind("Zap Gun & Hazards", "Zap Gun Rework", false, "Activates all of the following config options below, which allow the zap gun to temporarily disable various traps the same way the terminal does (depending on how long you zap them)");
             ZapScanPriority = base.Config.Bind("Zap Gun & Hazards", "Zap Target Priority", "Doors, Enemies, Traps, Players", "Replaces vanilla scan logic to prioritize certain entities in the order specified by this list (if you want to edit the list, use the exact same set of words, not case-sensitive).");
             ZapGunBattery = base.Config.Bind("Zap Gun & Hazards", "Zap Gun Battery", 22f, new ConfigDescription("The battery life of the zap gun (vanilla is 22, pro-flashlight battery is 300 for reference)", new AcceptableValueRange<float>(5f, 150f)));
             ZappableTurrets = base.Config.Bind("Zap Gun & Hazards", "Zappable Turrets", true, "Allows you to disable turrets with the zap gun.");
