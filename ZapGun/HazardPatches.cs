@@ -14,10 +14,7 @@ namespace ScienceBirdTweaks.ZapGun
     public class HazardPatches
     {
         public static GameObject doorPrefab;
-        public static Color mineGreen = new Color(0.3254902f, 1f, 0.3679014f, 1f);
-        public static Color mineGreenIndirect = new Color(0.6793682f, 1f, 0.6470588f, 1f);
-        public static Color mineRed = new Color(1f, 0.3254717f, 0.3254717f, 1f);
-        public static Color mineRedIndirect = new Color(1f, 0.6470588f, 0.6470588f, 1f);
+        public static Color spikesGreen = new Color(0.3254902f, 1f, 0.3679014f, 1f);
         public static AudioClip disabledBeep;
         public static Material disabledMat;
         public static Material offMat;
@@ -92,7 +89,6 @@ namespace ScienceBirdTweaks.ZapGun
         {
             if (!ScienceBirdTweaks.SpikeTrapDisableAnimation.Value && !ScienceBirdTweaks.ZapGunRework.Value) { return; }
 
-            ScienceBirdTweaks.Logger.LogDebug("SPIKE COOLDOWN");
             GameObject animObj = __instance.gameObject.transform.parent.gameObject;
             SpikesZapper zapper = animObj.GetComponentInChildren<SpikesZapper>();
             if (zapper != null && !zapper.tempStun)
@@ -111,7 +107,7 @@ namespace ScienceBirdTweaks.ZapGun
                         ScienceBirdTweaks.Logger.LogDebug($"STARTING SPIKES SPECIAL ANIM");
                         zapper.light.intensity = 2f;
                         zapper.light.colorTemperature = 6580f;
-                        zapper.light.color = mineGreen;
+                        zapper.light.color = spikesGreen;
                         Material[] mats = zapper.supportLights.GetComponent<MeshRenderer>().materials;
                         mats[0] = disabledMat;
                         zapper.supportLights.GetComponent<MeshRenderer>().materials = mats;
@@ -126,14 +122,9 @@ namespace ScienceBirdTweaks.ZapGun
                     zapper.light.colorTemperature = 1500f;
                     zapper.light.color = Color.white;
                     Material[] mats = zapper.supportLights.GetComponent<MeshRenderer>().materials;
-                    ScienceBirdTweaks.Logger.LogDebug($"OG MAT: {zapper.originalMat.name}");
                     mats[0] = zapper.originalMat;
                     zapper.supportLights.GetComponent<MeshRenderer>().materials = mats;
                 }
-            }
-            else if (zapper != null)
-            {
-                ScienceBirdTweaks.Logger.LogDebug($"SPIKES TEMPSTUN: {zapper.tempStun}");
             }
         }
 
@@ -143,7 +134,6 @@ namespace ScienceBirdTweaks.ZapGun
         {
             if (!ScienceBirdTweaks.MineDisableAnimation.Value && !ScienceBirdTweaks.ZapGunRework.Value) { return; }
 
-            ScienceBirdTweaks.Logger.LogDebug("MINE COOLDOWN");
             MineZapper zapper = __instance.GetComponent<MineZapper>();
             if (zapper != null && !zapper.tempStun)
             {
@@ -162,18 +152,9 @@ namespace ScienceBirdTweaks.ZapGun
                         ScienceBirdTweaks.Logger.LogDebug($"STARTING LANDMINE SPECIAL ANIM");
                         __instance.mineAnimator.SetBool("disabled", true);
                         ScienceBirdTweaks.Logger.LogDebug(__instance.mineAnimator.GetBoolString("disabled"));
-                        //__instance.mineAudio.clip = disabledBeep;
-                        //__instance.mineAudio.loop = true;
-                        //__instance.mineAudio.Play();
                         zapper.light1.intensity = 227.6638f;
                         zapper.light2.intensity = 227.6638f;
                         zapper.indirectLight.intensity = 436.6049f;
-                        //zapper.light1.colorTemperature = 6580f;
-                        //zapper.light2.colorTemperature = 6580f;
-                        //zapper.indirectLight.colorTemperature = 6580f;
-                        //zapper.light1.color = mineGreen;
-                        //zapper.light2.color = mineGreen;
-                        //zapper.indirectLight.color = mineGreenIndirect;
                         zapper.startRoutine = true;
                         extraTrigger = true;
                     }
@@ -183,40 +164,6 @@ namespace ScienceBirdTweaks.ZapGun
                     ScienceBirdTweaks.Logger.LogDebug($"ENDING LANDMINE SPECIAL ANIM");
                     __instance.mineAnimator.SetBool("disabled", false);
                     __instance.mineAudio.Stop();
-                    __instance.mineAudio.loop = false;
-                    __instance.mineAudio.clip = null;
-                    zapper.light1.colorTemperature = 1500f;
-                    zapper.light2.colorTemperature = 1500f;
-                    zapper.indirectLight.colorTemperature = 1500f;
-                    zapper.light1.color = mineRed;
-                    zapper.light2.color = mineRed;
-                    zapper.indirectLight.color = mineRedIndirect;
-                    extraTrigger = false;
-                }
-            }
-            else if (zapper != null)
-            {
-                ScienceBirdTweaks.Logger.LogDebug($"MINE TEMPSTUN: {zapper.tempStun}");
-            }
-        }
-
-        [HarmonyPatch(typeof(Landmine), nameof(Landmine.Update))]
-        [HarmonyPostfix]
-        public static void MineCooldownCheck(Landmine __instance)
-        {
-            if ((ScienceBirdTweaks.MineDisableAnimation.Value || ScienceBirdTweaks.ZapGunRework.Value) && !__instance.hasExploded && !__instance.sendingExplosionRPC)
-            {
-                if (extraTrigger)
-                {
-                    ScienceBirdTweaks.Logger.LogDebug($"{__instance.mineAnimator.GetBoolString("disabled")}, {__instance.mineAudio.isPlaying}, {__instance.mineAudio.clip}");
-                    //__instance.mineAnimator.SetTrigger("disable");
-                    //__instance.mineAudio.clip = disabledBeep;
-                    //__instance.mineAudio.loop = true;
-                    if (!__instance.mineAudio.isPlaying)
-                    {
-                        //__instance.mineAudio.Play();
-                    }
-                    //extraTrigger = false;
                 }
             }
         }

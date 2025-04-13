@@ -47,14 +47,12 @@ namespace ScienceBirdTweaks.ZapGun
 
         void IShockableWithGun.ShockWithGun(PlayerControllerB shockedByPlayer)
         {
-            ScienceBirdTweaks.Logger.LogDebug("SHOCK1");
             terminalObj.SetDoorOpen(true);
             stunned = true;
         }
 
         void IShockableWithGun.StopShockingWithGun()
         {
-            ScienceBirdTweaks.Logger.LogDebug("SHOCK4");
             stunned = false;
             terminalObj.SetDoorOpen(false);
         }

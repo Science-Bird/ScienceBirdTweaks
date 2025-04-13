@@ -1,13 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using HarmonyLib;
 using ScienceBirdTweaks.Patches;
-using Steamworks.ServerList;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.XR;
 
 namespace ScienceBirdTweaks.Scripts
 {
@@ -16,22 +11,21 @@ namespace ScienceBirdTweaks.Scripts
         public bool doneRPC = false;
         public static List<MaskInstance> activeMasks = new List<MaskInstance>();
 
-        public void PrepareMaskDropCoroutine(GameObject? prefab, GameObject mask)
+        public void PrepareMaskDropCoroutine(GameObject? prefab, GameObject mask)// prefab passed into coroutine is what mask should be spawned (server only), mask is the object currently worn by enemy
         {
-            ScienceBirdTweaks.Logger.LogDebug($"Running coroutine...");
-            activeMasks.Add(new MaskInstance(mask, mask.transform.position, mask.transform.rotation));
+            activeMasks.Add(new MaskInstance(mask, mask.transform.position, mask.transform.rotation));// to handle multiple mask spawns at once, they're pushed into a list
             StartCoroutine(SpawnMaskAfterAnim(prefab, mask));
         }
 
         [ClientRpc]
-        private void SyncMaskValuesClientRpc(int activeMaskIndex, int maskId, int value)
+        private void SyncMaskValuesClientRpc(int activeMaskIndex, int maskId, int value)// relevant values passed from server to clients
         {
-            ScienceBirdTweaks.Logger.LogDebug($"Adding mask to buffer! {activeMaskIndex}");
+            ScienceBirdTweaks.Logger.LogDebug($"Registering mask in clientRPC: {activeMaskIndex}, {maskId}, {value}");
             MaskInstance activeMask = activeMasks[activeMaskIndex];
             activeMask.id = maskId;
             activeMask.value = value;
             activeMask.UpdateTransform();
-            activeMask.AddToBufferAndDestroy();
+            activeMask.AddToBufferAndDestroy();// all these values are added into another buffer back in the main patch, using unique networkId to keep track of which mask is which
             activeMasks.RemoveAt(activeMaskIndex);
             MaskDropPatches.patchingMask = true;
             doneRPC = true;
@@ -39,17 +33,15 @@ namespace ScienceBirdTweaks.Scripts
         
         public IEnumerator SpawnMaskAfterAnim(GameObject? prefab, GameObject mask)
         {
-            ScienceBirdTweaks.Logger.LogDebug($"Entering coroutine!");
-            yield return new WaitForSeconds(1.5f);
-            MaskInstance activeMask = activeMasks.Find(x => x.wornMask == mask);
-            if (activeMask != null)
+            yield return new WaitForSeconds(1.5f);// delay exists to get the final resting position of the mask on the masked enemy (i.e. waiting for it to fall over and complete its death animation)
+
+            MaskInstance activeMask = activeMasks.Find(x => x.wornMask == mask);// find the mask in list matching the one we're currently handling (via checking worn mask object)
+            if (activeMask != null)// client rpc has usually destroyed the mask by this point (making it null), so this generally only runs on server
             {
                 activeMask.UpdateTransform();
-                ScienceBirdTweaks.Logger.LogInfo($"Found active mask! {activeMask.position}, {activeMask.rotation.eulerAngles}");
             }
-            if (prefab != null && activeMask != null)
+            if (prefab != null && activeMask != null)// server only
             {
-                ScienceBirdTweaks.Logger.LogInfo($"Starting after delay!");
                 GameObject obj = Object.Instantiate(prefab, activeMask.position, activeMask.rotation, RoundManager.Instance.spawnedScrapContainer);
                 obj.GetComponent<NetworkObject>().Spawn();
                 GrabbableObject grabbable = obj.GetComponent<GrabbableObject>();
@@ -58,9 +50,8 @@ namespace ScienceBirdTweaks.Scripts
                 {
                     yield return null;
                 }
-                ScienceBirdTweaks.Logger.LogDebug("Calling discard RPC!");
-                MaskDropPatches.MaskDropSync(obj.GetComponent<HauntedMaskItem>(), (int)grabbable.GetComponent<NetworkObject>().NetworkObjectId, activeMask.position, activeMask.rotation, activeMask.value);
-                grabbable.DiscardItemClientRpc();
+                MaskDropPatches.MaskDropSync(obj.GetComponent<HauntedMaskItem>(), (int)grabbable.GetComponent<NetworkObject>().NetworkObjectId, activeMask.position, activeMask.rotation, activeMask.value);// since patched clientrpc won't run on server, the sync function is ran directly here
+                grabbable.DiscardItemClientRpc();// artificially induce discard function to get clients to run discard routine
             }
         }
     }
@@ -83,7 +74,7 @@ namespace ScienceBirdTweaks.Scripts
             id = networkId;
         }
 
-        public void UpdateTransform()
+        public void UpdateTransform()// the way this is done means each client will use their own wornMask's position, so even if mask corpse positions are de-synced, the masks will still appear in the correct spots for each client
         {
             if (wornMask != null)
             {
@@ -91,7 +82,6 @@ namespace ScienceBirdTweaks.Scripts
                 rotation = wornMask.transform.rotation;
             }
         }
-
         public void AddToBufferAndDestroy()
         {
             ScienceBirdTweaks.Logger.LogDebug("Adding mask to buffer!");

@@ -31,7 +31,6 @@ namespace ScienceBirdTweaks.Patches
                 Item shotgun = Resources.FindObjectsOfTypeAll<Item>().Where(x => x.itemName == "Shotgun").First();
                 if (shotgun != null)
                 {
-                    ScienceBirdTweaks.Logger.LogDebug("Found shotgun item!");
                     shotgun.canBeGrabbedBeforeGameStart = true;
                 }
             }
@@ -40,7 +39,6 @@ namespace ScienceBirdTweaks.Patches
                 Item shell = Resources.FindObjectsOfTypeAll<Item>().Where(x => x.itemName == "Ammo").First();
                 if (shell != null)
                 {
-                    ScienceBirdTweaks.Logger.LogDebug("Found shell item!");
                     shell.canBeGrabbedBeforeGameStart = true;
                 }
             }
@@ -53,17 +51,32 @@ namespace ScienceBirdTweaks.Patches
             NutcrackerEnemyAI nutcracker = Resources.FindObjectsOfTypeAll<NutcrackerEnemyAI>().First();
             if (nutcracker != null)
             {
-                ScienceBirdTweaks.Logger.LogDebug("Found shell prefab!");
                 shellPrefab = nutcracker.shotgunShellPrefab;
             }
         }
+
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SceneManager_OnLoadComplete1))]
+        [HarmonyPostfix]
+        static void ShellPrefabCheck(StartOfRound __instance)// some mods cause the network registration of this prefab to be delayed, so it's double-checked here
+        {
+            if (ScienceBirdTweaks.ShotgunMasterDisable.Value) { return; }
+            if (!NetworkManager.Singleton.NetworkConfig.Prefabs.Contains(shellPrefab))
+            {
+                NutcrackerEnemyAI nutcracker = Resources.FindObjectsOfTypeAll<NutcrackerEnemyAI>().First();
+                if (nutcracker != null)
+                {
+                    ScienceBirdTweaks.Logger.LogDebug("Re-finding shell prefab!");
+                    shellPrefab = nutcracker.shotgunShellPrefab;
+                }
+            }
+        }
+
 
         [HarmonyPatch(typeof(ShotgunItem), nameof(ShotgunItem.SetControlTipsForItem))]
         [HarmonyPostfix]
         public static void TooltipSet(ShotgunItem __instance)
         {
             if (ScienceBirdTweaks.ShotgunMasterDisable.Value) { return; }
-            ScienceBirdTweaks.Logger.LogDebug("SetTips called!");
             TooltipUpdate(__instance);
         }
 
@@ -109,26 +122,18 @@ namespace ScienceBirdTweaks.Patches
         public static void OnSwitch(PlayerControllerB __instance, GrabbableObject fillSlotWithItem)
         {
             if (ScienceBirdTweaks.ShotgunMasterDisable.Value) { return; }
-            ScienceBirdTweaks.Logger.LogDebug("Item switch detected!");
             ShotgunItem? shotgun = null;
             if (fillSlotWithItem != null && fillSlotWithItem.GetComponent<ShotgunItem>())
             {
-                ScienceBirdTweaks.Logger.LogDebug("Found shotgun on filled slot");
                 shotgun = fillSlotWithItem.GetComponent<ShotgunItem>();
             }
             else if (__instance.currentlyHeldObjectServer != null && __instance.currentlyHeldObjectServer.GetComponent<ShotgunItem>())
             {
-                ScienceBirdTweaks.Logger.LogDebug("Found shotgun on currently held");
                 shotgun = __instance.currentlyHeldObjectServer.GetComponent<ShotgunItem>();
             }
             if (shotgun != null)
             {
-                ScienceBirdTweaks.Logger.LogDebug("Updating tooltip!");
                 TooltipUpdate(shotgun);
-            }
-            else
-            {
-                ScienceBirdTweaks.Logger.LogDebug("No shotgun found!");
             }
         }
 
@@ -158,24 +163,20 @@ namespace ScienceBirdTweaks.Patches
                 }
                 if (shotgun.safetyOn)
                 {
-                    ScienceBirdTweaks.Logger.LogDebug("Updating safety tip: ON");
                     toolTips[2] = safetyOnText;
                 }
                 else
                 {
-                    ScienceBirdTweaks.Logger.LogDebug("Updating safety tip: OFF");
                     toolTips[2] = safetyOffText;
                 }
                 if (unloadEnabled)
                 {
-                    if (shotgun.FindAmmoInInventory() != -1)
+                    if (shotgun.FindAmmoInInventory() != -1 && shotgun.shellsLoaded < 2)
                     {
-                        ScienceBirdTweaks.Logger.LogDebug("Updating reload tip: RELOAD");
                         toolTips[1] = "Reload : [E]";
                     }
                     else if (shotgun.shellsLoaded > 0)
                     {
-                        ScienceBirdTweaks.Logger.LogDebug("Updating reload tip: EJECT");
                         toolTips[1] = "Eject shells : [Hold E]";
                     }
                     else// remove 2nd tooltip and shift 3rd one up
@@ -190,29 +191,24 @@ namespace ScienceBirdTweaks.Patches
 
         [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.ItemInteractLeftRightOnClient))]
         [HarmonyPrefix]
-        static bool InteractPrefix(GrabbableObject __instance, bool right)
+        static bool InteractPrefix(GrabbableObject __instance, bool right)// this exists to interrupt the usual interaction event if the eject requirements are met, this is so the eject procedure can do some client-side checks and do the hold event before starting synced interaction with other clients
         {
-            if (!ScienceBirdTweaks.ShotgunMasterDisable.Value && unloadEnabled && __instance.GetComponent<ShotgunItem>() && right && __instance.GetComponent<ShotgunItem>().FindAmmoInInventory() == -1 && __instance.GetComponent<ShotgunItem>().shellsLoaded > 0)
+            if (!ScienceBirdTweaks.ShotgunMasterDisable.Value && unloadEnabled && __instance.GetComponent<ShotgunItem>() && right && (__instance.GetComponent<ShotgunItem>().FindAmmoInInventory() == -1 || __instance.GetComponent<ShotgunItem>().shellsLoaded >= 2) && __instance.GetComponent<ShotgunItem>().shellsLoaded > 0)
             {
-                if (__instance.IsOwner && __instance.isHeld && HUDManager.Instance.holdFillAmount <= 0f && __instance.playerHeldBy.cursorTip.text == "")
+                if (__instance.IsOwner && __instance.isHeld && HUDManager.Instance.holdFillAmount <= 0f && __instance.playerHeldBy.cursorTip.text == "")// make sure player isn't doing some other kind of ongoing interaction
                 {
-                    ScienceBirdTweaks.Logger.LogDebug("Conditions met!");
                     LocalInteract(__instance.GetComponent<ShotgunItem>(), right);
                 }
-                else
-                {
-                    ScienceBirdTweaks.Logger.LogDebug($"ABORTING HOLD {__instance.IsOwner}, {__instance.isHeld}, {HUDManager.Instance.holdFillAmount <= 0f}, {__instance.playerHeldBy.cursorTip.text == ""}, {__instance.GetComponent<ShotgunItem>().shellsLoaded > 0}");
-                }
+                // this inner failure will still return false (halting the interaction), because the basic eject criteria were met, we shouldn't try to do any interaction at all
                 return false;
             }
-            ScienceBirdTweaks.Logger.LogDebug($"ABORTING HOLD {__instance.IsOwner}, {__instance.isHeld}, {HUDManager.Instance.holdFillAmount <= 0f}, {__instance.playerHeldBy.cursorTip.text == ""}, {__instance.GetComponent<ShotgunItem>().shellsLoaded > 0}");
             return true;
         }
 
 
-        static void LocalInteract(ShotgunItem shotgun, bool right)
+        static void LocalInteract(ShotgunItem shotgun, bool right)// initialize local hold event
         {
-            if (unloadEnabled && shotgun.IsOwner && shotgun.isHeld && HUDManager.Instance.holdFillAmount <= 0f && shotgun.playerHeldBy.cursorTip.text == "" && right && shotgun.FindAmmoInInventory() == -1 && shotgun.shellsLoaded > 0)
+            if (unloadEnabled && shotgun.IsOwner && shotgun.isHeld && HUDManager.Instance.holdFillAmount <= 0f && shotgun.playerHeldBy.cursorTip.text == "" && right && (shotgun.FindAmmoInInventory() == -1 || shotgun.shellsLoaded >= 2) && shotgun.shellsLoaded > 0)
             {
                 holdingDown = true;
                 startTime = Time.realtimeSinceStartup;
@@ -222,7 +218,7 @@ namespace ScienceBirdTweaks.Patches
 
         [HarmonyPatch(typeof(ShotgunItem), nameof(ShotgunItem.Update))]
         [HarmonyPostfix]
-        static void AttemptInteract(ShotgunItem __instance)
+        static void AttemptInteract(ShotgunItem __instance)// make sure button is held for 1 second
         {
             if (holdingDown)
             { 
@@ -230,9 +226,8 @@ namespace ScienceBirdTweaks.Patches
                 {
                     if (IngamePlayerSettings.Instance.playerInput.actions.FindAction("ItemTertiaryUse").IsPressed())
                     {
-                        if (Time.realtimeSinceStartup - startTime > 1f)
+                        if (Time.realtimeSinceStartup - startTime > 1f)// this is all the usual interaction calls, meaning vanilla logic should take over from here
                         {
-                            ScienceBirdTweaks.Logger.LogDebug("COMPLETED HOLD");
                             holdingDown = false;
                             __instance.ItemInteractLeftRight(true);
                             __instance.isSendingItemRPC++;
@@ -241,13 +236,11 @@ namespace ScienceBirdTweaks.Patches
                     }
                     else
                     {
-                        ScienceBirdTweaks.Logger.LogDebug("STOPPING HOLD");
                         holdingDown = false;
                     }
                 }
                 else
                 {
-                    ScienceBirdTweaks.Logger.LogDebug($"STOPPING HOLD {__instance.IsOwner}, {__instance.isHeld}, {HUDManager.Instance.holdFillAmount <= 0f}, {__instance.playerHeldBy.cursorTip.text == ""}, {__instance.shellsLoaded > 0} ");
                     holdingDown = false;
                 }
             }
@@ -256,14 +249,15 @@ namespace ScienceBirdTweaks.Patches
 
         [HarmonyPatch(typeof(ShotgunItem), nameof(ShotgunItem.ItemInteractLeftRight))]
         [HarmonyPostfix]
-        static void ReloadInteract(ShotgunItem __instance, bool right)
+        static void ReloadInteract(ShotgunItem __instance, bool right)// this method is only reached if the local client gets through the above functions
         {
             if (ScienceBirdTweaks.ShotgunMasterDisable.Value) { return; }
 
             ScienceBirdTweaks.Logger.LogDebug(__instance.playerHeldBy.isHoldingInteract);
-            if (unloadEnabled && right && __instance.FindAmmoInInventory() == -1 && __instance.shellsLoaded > 0)
+            if (unloadEnabled && right && (__instance.FindAmmoInInventory() == -1 || __instance.shellsLoaded >= 2) && __instance.shellsLoaded > 0)
             {
                 ScienceBirdTweaks.Logger.LogDebug("Eject called!");
+
                 if (__instance.IsServer)
                 {
                     // in short: put it in the ship if it's in orbit, otherwise put it in the current round's scrap container
@@ -273,7 +267,6 @@ namespace ScienceBirdTweaks.Patches
                         GameObject obj = Object.Instantiate(shellPrefab, __instance.gameObject.transform.position + new Vector3(Random.Range(-0.5f, 0.5f), -0.1f, Random.Range(-0.5f, 0.5f)), Quaternion.identity, parent);
                         obj.GetComponent<NetworkObject>().Spawn();
                         GrabbableObject grabbable = obj.GetComponent<NetworkObject>().GetComponent<GrabbableObject>();
-                        // TO-DO: spawn with random rotation that is synced on clients
                         grabbable.startFallingPosition = obj.transform.position;
                         grabbable.fallTime = 0f;
                         grabbable.hasHitGround = false;
@@ -295,7 +288,7 @@ namespace ScienceBirdTweaks.Patches
 
         [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.Start))]
         [HarmonyPostfix]
-        static void ShellRotationPatch(GrabbableObject __instance)
+        static void ShellRotationPatch(GrabbableObject __instance)// randomly rotate spawned shells
         {
             if (ScienceBirdTweaks.ShotgunMasterDisable.Value) { return; }
             

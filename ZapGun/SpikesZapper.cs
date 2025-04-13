@@ -72,7 +72,6 @@ namespace ScienceBirdTweaks.ZapGun
                 return;
             }
             startRoutine = false;
-            ScienceBirdTweaks.Logger.LogDebug("SHOCK1");
             startTime = Time.realtimeSinceStartup;
             tempStun = true;
             spikes.ToggleSpikesEnabledLocalClient(false);
@@ -102,7 +101,6 @@ namespace ScienceBirdTweaks.ZapGun
                 yield return null;
             }
             startRoutine = false;
-            ScienceBirdTweaks.Logger.LogDebug($"COOLDOWN: {terminalObj.inCooldown}");
             if (!terminalObj.initializedValues)
             {
                 terminalObj.InitializeValues();

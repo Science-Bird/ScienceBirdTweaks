@@ -34,7 +34,6 @@ namespace ScienceBirdTweaks.Patches
                     if (suitNetworked.TrySetParent(hangarShip.transform, worldPositionStays: true))
                     {
                         continue;
-                       // ScienceBirdTweaks.Logger.LogDebug("Parented suit to ship!");
                     }
                     else
                     {
@@ -107,7 +106,6 @@ namespace ScienceBirdTweaks.Patches
             {
                 if (ScienceBirdTweaks.OnlyFixDefault.Value && Array.IndexOf(vanillaIDs, index) == -1)
                 {
-                    //ScienceBirdTweaks.Logger.LogDebug($"Skipping non-default ID... {index}");
                     return;
                 }
                 if (idBlacklist.Contains(index))
@@ -164,7 +162,6 @@ namespace ScienceBirdTweaks.Patches
                 }
                 if (ScienceBirdTweaks.OnlyFixDefault.Value && Array.IndexOf(vanillaIDs, index) == -1)
                 {
-                    //ScienceBirdTweaks.Logger.LogDebug($"Skipping non-default ID... {index}");
                     return;
                 }
                 if (idBlacklist.Contains(index))

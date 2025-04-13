@@ -91,7 +91,6 @@ namespace ScienceBirdTweaks.ZapGun
 
                 savedTimer = turret.switchRotationTimer;
                 savedRot = turret.turretRod.rotation;
-                ScienceBirdTweaks.Logger.LogDebug($"Saving values: {savedTimer}, {savedRot.eulerAngles}");
                 panicMode = true;
             }
         }
@@ -113,11 +112,11 @@ namespace ScienceBirdTweaks.ZapGun
             terminalObj.terminalCodeEvent.Invoke(GameNetworkManager.Instance.localPlayerController);
             effectiveCooldown = cooldown * (elapsedTime * multiplier);
             cooldownTimer = effectiveCooldown;
-            ScienceBirdTweaks.Logger.LogDebug($"Freezing for {cooldownTimer}s ({elapsedTime * multiplier}x normal) {GameNetworkManager.Instance.localPlayerController.IsHost}");
+            ScienceBirdTweaks.Logger.LogDebug($"Freezing for {cooldownTimer}s ({elapsedTime * multiplier}x normal)");
             StartCoroutine(turretCoolDown());
         }
 
-        private void Update()
+        private void Update()// while turret is in panic mode, simulate update loop so it can rotate
         {
             if (panicMode && terminalObj.inCooldown)
             {
@@ -125,7 +124,6 @@ namespace ScienceBirdTweaks.ZapGun
                 {
                     if (turret.switchRotationTimer >= 7f)
                     {
-                        ScienceBirdTweaks.Logger.LogDebug("TURRET SWITCH CALLED");
                         turret.switchRotationTimer = 0f;
                         bool setRotateRight = !turret.rotatingRight;
                         turret.SwitchRotationClientRpc(setRotateRight);
@@ -148,7 +146,7 @@ namespace ScienceBirdTweaks.ZapGun
                 }
                 turret.turretRod.rotation = Quaternion.RotateTowards(turret.turretRod.rotation, turret.turnTowardsObjectCompass.rotation, turret.rotationSpeed * Time.deltaTime);
             }
-            else if (!restoredRot && terminalObj.inCooldown)
+            else if (!restoredRot && terminalObj.inCooldown)// slowly restore rotation to value before the panic sequence, to ensure that the turret's range is relatively unchanged and that things stay synced between clients
             {
                 turret.turretRod.rotation = Quaternion.Slerp(turret.turretRod.rotation, savedRot, Time.deltaTime / cooldownTimer);
             }
@@ -158,7 +156,6 @@ namespace ScienceBirdTweaks.ZapGun
         {
             if (terminalObj != null)
             {
-                ScienceBirdTweaks.Logger.LogDebug($"COOLDOWN: {terminalObj.inCooldown}");
                 if (!terminalObj.initializedValues)
                 {
                     terminalObj.InitializeValues();
@@ -200,13 +197,11 @@ namespace ScienceBirdTweaks.ZapGun
                 terminalObj.mapRadarText.enabled = true;
                 cooldownBar.enabled = false;
                 terminalObj.inCooldown = false;
-                ScienceBirdTweaks.Logger.LogDebug($"Restoring values: {turret.switchRotationTimer}, {turret.turretRod.rotation.eulerAngles}");
                 turret.turretRod.rotation = savedRot;
                 if (base.IsServer)
                 {
                     turret.switchRotationTimer = savedTimer;
                 }
-                ScienceBirdTweaks.Logger.LogDebug($"Restored values: {savedTimer}, {savedRot.eulerAngles}");
                 restoredRot = true;
             }
         }

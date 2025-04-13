@@ -20,7 +20,7 @@ namespace ScienceBirdTweaks.Scripts
         private static readonly int surfaceTypeID = Shader.PropertyToID("_SurfaceType");
         private const string emissiveColorMapKeyword = "_EMISSIVE_COLOR_MAP";
         private const string useEmissiveIntensityID = "_EMISSION";
-        private static readonly Boolean extraLogs = false;
+        private static readonly Boolean extraLogs = ScienceBirdTweaks.ExtraLogs.Value;
         private static string[] nameBlacklist = InitializeBlacklist(ScienceBirdTweaks.TrueBlackoutNameBlacklist.Value);
         private static readonly int nameBlacklistLength = nameBlacklist.Length;
         private static string[] hierarchyBlacklist = InitializeBlacklist(ScienceBirdTweaks.TrueBlackoutHierarchyBlacklist.Value);

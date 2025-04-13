@@ -42,7 +42,7 @@ namespace ScienceBirdTweaks.Scripts
             if (_startOfRoundInstance == null)
                 ScienceBirdTweaks.Logger.LogError("Failed to get StartOfRound instance! Spinner cannot check landing status.");
             else
-                ScienceBirdTweaks.Logger.LogInfo("ShipFloodlightController Start: Got StartOfRound reference. Waiting for initialization and landing.");
+                ScienceBirdTweaks.Logger.LogDebug("ShipFloodlightController Start: Got StartOfRound reference. Waiting for initialization and landing.");
 
             StartSpinning();
         }
@@ -149,7 +149,7 @@ namespace ScienceBirdTweaks.Scripts
                 this.enabled = true;
 
             if (_initialStateSet && _canRotate)
-                ScienceBirdTweaks.Logger.LogInfo($"Rotation enabled.");
+                ScienceBirdTweaks.Logger.LogInfo($"Floodlight rotation enabled.");
             else if
                 (_initialStateSet) ScienceBirdTweaks.Logger.LogDebug($"Rotation enabled, waiting for ship to land.");
             else
@@ -161,9 +161,9 @@ namespace ScienceBirdTweaks.Scripts
             _isRotating = false;
 
             if
-                (_parentTransform != null) ScienceBirdTweaks.Logger.LogInfo($"Rotation disabled.");
+                (_parentTransform != null) ScienceBirdTweaks.Logger.LogDebug($"Rotation disabled.");
             else
-                ScienceBirdTweaks.Logger.LogInfo($"Rotation explicitly disabled (target may not have been found).");
+                ScienceBirdTweaks.Logger.LogDebug($"Rotation explicitly disabled (target may not have been found).");
         }
 
         public void SetRotationSpeed(float newSpeed) {
@@ -242,11 +242,11 @@ namespace ScienceBirdTweaks.Scripts
 
             if (ScienceBirdTweaks.FloodlightRotation.Value) // Reset rotations & positions once in orbit to prevent drift
             {
-                ScienceBirdTweaks.Logger.LogInfo("Resetting floodlight position / rotation.");
+                ScienceBirdTweaks.Logger.LogDebug("Resetting floodlight position / rotation.");
 
                 if (ScienceBirdTweaks.FloodlightRotation.Value)
                 {
-                    ScienceBirdTweaks.Logger.LogInfo("Resetting floodlight rotation.");
+                    ScienceBirdTweaks.Logger.LogDebug("Resetting floodlight rotation.");
 
                     if (_originalStates.Count == 0)
                     {
@@ -278,11 +278,11 @@ namespace ScienceBirdTweaks.Scripts
                             ScienceBirdTweaks.Logger.LogWarning($"Attempted to reset rotation on a null transform (originally stored).");
                         }
                     }
-                    ScienceBirdTweaks.Logger.LogInfo("Floodlight rotation reset complete.");
+                    ScienceBirdTweaks.Logger.LogDebug("Floodlight rotation reset complete.");
                 }
                 else
                 {
-                    ScienceBirdTweaks.Logger.LogInfo("Floodlight rotation disabled in config, skipping rotation reset.");
+                    ScienceBirdTweaks.Logger.LogDebug("Floodlight rotation disabled in config, skipping rotation reset.");
                 }
             }
         }

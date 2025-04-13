@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using ScienceBirdTweaks.Scripts;
-using UnityEngine.SceneManagement;
 
 namespace ScienceBirdTweaks.Patches
 {
@@ -34,7 +33,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void ResetSpinnerFlagPatch()
         {
-            ScienceBirdTweaks.Logger.LogInfo("Disconnect detected, resetting spinnerAdded flag.");
+            ScienceBirdTweaks.Logger.LogDebug("Disconnect detected, resetting spinnerAdded flag.");
             spinnerAdded = false;
         }
 
@@ -42,7 +41,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void OnDestroyResetSpinnerFlagPatch()
         {
-            ScienceBirdTweaks.Logger.LogInfo("StartOfRound OnDestroy, resetting spinnerAdded flag.");
+            ScienceBirdTweaks.Logger.LogDebug("StartOfRound OnDestroy, resetting spinnerAdded flag.");
             spinnerAdded = false;
         }
 
@@ -50,7 +49,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void ResetLightsOnLoadPatch(StartOfRound __instance)
         {
-            ScienceBirdTweaks.Logger.LogInfo("Ship reached orbit, attempting to reset floodlights.");
+            ScienceBirdTweaks.Logger.LogDebug("Ship reached orbit, attempting to reset floodlights.");
 
             if (__instance == null)
             {

@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
 using ScienceBirdTweaks.Scripts;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace ScienceBirdTweaks.Patches
 {
@@ -16,7 +15,6 @@ namespace ScienceBirdTweaks.Patches
         {
             if (ScienceBirdTweaks.DisableTrapsOnApparatusRemoval.Value && __instance.isLungDocked)
             {
-                ScienceBirdTweaks.Logger.LogDebug("Appy detected!");
                 doingHazardShutdown = true;
             }
         }
@@ -36,11 +34,11 @@ namespace ScienceBirdTweaks.Patches
                 return;
             }
 
-            ScienceBirdTweaks.Logger.LogInfo($"Apparatus removal coroutine (DisconnectFromMachinery) initiated for {__instance.gameObject.name}. Triggering blackout via Postfix.");
+            ScienceBirdTweaks.Logger.LogDebug($"Apparatus removal coroutine (DisconnectFromMachinery) initiated for {__instance.gameObject.name}. Triggering blackout via Postfix.");
 
             try
             {
-                ScienceBirdTweaks.Logger.LogInfo($"Calling TrueBlackoutPatch.BlackoutOverridePrefix for {__instance.gameObject.name}.");
+                ScienceBirdTweaks.Logger.LogDebug($"Calling TrueBlackoutPatch.BlackoutOverridePrefix for {__instance.gameObject.name}.");
                 TrueBlackout.DoBlackout(false);
             }
             catch (System.Exception e)
@@ -77,10 +75,8 @@ namespace ScienceBirdTweaks.Patches
 
         public static void HazardShutdown(TerminalAccessibleObject terminalObj, bool switchedOn)
         {
-            ScienceBirdTweaks.Logger.LogDebug($"Terminal obj power switch! {terminalObj.isBigDoor}");
             if (!switchedOn && doingHazardShutdown && ScienceBirdTweaks.DisableTrapsOnApparatusRemoval.Value && !terminalObj.isBigDoor)
             {
-                ScienceBirdTweaks.Logger.LogDebug("Hazard shutdown!");
                 Landmine mine = terminalObj.gameObject.GetComponent<Landmine>();
                 Turret turret = terminalObj.gameObject.GetComponent<Turret>();
                 SpikeRoofTrap spikes = terminalObj.gameObject.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>();

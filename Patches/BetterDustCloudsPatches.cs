@@ -23,12 +23,11 @@ namespace ScienceBirdTweaks.Patches
             {
                 return;
             }
-            if (__instance.currentLevelWeather == LevelWeatherType.DustClouds)
+            if (__instance.currentLevelWeather == LevelWeatherType.DustClouds)// I noticed dust clouds could get permanently disabled by some audio reverb triggers, this exists as a failsafe to catch that
             {
                 GameObject dustClouds = __instance.effects[0].effectObject;
                 if (dustClouds != null && (!dustClouds.activeInHierarchy || !__instance.effects[0].effectEnabled) && GameNetworkManager.Instance.localPlayerController != null && !GameNetworkManager.Instance.localPlayerController.isInsideFactory)
                 {
-                    ScienceBirdTweaks.Logger.LogDebug("DOING OVERRIDE SET ACTIVE");
                     dustClouds.SetActive(true);
                     __instance.effects[0].effectEnabled = true;
                 }
@@ -127,7 +126,6 @@ namespace ScienceBirdTweaks.Patches
             }
             else if (dustClouds != null && dustClouds.activeInHierarchy)// case for Experimentation dust clouds, which aren't an actual weather. they use all the vanilla values/logic
             {
-                ScienceBirdTweaks.Logger.LogDebug("EXP DUST CLOUDS");
                 AudioSource cloudsAudio = dustClouds.GetComponentInChildren<AudioSource>();
                 if (cloudsAudio != null)
                 {
