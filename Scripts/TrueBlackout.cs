@@ -8,18 +8,37 @@ using UnityEngine;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
 using ScienceBirdTweaks.Scripts;
+using System.IO;
 
 namespace ScienceBirdTweaks.Scripts
 {
+    public static class CollectionExtensions
+    {
+        private static System.Random rng = new System.Random();
+
+        public static void Shuffle<T>(this IList<T> list)
+        {
+            int n = list.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = rng.Next(n + 1);
+
+                T value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
+        }
+    }
+
     public class TrueBlackout : MonoBehaviour
     {
-        private static readonly int emissionColorID = Shader.PropertyToID("_EmissionColor");
         private static readonly int emissiveColorID = Shader.PropertyToID("_EmissiveColor");
-        private static readonly int emissiveIntensityID = Shader.PropertyToID("_EmissiveIntensity");
         private static readonly int emissionMapID = Shader.PropertyToID("_EmissionMap");
+        private static readonly int emissionColorID = Shader.PropertyToID("_EmissionColor");
+        private static readonly int emissiveIntensityID = Shader.PropertyToID("_EmissiveIntensity");
         private static readonly int surfaceTypeID = Shader.PropertyToID("_SurfaceType");
         private const string emissiveColorMapKeyword = "_EMISSIVE_COLOR_MAP";
-        private const string useEmissiveIntensityID = "_EMISSION";
         private static readonly Boolean extraLogs = ScienceBirdTweaks.ExtraLogs.Value;
         private static string[] nameBlacklist = InitializeBlacklist(ScienceBirdTweaks.TrueBlackoutNameBlacklist.Value);
         private static readonly int nameBlacklistLength = nameBlacklist.Length;
@@ -114,16 +133,6 @@ namespace ScienceBirdTweaks.Scripts
 
             HashSet<GameObject> lightObjects = new HashSet<GameObject>();
             HashSet<GameObject> lightObjectsBlacklist = new HashSet<GameObject>();
-
-            float floodLightIntensity = ScienceBirdTweaks.FloodLightIntensity.Value;
-            float floodLightAngle = ScienceBirdTweaks.FloodLightIntensity.Value;
-            float floodLightRange = ScienceBirdTweaks.FloodLightIntensity.Value;
-
-            List<HDAdditionalLightData> Floodlights = new List<HDAdditionalLightData>();
-            Transform ShipLightsPost = GameObject.Find("ShipLightsPost").GetComponent<Transform>();
-            List<Light> ShipPostLights = GetLightsInParent(ShipLightsPost);
-
-            ScienceBirdTweaks.Logger.LogInfo($"Found {ShipPostLights.Count} floodlights in scene");
 
             foreach (Light light in allLights)
             {
@@ -280,9 +289,12 @@ namespace ScienceBirdTweaks.Scripts
         IEnumerator DisableLightsOverFrames(IEnumerable<GameObject> lightObjectsEnumerable)
         {
             var lightObjects = lightObjectsEnumerable.ToList();
-            int batchSize = 10;
+
+            lightObjects.Shuffle();
+
+            int batchSize = 5;
             int index = 0;
-            int framesToWait = 25;
+            int framesToWait = 15;
 
             WaitForEndOfFrame waitForEndOfFrame = new WaitForEndOfFrame();
 
@@ -301,14 +313,14 @@ namespace ScienceBirdTweaks.Scripts
 
                     foreach (Light light in lightObject.GetComponentsInChildren<Light>(true))
                     {
-                        if (extraLogs)
-                            ScienceBirdTweaks.Logger.LogDebug($"Disabling light {light.name} with path {GetObjectPath(lightObject)}");
+                        //if (extraLogs)
+                        //    ScienceBirdTweaks.Logger.LogDebug($"Disabling light {light.name} with path {GetObjectPath(lightObject)}");
 
                         light.enabled = false;
                     }
 
-                    if (extraLogs)
-                        ScienceBirdTweaks.Logger.LogDebug($"Disabling light object {lightObject.name} with path {GetObjectPath(lightObject)}");
+                    //if (extraLogs)
+                    //    ScienceBirdTweaks.Logger.LogDebug($"Disabling light object {lightObject.name} with path {GetObjectPath(lightObject)}");
 
                     foreach (Renderer renderer in lightObject.GetComponentsInChildren<Renderer>(true))
                     {
@@ -321,37 +333,37 @@ namespace ScienceBirdTweaks.Scripts
                             if (mat == null) continue;
 
                             bool hasEmissionMap = mat.HasProperty(emissionMapID);
-                            bool hasEmissionColor = mat.HasProperty(emissionColorID);
                             bool hasEmissiveColor = mat.HasProperty(emissiveColorID);
+                            bool hasEmissionColor = mat.HasProperty(emissionColorID);
                             bool hasEmissiveIntensity = mat.HasProperty(emissiveIntensityID);
-                            float currentIntensity = hasEmissiveIntensity ? mat.GetFloat(emissiveIntensityID) : 0f;
                             bool isEmissiveKeywordEnabled = mat.IsKeywordEnabled(emissiveColorMapKeyword);
 
-                            bool hasEmission = hasEmissionMap || hasEmissionColor || hasEmissiveColor || hasEmissiveIntensity || isEmissiveKeywordEnabled;
+                            //if (extraLogs)
+                            //    ScienceBirdTweaks.Logger.LogDebug($"Material {mat.name} of {renderer.gameObject.name} has emission: {hasEmission}");
 
-                            if (hasEmission)
+                            if (isEmissiveKeywordEnabled || hasEmissiveColor || hasEmissionColor || hasEmissiveIntensity)
                             {
-                                if (hasEmissionColor)
-                                    mat.SetColor(emissionColorID, zeroEmission);
                                 if (hasEmissiveColor)
                                     mat.SetColor(emissiveColorID, zeroEmission);
+                                if (hasEmissionColor)
+                                    mat.SetColor(emissionColorID, zeroEmission);
                                 if (hasEmissiveIntensity)
                                     mat.SetFloat(emissiveIntensityID, 0f);
 
                                 materialsModified = true;
 
-                                if (extraLogs)
-                                    ScienceBirdTweaks.Logger.LogDebug($"Darkened material {mat.name} of {renderer.gameObject.name}");
+                                //if (extraLogs)
+                                //    ScienceBirdTweaks.Logger.LogDebug($"Darkened material {mat.name} of {renderer.gameObject.name}");
                             }
                             else
                             {
-                                if (extraLogs)
-                                    ScienceBirdTweaks.Logger.LogDebug($"Skipping material {mat.name} of {renderer.gameObject.name}");
+                                //if (extraLogs)
+                                //    ScienceBirdTweaks.Logger.LogDebug($"Skipping material {mat.name} of {renderer.gameObject.name} which has the following properties: {mat.color}");
 
-                                if (mat.name == "SkyEmissive (Instance)" || mat.name.Contains("LEDLight (Instance)"))
+                                if (mat.name == "SkyEmissive (Instance)")
                                 {
-                                    if (extraLogs)
-                                        ScienceBirdTweaks.Logger.LogDebug($"Found LED light material {mat.name} of {renderer.gameObject.name}");
+                                    //if (extraLogs)
+                                    //    ScienceBirdTweaks.Logger.LogDebug($"Found LED light material {mat.name} of {renderer.gameObject.name}");
 
                                     materials[j] = blackMaterial;
                                     

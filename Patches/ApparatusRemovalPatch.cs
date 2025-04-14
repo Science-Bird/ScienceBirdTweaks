@@ -7,44 +7,47 @@ namespace ScienceBirdTweaks.Patches
     [HarmonyPatch]
     public class ApparatusRemovalPatch
     {
+        private static bool _doBlackout = false;
         public static bool doingHazardShutdown = false;
 
         [HarmonyPatch(typeof(LungProp), nameof(LungProp.EquipItem))]
         [HarmonyPrefix]
-        static void OnDisconnectTest1(LungProp __instance)
+        static void OnApparatusGrab(LungProp __instance)
         {
-            if (ScienceBirdTweaks.DisableTrapsOnApparatusRemoval.Value && __instance.isLungDocked)
-            {
-                doingHazardShutdown = true;
-            }
-        }
-
-        [HarmonyPatch(typeof(HUDManager), nameof(HUDManager.RadiationWarningHUD))]
-        [HarmonyPostfix]
-        static void OnDisconnectFromMachinery(HUDManager __instance)
-        {
-            if (!ScienceBirdTweaks.BlackoutOnApparatusRemoval.Value)
+            if (!__instance.isLungDocked)
                 return;
 
-            doingHazardShutdown = false;
+            if (ScienceBirdTweaks.BlackoutOnApparatusRemoval.Value)
+                _doBlackout = true;
+
+            if (ScienceBirdTweaks.DisableTrapsOnApparatusRemoval.Value)
+                doingHazardShutdown = true;
+        }
+
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.FlickerPoweredLights))]
+        [HarmonyPostfix]
+        static void FlickerPoweredLightsPostfix(RoundManager __instance)
+        {
+            if (!_doBlackout)
+                return;
 
             if (__instance == null)
             {
-                ScienceBirdTweaks.Logger.LogWarning("LungProp_Disconnect_Patch called but __instance was null.");
+                ScienceBirdTweaks.Logger.LogWarning("FlickerPoweredLightsPostfix called but __instance was null.");
                 return;
             }
 
-            ScienceBirdTweaks.Logger.LogDebug($"Apparatus removal coroutine (DisconnectFromMachinery) initiated for {__instance.gameObject.name}. Triggering blackout via Postfix.");
-
             try
             {
-                ScienceBirdTweaks.Logger.LogDebug($"Calling TrueBlackoutPatch.BlackoutOverridePrefix for {__instance.gameObject.name}.");
+                ScienceBirdTweaks.Logger.LogDebug($"Calling BlackoutOverride for {__instance.gameObject.name}.");
                 TrueBlackout.DoBlackout(false);
             }
             catch (System.Exception e)
             {
-                ScienceBirdTweaks.Logger.LogError($"Error executing BlackoutOverride after DisconnectFromMachinery initiation: {e}");
+                ScienceBirdTweaks.Logger.LogError($"Error executing BlackoutOverride after FlickerPoweredLights initiation: {e}");
             }
+
+            _doBlackout = false;
         }
 
         [HarmonyPatch(typeof(TerminalAccessibleObject), nameof(TerminalAccessibleObject.Start))]
@@ -66,10 +69,12 @@ namespace ScienceBirdTweaks.Patches
         public static bool PowerSwitchPrefix(TerminalAccessibleObject __instance, bool switchedOn)
         {
             if (__instance.isBigDoor)
-            {
                 return true;
-            }
+
             HazardShutdown(__instance, switchedOn);
+
+            doingHazardShutdown = false;
+
             return false;
         }
 
