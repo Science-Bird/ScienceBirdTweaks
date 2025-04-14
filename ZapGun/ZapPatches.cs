@@ -366,6 +366,14 @@ namespace ScienceBirdTweaks.ZapGun
                         .ThenBy(x => x.distance)
                         .ToArray();
 
+                    foreach (RaycastHit hit in validHits)
+                    {
+                        if (hit.transform != null)
+                        {
+                            ScienceBirdTweaks.Logger.LogDebug($"{hit.transform.gameObject.name} ({hit.distance}, {hit.transform.gameObject.layer})");
+                        }
+                    }
+
                     for (int j = 0; j < validHits.Length; j++)
                     {
                         __instance.hit = validHits[j];

@@ -12,10 +12,13 @@ namespace ScienceBirdTweaks.Patches
         {
             if (ScienceBirdTweaks.PauseMenuFlickerFix.Value && __instance.menuContainer.activeInHierarchy)
             {
-                UnityEngine.UI.Button button = EventSystem.current.currentSelectedGameObject.GetComponent<UnityEngine.UI.Button>();
-                if (button != null)
+                if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject != null)
                 {
-                    button.animator.SetTrigger("Highlighted");
+                    UnityEngine.UI.Button button = EventSystem.current.currentSelectedGameObject.GetComponent<UnityEngine.UI.Button>();
+                    if (button != null)
+                    {
+                        button.animator.SetTrigger("Highlighted");
+                    }
                 }
             }
         }

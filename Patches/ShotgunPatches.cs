@@ -195,20 +195,26 @@ namespace ScienceBirdTweaks.Patches
         {
             if (!ScienceBirdTweaks.ShotgunMasterDisable.Value && unloadEnabled && __instance.GetComponent<ShotgunItem>() && right && (__instance.GetComponent<ShotgunItem>().FindAmmoInInventory() == -1 || __instance.GetComponent<ShotgunItem>().shellsLoaded >= 2) && __instance.GetComponent<ShotgunItem>().shellsLoaded > 0)
             {
-                if (__instance.IsOwner && __instance.isHeld && HUDManager.Instance.holdFillAmount <= 0f && __instance.playerHeldBy.cursorTip.text == "")// make sure player isn't doing some other kind of ongoing interaction
+                if (__instance.IsOwner && __instance.isHeld && !__instance.isPocketed && HUDManager.Instance.holdFillAmount <= 0f && __instance.playerHeldBy.cursorTip.text == "")// make sure player isn't doing some other kind of ongoing interaction
                 {
                     LocalInteract(__instance.GetComponent<ShotgunItem>(), right);
                 }
+                else
+                {
+                    ScienceBirdTweaks.Logger.LogDebug($"ABORTING HOLD {__instance.IsOwner}, {__instance.isHeld}, {HUDManager.Instance.holdFillAmount <= 0f}, {__instance.playerHeldBy.cursorTip.text == ""}");
+                }
                 // this inner failure will still return false (halting the interaction), because the basic eject criteria were met, we shouldn't try to do any interaction at all
+
                 return false;
             }
+            ScienceBirdTweaks.Logger.LogDebug($"ABORTING HOLD {__instance.GetComponent<ShotgunItem>()}, {right}, {__instance.GetComponent<ShotgunItem>().FindAmmoInInventory() == -1 || __instance.GetComponent<ShotgunItem>().shellsLoaded >= 2}, {__instance.GetComponent<ShotgunItem>().shellsLoaded > 0}");
             return true;
         }
 
 
         static void LocalInteract(ShotgunItem shotgun, bool right)// initialize local hold event
         {
-            if (unloadEnabled && shotgun.IsOwner && shotgun.isHeld && HUDManager.Instance.holdFillAmount <= 0f && shotgun.playerHeldBy.cursorTip.text == "" && right && (shotgun.FindAmmoInInventory() == -1 || shotgun.shellsLoaded >= 2) && shotgun.shellsLoaded > 0)
+            if (unloadEnabled && shotgun.IsOwner && shotgun.isHeld && !shotgun.isPocketed && HUDManager.Instance.holdFillAmount <= 0f && shotgun.playerHeldBy.cursorTip.text == "" && right && (shotgun.FindAmmoInInventory() == -1 || shotgun.shellsLoaded >= 2) && shotgun.shellsLoaded > 0)
             {
                 holdingDown = true;
                 startTime = Time.realtimeSinceStartup;
@@ -220,9 +226,9 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void AttemptInteract(ShotgunItem __instance)// make sure button is held for 1 second
         {
-            if (holdingDown)
+            if (holdingDown && __instance.playerHeldBy != null && __instance.isHeld && !__instance.isPocketed)
             { 
-                if (__instance.IsOwner && __instance.isHeld && HUDManager.Instance.holdFillAmount <= 0f && __instance.playerHeldBy.cursorTip.text == "" && __instance.shellsLoaded > 0)
+                if (__instance.IsOwner && HUDManager.Instance.holdFillAmount <= 0f && __instance.playerHeldBy.cursorTip.text == "" && __instance.shellsLoaded > 0)
                 {
                     if (IngamePlayerSettings.Instance.playerInput.actions.FindAction("ItemTertiaryUse").IsPressed())
                     {
@@ -236,11 +242,13 @@ namespace ScienceBirdTweaks.Patches
                     }
                     else
                     {
+                        ScienceBirdTweaks.Logger.LogDebug($"STOPPING HOLD");
                         holdingDown = false;
                     }
                 }
                 else
                 {
+                    ScienceBirdTweaks.Logger.LogDebug($"STOPPING HOLD {__instance.IsOwner}, {__instance.isHeld}, {HUDManager.Instance.holdFillAmount <= 0f}, {__instance.playerHeldBy.cursorTip.text == ""}, {__instance.shellsLoaded > 0} ");
                     holdingDown = false;
                 }
             }

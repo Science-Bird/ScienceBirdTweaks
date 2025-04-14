@@ -62,6 +62,7 @@ namespace ScienceBirdTweaks.Patches
             if (!ScienceBirdTweaks.DropMasks.Value || !__instance.gameObject.GetComponentInChildren<RandomPeriodicAudioPlayer>())
                 return;
 
+            ScienceBirdTweaks.Logger.LogDebug($"Found valid mask!");
             GameObject mask = __instance.gameObject.GetComponentsInChildren<RandomPeriodicAudioPlayer>().Where(x => x.gameObject.activeInHierarchy).First().gameObject;// this is the mask worn on the mask enemy
             GameObject maskMesh = mask.transform.Find("Mesh").gameObject;
             GameObject? maskPrefab = null;
@@ -109,6 +110,8 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         static bool MaskDropSyncClient(HauntedMaskItem __instance)// this is artificially induced by mask script by exploiting an existing rpc, and will only run on clients
         {
+            if (!ScienceBirdTweaks.DropMasks.Value || maskBuffer == null || __instance.GetComponent<NetworkObject>() == null) { return true; }
+
             if (patchingMask && __instance.previousPlayerHeldBy == null && maskBuffer.TryGetValue((int)__instance.GetComponent<NetworkObject>().NetworkObjectId, out (Vector3, Quaternion, int) value))
             {
                 MaskDropSync(__instance, (int)__instance.GetComponent<NetworkObject>().NetworkObjectId, value.Item1, value.Item2, value.Item3);
@@ -138,6 +141,8 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void FixMaskPosition(HauntedMaskItem __instance)// make sure mask position is not corrected by grabbable update logic
         {
+            if (!ScienceBirdTweaks.DropMasks.Value || maskBuffer == null || __instance.GetComponent<NetworkObject>() == null) { return; }
+
             if (__instance.previousPlayerHeldBy == null && __instance.playerHeldBy == null && maskBuffer.TryGetValue((int)__instance.GetComponent<NetworkObject>().NetworkObjectId, out (Vector3, Quaternion, int) value))
             {
                 __instance.gameObject.transform.position = value.Item1;
@@ -149,7 +154,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         static void MaskPickup(PlayerControllerB __instance, bool grabValidated, NetworkObjectReference grabbedObject)// mask is still registered in buffer even after spawning so its position can be updated, but when picked up it should be removed from the buffer
         {
-            if (grabValidated)
+            if (ScienceBirdTweaks.DropMasks.Value && grabValidated)
             {
                 NetworkObjectReference tempGrabbed = grabbedObject;
                 if (tempGrabbed.TryGet(out var networkObject))
@@ -157,8 +162,8 @@ namespace ScienceBirdTweaks.Patches
                     GrabbableObject component = networkObject.GetComponent<GrabbableObject>();
                     if (component.gameObject.GetComponent<HauntedMaskItem>() && maskBuffer.TryGetValue((int)component.GetComponent<NetworkObject>().NetworkObjectId, out (Vector3, Quaternion, int) value))
                     {
-                        ScienceBirdTweaks.Logger.LogDebug("Removing mask from buffer!");
-                        maskBuffer.Remove((int)__instance.GetComponent<NetworkObject>().NetworkObjectId);
+                        ScienceBirdTweaks.Logger.LogDebug($"Removing mask from buffer! {maskBuffer.Count}, {patchingMask}");
+                        maskBuffer.Remove((int)component.GetComponent<NetworkObject>().NetworkObjectId);
                         if (maskBuffer.Count <= 0)
                         {
                             patchingMask = false;

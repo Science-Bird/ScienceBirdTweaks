@@ -113,17 +113,24 @@ namespace ScienceBirdTweaks.Patches
         {
             try
             {
-                if (setValueTo > 0 || CustomScanText.DoSetSubtext(__instance) == 0)
+                if (setValueTo <= 0)
                 {
-                    if (extraLogs)
-                        ScienceBirdTweaks.Logger.LogDebug($"SetScrapValue Postfix: Conditions not met for item '{__instance.name}', skipping custom text override.");
-                    return;
+                    switch (CustomScanText.DoSetSubtext(__instance))
+                    {
+                        case 0:
+                            if (extraLogs)
+                                ScienceBirdTweaks.Logger.LogDebug($"DiscardItem Postfix: Conditions not met for item '{__instance.name}', skipping custom text override.");
+                            return;
+                        case 1:
+                            ScienceBirdTweaks.Logger.LogDebug("Setting subtext...");
+                            CustomScanText.SetSubtext(__instance, ScienceBirdTweaks.CustomWorthlessDisplayText.Value);
+                            break;
+                        case 2:
+                            ScienceBirdTweaks.Logger.LogDebug("Resetting subtext...");
+                            CustomScanText.ResetSubtext(__instance);
+                            break;
+                    }
                 }
-
-                if (extraLogs)
-                    ScienceBirdTweaks.Logger.LogDebug($"SetScrapValue Postfix: Conditions met for item '{__instance.name}'. Applying custom text.");
-
-                CustomScanText.SetSubtext(__instance, ScienceBirdTweaks.CustomWorthlessDisplayText.Value);
             }
             catch (Exception ex)
             {
