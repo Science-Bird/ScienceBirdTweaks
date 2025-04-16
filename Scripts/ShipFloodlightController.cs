@@ -24,6 +24,11 @@ namespace ScienceBirdTweaks.Scripts
         private bool _initialStateSet = false;
         private bool _canRotate = false;
 
+        private Vector3 playerPos = Vector3.zero;
+        private Vector3 enemyPos = Vector3.zero;
+        private float timeSinceLastCheck = 0f;
+        private const float refreshInterval = 1f;
+
         private Dictionary<Transform, TransformState> _originalStates = new Dictionary<Transform, TransformState>();
 
         private struct TransformState
@@ -115,7 +120,6 @@ namespace ScienceBirdTweaks.Scripts
                 else return;
             }
 
-
             if (_initialized && ScienceBirdTweaks.FloodlightRotation.Value)
             {
                 bool isLanded = _startOfRoundInstance != null && _startOfRoundInstance.shipHasLanded;
@@ -130,12 +134,46 @@ namespace ScienceBirdTweaks.Scripts
                 {
                     if (_isRotating)
                     {
-                        foreach (Transform rotatingT in _rotationList)
+                        timeSinceLastCheck += Time.deltaTime;
+
+                        if (timeSinceLastCheck >= refreshInterval)
                         {
-                            if (rotatingT != null)
-                                rotatingT.RotateAround(pivotPoint, Vector3.up.normalized, rotationSpeed * Time.deltaTime);
-                            else
-                                ScienceBirdTweaks.Logger.LogWarning($"Rotating sibling is null! Skipping rotation.");
+                            playerPos = GetClosestPlayerPosition(_pivotTransform);
+                            timeSinceLastCheck = 0f;
+                        }
+
+                        //Vector3 playerPos = GetClosestPlayerPosition(_pivotTransform);
+                        //Vector3 enemyPos = GetClosestWhitelistedEnemy(_pivotTransform)?.transform.position ?? Vector3.zero;
+
+                        if (playerPos != Vector3.zero)
+                        {
+                            Vector3 toPlayer = playerPos - _pivotTransform.position;
+                            toPlayer.y = 0f;
+
+                            float currentY = _pivotTransform.eulerAngles.y;
+                            float targetY = Quaternion.LookRotation(toPlayer).eulerAngles.y + 90f;
+                            float newY = Mathf.MoveTowardsAngle(currentY, targetY, rotationSpeed * Time.deltaTime * 0.5f);
+                            float angleToRotate = newY - currentY;
+
+                            foreach (Transform rotatingT in _rotationList)
+                            {
+                                if (rotatingT != null)
+                                    rotatingT.RotateAround(pivotPoint, Vector3.up, angleToRotate);
+                                else
+                                    ScienceBirdTweaks.Logger.LogWarning("Rotating sibling is null! Skipping rotation.");
+
+                                //ScienceBirdTweaks.Logger.LogDebug($"Rotating {rotatingT?.name}: Current Rotation = {rotatingT?.rotation.eulerAngles}");
+                            }
+                        }
+                        else
+                        {
+                            foreach (Transform rotatingT in _rotationList)
+                            {
+                                if (rotatingT != null)
+                                    rotatingT.RotateAround(pivotPoint, Vector3.up.normalized, rotationSpeed * Time.deltaTime);
+                                else
+                                    ScienceBirdTweaks.Logger.LogWarning($"Rotating sibling is null! Skipping rotation.");
+                            }
                         }
                     }
                 }
@@ -285,6 +323,59 @@ namespace ScienceBirdTweaks.Scripts
                     ScienceBirdTweaks.Logger.LogDebug("Floodlight rotation disabled in config, skipping rotation reset.");
                 }
             }
+        }
+
+        public static Vector3 GetClosestPlayerPosition(Transform _pivotTransform) // maybe this and enemy func should be merged $idk
+        {
+            float minDistance = float.MaxValue;
+            Vector3 closestPos = Vector3.zero;
+
+            foreach (var player in StartOfRound.Instance.allPlayerScripts)
+            {
+                if (player == null || !player.isPlayerControlled || player.isPlayerDead || player.isInHangarShipRoom)
+                    continue;
+
+                float dist = Vector3.Distance(_pivotTransform.position, player.transform.position);
+                if (dist < minDistance)
+                {
+                    minDistance = dist;
+                    closestPos = player.transform.position;
+                }
+            }
+
+            ScienceBirdTweaks.Logger.LogDebug($"Closest player position: {closestPos}");
+
+            return closestPos;
+        }
+
+        public static Vector3 GetClosestEnemyPosition(Transform _pivotTransform)
+        {
+            float closestDist = float.MaxValue;
+            Vector3 closestPos = Vector3.zero;
+
+            List<string> enemyBlacklist = new List<string>(); // should pull from class variables, also 90% sure these enemy names arn't correct in-game
+            enemyBlacklist.Add("Manticoil");
+            enemyBlacklist.Add("Roaming_Locust");
+            enemyBlacklist.Add("Tulip_Snake");
+
+            foreach (var enemy in Object.FindObjectsOfType<EnemyAI>())
+            {
+                if (enemy == null || enemy.isEnemyDead || !enemy.isOutside) // havn't confirmed isOutside does anything
+                    continue;
+
+                string enemyName = enemy.enemyType.enemyName;
+                if (!enemyBlacklist.Contains(enemyName))
+                    continue;
+
+                float dist = Vector3.Distance(_pivotTransform.position, enemy.transform.position);
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    closestPos = enemy.transform.position;
+                }
+            }
+
+            return closestPos;
         }
     }
 }
