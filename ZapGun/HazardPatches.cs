@@ -25,7 +25,7 @@ namespace ScienceBirdTweaks.ZapGun
         [HarmonyPostfix]
         public static void InitializeAssets()
         {
-            if (!ScienceBirdTweaks.SpikeTrapDisableAnimation.Value && !ScienceBirdTweaks.ZapGunRework.Value) { return; }
+            if (!ScienceBirdTweaks.SpikeTrapDisableAnimation.Value && !ScienceBirdTweaks.MineDisableAnimation.Value && !ScienceBirdTweaks.ZapGunRework.Value) { return; }
 
             doorPrefab = (GameObject)ScienceBirdTweaks.TweaksAssets.LoadAsset("DoorKillTrigger");
             disabledMat = (Material)ScienceBirdTweaks.TweaksAssets.LoadAsset("SpikeRoofTrapDisabledMat");
@@ -95,7 +95,7 @@ namespace ScienceBirdTweaks.ZapGun
             {
                 if (!enabled)
                 {
-                    if (ApparatusRemovalPatch.doingHazardShutdown)
+                    if (BlackoutTriggerPatches.doingHazardShutdown)
                     {
                         zapper.light.intensity = 0f;
                         Material[] materials = zapper.supportLights.GetComponent<MeshRenderer>().materials;
@@ -104,7 +104,7 @@ namespace ScienceBirdTweaks.ZapGun
                     }
                     else
                     {
-                        ScienceBirdTweaks.Logger.LogDebug($"STARTING SPIKES SPECIAL ANIM");
+                        ScienceBirdTweaks.Logger.LogDebug($"Starting spike trap special animation!");
                         zapper.light.intensity = 2f;
                         zapper.light.colorTemperature = 6580f;
                         zapper.light.color = spikesGreen;
@@ -116,7 +116,7 @@ namespace ScienceBirdTweaks.ZapGun
                 }
                 else
                 {
-                    ScienceBirdTweaks.Logger.LogDebug($"ENDING SPIKES SPECIAL ANIM");
+                    ScienceBirdTweaks.Logger.LogDebug($"Ending spike trap special animation!");
                     if (zapper == null) { return; }
                     zapper.light.intensity = 1.172347f;
                     zapper.light.colorTemperature = 1500f;
@@ -124,6 +124,50 @@ namespace ScienceBirdTweaks.ZapGun
                     Material[] mats = zapper.supportLights.GetComponent<MeshRenderer>().materials;
                     mats[0] = zapper.originalMat;
                     zapper.supportLights.GetComponent<MeshRenderer>().materials = mats;
+                }
+            }
+        }
+
+
+        [HarmonyPatch(typeof(Landmine), nameof(Landmine.TriggerMineOnLocalClientByExiting))]
+        [HarmonyPrefix]
+        public static bool DetonateCheck1(Landmine __instance)// make sure mine animator doesnt go off unintentionally
+        {
+            if (!ScienceBirdTweaks.MineDisableAnimation.Value && !ScienceBirdTweaks.ZapGunRework.Value) { return true; }
+
+            if (!__instance.mineActivated || (__instance.GetComponent<MineZapper>() && (__instance.GetComponent<MineZapper>().tempStun || __instance.GetComponent<MineZapper>().light1.intensity == 0f)))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(typeof(Landmine), nameof(Landmine.SetOffMineAnimation))]
+        [HarmonyPrefix]
+        public static bool DetonateCheck2(Landmine __instance)// make sure mine animator doesnt go off unintentionally (the sequel)
+        {
+            if (!ScienceBirdTweaks.MineDisableAnimation.Value && !ScienceBirdTweaks.ZapGunRework.Value) { return true; }
+
+            if (!__instance.mineActivated || (__instance.GetComponent<MineZapper>() && (__instance.GetComponent<MineZapper>().tempStun || __instance.GetComponent<MineZapper>().light1.intensity == 0f)))
+            {
+                return false;
+            }
+            return true;
+        }
+
+
+        [HarmonyPatch(typeof(Landmine), nameof(Landmine.OnTriggerExit))]
+        [HarmonyPrefix]
+        public static void MineTriggerExitFix(Landmine __instance, Collider other)
+        {
+            if (!ScienceBirdTweaks.LandmineFix.Value) { return; }
+
+            if (!__instance.mineActivated && other.CompareTag("Player"))
+            {
+                PlayerControllerB component = other.gameObject.GetComponent<PlayerControllerB>();
+                if (component != null && !component.isPlayerDead && !(component != GameNetworkManager.Instance.localPlayerController))
+                {
+                    __instance.localPlayerOnMine = false;
                 }
             }
         }
@@ -139,7 +183,7 @@ namespace ScienceBirdTweaks.ZapGun
             {
                 if (!enabled)
                 {
-                    if (ApparatusRemovalPatch.doingHazardShutdown)
+                    if (BlackoutTriggerPatches.doingHazardShutdown)
                     {
                         __instance.mineAudio.Stop();
                         __instance.mineAudio.volume = 0f;
@@ -149,9 +193,8 @@ namespace ScienceBirdTweaks.ZapGun
                     }
                     else
                     {
-                        ScienceBirdTweaks.Logger.LogDebug($"STARTING LANDMINE SPECIAL ANIM");
+                        ScienceBirdTweaks.Logger.LogDebug($"Starting landmine special animation!");
                         __instance.mineAnimator.SetBool("disabled", true);
-                        ScienceBirdTweaks.Logger.LogDebug(__instance.mineAnimator.GetBoolString("disabled"));
                         zapper.light1.intensity = 227.6638f;
                         zapper.light2.intensity = 227.6638f;
                         zapper.indirectLight.intensity = 436.6049f;
@@ -161,9 +204,19 @@ namespace ScienceBirdTweaks.ZapGun
                 }
                 else
                 {
-                    ScienceBirdTweaks.Logger.LogDebug($"ENDING LANDMINE SPECIAL ANIM");
-                    __instance.mineAnimator.SetBool("disabled", false);
-                    __instance.mineAudio.Stop();
+                    if (BlackoutTriggerPatches.doingHazardStartup)
+                    {
+                        __instance.mineAudio.Play();
+                        __instance.mineAudio.volume = 1f;
+                        zapper.light1.intensity = 227.6638f;
+                        zapper.light2.intensity = 227.6638f;
+                        zapper.indirectLight.intensity = 436.6049f;
+                    }
+                    else
+                    {
+                        ScienceBirdTweaks.Logger.LogDebug($"Ending landmine special animation!");
+                        __instance.mineAnimator.SetBool("disabled", false);
+                    }
                 }
             }
         }

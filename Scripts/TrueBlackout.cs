@@ -9,6 +9,7 @@ using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
 using ScienceBirdTweaks.Scripts;
 using System.IO;
+using static UnityEngine.ParticleSystem.PlaybackState;
 
 namespace ScienceBirdTweaks.Scripts
 {
@@ -280,6 +281,95 @@ namespace ScienceBirdTweaks.Scripts
                 }
             }
 
+
+            // edge cases for specific moons and interiors
+            if (StartOfRound.Instance.currentLevel.PlanetName == "85 Rend" || StartOfRound.Instance.currentLevel.PlanetName == "20 Adamance")
+            {
+                GameObject lightSwitch1 = GameObject.Find("SnowCabin/LightSwitchContainer/LightSwitch");
+                GameObject lightSwitch2 = GameObject.Find("SnowCabin/LightSwitchContainer (1)/LightSwitch");
+                GameObject light1 = GameObject.Find("SnowCabin/HangingLight");
+                GameObject light2 = GameObject.Find("SnowCabin/HangingLight (1)");
+                if (lightSwitch1 != null)
+                {
+                    lightSwitch1.GetComponent<AnimatedObjectTrigger>().triggerAnimatorB = null;
+                }
+                if (lightSwitch2 != null)
+                {
+                    lightSwitch2.GetComponent<AnimatedObjectTrigger>().triggerAnimatorB = null;
+                }
+                if (light1 != null)
+                {
+                    light1.GetComponent<Animator>().SetBool("on", false);
+                }
+                if (light2 != null)
+                {
+                    light2.GetComponent<Animator>().SetBool("on", false);
+                }
+            }
+            else if (StartOfRound.Instance.currentLevel.PlanetName == "68 Artifice")
+            {
+                GameObject lightSwitch = GameObject.Find("SideShed/LightSwitchContainer (1)/LightSwitch");
+                GameObject light = GameObject.Find("SideShed/HangingLight (1)");
+                if (lightSwitch != null)
+                {
+                    lightSwitch.GetComponent<AnimatedObjectTrigger>().triggerAnimatorB = null;
+                }
+                if (light != null)
+                {
+                    light.GetComponent<Animator>().SetBool("on", false);
+                }
+
+                Animator[] LEDAnimators = UnityEngine.Object.FindObjectsOfType<Animator>().Where(x => x.runtimeAnimatorController.name == "LEDHangingLight").ToArray();
+                foreach (Animator animator in LEDAnimators)
+                {
+                    animator.SetBool("on", false);
+                }
+            }
+            else if (StartOfRound.Instance.currentLevel.PlanetName == "41 Experimentation")// for rebalanced moons specifically
+            {
+                Animator[] hangingAnimators = UnityEngine.Object.FindObjectsOfType<Animator>().Where(x => x.gameObject.name.Contains("HangingLight", StringComparison.Ordinal) && x.transform.parent != null && x.transform.parent.gameObject.name == "Environment").ToArray();
+                foreach (Animator animator in hangingAnimators)
+                {
+                    animator.SetBool("on", false);
+                }
+            }
+
+            if (GameObject.Find("Systems/LevelGeneration/LevelGenerationRoot/Tower2x3(Clone)") || GameObject.Find("Systems/LevelGeneration/LevelGenerationRoot/Tower2x2(Clone)"))
+            {
+                Animator[] onAnimators = UnityEngine.Object.FindObjectsOfType<Animator>().Where(x => x.gameObject.name == "HangingLightSmall ON").ToArray();
+
+                foreach(Animator animator in onAnimators)
+                {
+                    animator.SetBool("on", false);
+                }
+            }
+            if (GameObject.Find("Systems/LevelGeneration/LevelGenerationRoot/backroomssillyhall(Clone)"))
+            {
+                Material offMaterial = UnityEngine.Object.FindObjectsOfType<MeshRenderer>().Where(x => x.gameObject.name == "Cube" && x.materials != null && x.materials.Length == 1 && x.materials[0].name == "no light (Instance)").First().materials[0];
+                MeshRenderer[] onRenderers = UnityEngine.Object.FindObjectsOfType<MeshRenderer>().Where(x => x.gameObject.name == "Cube" && x.materials != null && x.materials.Length == 1 && x.materials[0].name == "light (Instance)").ToArray();
+                foreach (MeshRenderer renderer in onRenderers)
+                {
+                    Material[] mats = renderer.materials;
+                    mats[0] = offMaterial;
+                    renderer.materials = mats;
+                }
+            }
+            if (GameObject.Find("Systems/LevelGeneration/LevelGenerationRoot/Bathroom(Clone)") && GameObject.Find("Systems/LevelGeneration/LevelGenerationRoot/OfficeStartRoom(Clone)"))
+            {
+                MeshRenderer[] signRenderers = UnityEngine.Object.FindObjectsOfType<MeshRenderer>().Where(x => (x.gameObject.name == "Cube (1)" || x.gameObject.name == "Cube (2)") && x.materials != null && x.materials.Length == 2 && (x.materials[1].name == "male (Instance)" || x.materials[1].name == "female (Instance)")).ToArray();
+                foreach (MeshRenderer renderer in signRenderers)
+                {
+                    Material[] mats = renderer.materials;
+                    mats[1].SetColor(emissiveColorID, new Color(0f, 0f, 0f, 1f));
+                    mats[1].SetColor(emissionColorID, new Color(0f, 0f, 0f, 1f));
+                    mats[1].SetFloat(emissiveIntensityID, 0f);
+                    renderer.materials = mats;
+                }
+            }
+
+
+
+
             trueBlackoutInstance.StartCoroutine(trueBlackoutInstance.DisableLightsOverFrames(lightObjects));
 
             totalStopwatch.Stop();
@@ -313,14 +403,14 @@ namespace ScienceBirdTweaks.Scripts
 
                     foreach (Light light in lightObject.GetComponentsInChildren<Light>(true))
                     {
-                        //if (extraLogs)
-                        //    ScienceBirdTweaks.Logger.LogDebug($"Disabling light {light.name} with path {GetObjectPath(lightObject)}");
+                        if (extraLogs)
+                            ScienceBirdTweaks.Logger.LogDebug($"Disabling light {light.name} with path {GetObjectPath(lightObject)}");
 
                         light.enabled = false;
                     }
 
-                    //if (extraLogs)
-                    //    ScienceBirdTweaks.Logger.LogDebug($"Disabling light object {lightObject.name} with path {GetObjectPath(lightObject)}");
+                    if (extraLogs)
+                        ScienceBirdTweaks.Logger.LogDebug($"Disabling light object {lightObject.name} with path {GetObjectPath(lightObject)}");
 
                     foreach (Renderer renderer in lightObject.GetComponentsInChildren<Renderer>(true))
                     {
@@ -337,11 +427,14 @@ namespace ScienceBirdTweaks.Scripts
                             bool hasEmissionColor = mat.HasProperty(emissionColorID);
                             bool hasEmissiveIntensity = mat.HasProperty(emissiveIntensityID);
                             bool isEmissiveKeywordEnabled = mat.IsKeywordEnabled(emissiveColorMapKeyword);
+                            bool isFloatSet = mat.GetFloat("_UseEmissiveIntensity") == 1f;
+                            bool hasLightName = FastContains(mat.name, "Light") || FastContains(mat.name, "LED");
+                            bool isPureColour = mat.color.a == 1f && (mat.color.r == 1f || mat.color.g == 1f || mat.color.b == 1f);
 
                             //if (extraLogs)
-                            //    ScienceBirdTweaks.Logger.LogDebug($"Material {mat.name} of {renderer.gameObject.name} has emission: {hasEmission}");
+                            //ScienceBirdTweaks.Logger.LogDebug($"Material {mat.name} of {renderer.gameObject.name} has emission: {hasEmission}");
 
-                            if (isEmissiveKeywordEnabled || hasEmissiveColor || hasEmissionColor || hasEmissiveIntensity)
+                            if (isEmissiveKeywordEnabled || hasEmissionMap || isFloatSet || hasLightName || isPureColour)
                             {
                                 if (hasEmissiveColor)
                                     mat.SetColor(emissiveColorID, zeroEmission);
@@ -352,18 +445,18 @@ namespace ScienceBirdTweaks.Scripts
 
                                 materialsModified = true;
 
-                                //if (extraLogs)
-                                //    ScienceBirdTweaks.Logger.LogDebug($"Darkened material {mat.name} of {renderer.gameObject.name}");
+                                if (extraLogs)
+                                    ScienceBirdTweaks.Logger.LogDebug($"Darkened material {mat.name} of {renderer.gameObject.name} {isEmissiveKeywordEnabled} {hasEmissionMap} {hasEmissiveColor} {hasEmissionColor} {hasEmissiveIntensity} {isFloatSet} {hasLightName} {isPureColour}");
                             }
                             else
                             {
-                                //if (extraLogs)
-                                //    ScienceBirdTweaks.Logger.LogDebug($"Skipping material {mat.name} of {renderer.gameObject.name} which has the following properties: {mat.color}");
+                                if (extraLogs)
+                                    ScienceBirdTweaks.Logger.LogDebug($"Skipping material {mat.name} of {renderer.gameObject.name} which has the following properties: {mat.color} {isEmissiveKeywordEnabled} {hasEmissionMap} {hasEmissiveColor} {hasEmissionColor} {hasEmissiveIntensity} {isFloatSet} {hasLightName} {isPureColour}");
 
                                 if (mat.name == "SkyEmissive (Instance)")
                                 {
-                                    //if (extraLogs)
-                                    //    ScienceBirdTweaks.Logger.LogDebug($"Found LED light material {mat.name} of {renderer.gameObject.name}");
+                                    if (extraLogs)
+                                        ScienceBirdTweaks.Logger.LogDebug($"Found LED light material {mat.name} of {renderer.gameObject.name}");
 
                                     materials[j] = blackMaterial;
                                     

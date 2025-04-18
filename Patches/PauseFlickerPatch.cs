@@ -15,7 +15,7 @@ namespace ScienceBirdTweaks.Patches
                 if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject != null)
                 {
                     UnityEngine.UI.Button button = EventSystem.current.currentSelectedGameObject.GetComponent<UnityEngine.UI.Button>();
-                    if (button != null)
+                    if (button != null && button.animator != null)
                     {
                         button.animator.SetTrigger("Highlighted");
                     }

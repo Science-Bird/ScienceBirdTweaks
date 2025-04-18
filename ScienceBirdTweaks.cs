@@ -41,6 +41,8 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<bool> BegoneBottomCollision;
         public static ConfigEntry<bool> LargerLeverCollision;
         public static ConfigEntry<bool> FloodlightRotation;
+        public static ConfigEntry<bool> FloodlightRotationOnLand;
+        public static ConfigEntry<bool> FloodlightPlayerFollow;
         public static ConfigEntry<int> FloodLightIntensity;
         public static ConfigEntry<int> FloodLightAngle;
         public static ConfigEntry<int> FloodLightRange;
@@ -66,6 +68,7 @@ namespace ScienceBirdTweaks
 
         public static ConfigEntry<bool> BigScrew;
         public static ConfigEntry<bool> ClientShipItems;
+        public static ConfigEntry<bool> LandmineFix;
         public static ConfigEntry<bool> PauseMenuFlickerFix;
         public static ConfigEntry<bool> FallingRotationFix;
         public static ConfigEntry<bool> OldHalloweenElevatorMusic;
@@ -110,6 +113,9 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<string> WorthlessDisplayTextBlacklist;
 
         public static ConfigEntry<bool> TrueBlackout;
+        public static ConfigEntry<bool> BlackoutOnApparatusRemoval;
+        public static ConfigEntry<bool> DisableTrapsOnApparatusRemoval;
+        public static ConfigEntry<bool> DisableTrapsOnBreakerSwitch;
         public static ConfigEntry<int> BlackoutFloodLightIntensity;
         public static ConfigEntry<int> BlackoutFloodLightAngle;
         public static ConfigEntry<int> BlackoutFloodLightRange;
@@ -119,8 +125,6 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<string> CentipedeMode;
         public static ConfigEntry<float> CentipedeFixedDamage;
         public static ConfigEntry<int> CentipedeSecondChanceThreshold;
-        public static ConfigEntry<bool> BlackoutOnApparatusRemoval;
-        public static ConfigEntry<bool> DisableTrapsOnApparatusRemoval;
         public static ConfigEntry<bool> DropMasks;
         public static ConfigEntry<int> MaskScrapValue;
 
@@ -163,8 +167,10 @@ namespace ScienceBirdTweaks
             TinyTeleporterCollision = base.Config.Bind("Ship Tweaks", "Tiny Teleporter Collision", true, "Shrinks the teleporter and inverse teleporter placement colliders (i.e. just their hitboxes) so they can be put next to all walls and in small nooks of the ship (customizable in Collider Sizes config section).");
             BegoneBottomCollision = base.Config.Bind("Ship Tweaks", "Begone Bottom Collision", false, "Removes collision from components underneath the ship, making it easier to get underneath if you need to (still depending on the moon).");
             LargerLeverCollision = base.Config.Bind("Ship Tweaks", "Larger Lever Collision", false, "Makes the ship's start lever hitbox larger and thus easier to pull (customizable in Collider Sizes config section).");
-            FloodlightRotation = base.Config.Bind("Ship Tweaks", "Rotating Floodlight", false, "The ship's top-mounted floodlight will rotate while landed.");
-            FloodLightRotationSpeed = base.Config.Bind("Ship Tweaks", "Ship Floodlight Rotation Speed", 45.0f, new ConfigDescription("Rotation speed of the ship's floodlights", new AcceptableValueRange<float>(0.0f, 360.0f)));
+            FloodlightRotation = base.Config.Bind("Ship Tweaks", "Rotating Floodlight", false, "The ship's top-mounted floodlight can rotate, toggled by a button near the start lever.");
+            FloodlightRotationOnLand = base.Config.Bind("Ship Tweaks", "Rotate Floodlight Upon Landing", false, "The ship's floodlight will automatically start rotating when the ship lands.");
+            FloodlightPlayerFollow = base.Config.Bind("Ship Tweaks", "Floodlight Follows Players", false, "EXPERIMENTAL - The ship's floodlight will track the closest player (note that since the floodlight point outwards, the targeted player will be between the lights, not actually illuminated).");
+            FloodLightRotationSpeed = base.Config.Bind("Ship Tweaks", "Ship Floodlight Rotation Speed", 45.0f, new ConfigDescription("Rotation speed of the ship's floodlights.", new AcceptableValueRange<float>(0.0f, 360.0f)));
             FloodLightIntensity = base.Config.Bind("Ship Tweaks", "Ship Floodlight Intensity", 2275, new ConfigDescription("Lumen value of the ship's floodlights.", new AcceptableValueRange<int>(0, 60000)));
             FloodLightAngle = base.Config.Bind("Ship Tweaks", "Ship Floodlight Angle", 115, new ConfigDescription("Light angle (degrees) of the ship's floodlights.", new AcceptableValueRange<int>(0, 180)));
             FloodLightRange = base.Config.Bind("Ship Tweaks", "Ship Floodlight Range", 45, new ConfigDescription("Light range (meters) of the ship's floodlights.", new AcceptableValueRange<int>(0, 2000)));
@@ -189,6 +195,7 @@ namespace ScienceBirdTweaks
             
             BigScrew = base.Config.Bind("General Tweaks", "Big Screw", true, "'Big bolt' is accurately renamed to 'Big screw'.");
             ClientShipItems = base.Config.Bind("General Tweaks", "Joining Client Items Fix", true, "When clients join, items aren't normally registered as being inside the ship (meaning you'll see a 'collected' pop-up if you grab them). This fixes that.");
+            LandmineFix = base.Config.Bind("General Tweaks", "Fix Mine Explosion On Exit", true, "Fixes a vanilla issue where mines would explode after being stepped on while deactivated then going outside.");
             FallingRotationFix = base.Config.Bind("General Tweaks", "Falling Rotation Fix", false, "Normally, if you ever drop an object from really high up, its rotation takes so long to change that it's still rotating when it hits the ground. This tweak properly scales the rotation so objects land normally.");
             PauseMenuFlickerFix = base.Config.Bind("General Tweaks", "Pause Menu Flicker Fix", false, "'Fixes' the resume button flickering when pausing the game by making the currently selected option always highlighted (will look slightly strange).");
             OldHalloweenElevatorMusic = base.Config.Bind("General Tweaks", "Old Halloween Elevator Music", false, "Restores mineshaft elevator to its old Halloween behaviour, playing a random selection of groovy tracks (disabled if ButteryStancakes' HalloweenElevator is installed).");
@@ -226,14 +233,15 @@ namespace ScienceBirdTweaks
 
             ShotgunMasterDisable = base.Config.Bind("Shotgun QOL", "Master Disable", false, "Reject all changes made by this mod to shotguns, leaving vanilla behaviour untouched (turn this on to disable all shotgun changes).");
             ShowAmmo = base.Config.Bind("Shotgun QOL", "Show Loaded Shells", false, "Shows how many shells your shotgun has left in the top-right tooltips.");
-            SafetyOnString = base.Config.Bind("Shotgun QOL", "Shotgun Safety On Tip", "The safety is on : [Q]", "Customize the tooltip for the shotgun safety toggle (vanilla: 'Turn safety off: [Q]').");
-            SafetyOffString = base.Config.Bind("Shotgun QOL", "Shotgun Safety Off Tip", "The safety is off : [Q]", "Customize the tooltip for the shotgun safety toggle (vanilla: 'Turn safety on: [Q]').");
+            SafetyOnString = base.Config.Bind("Shotgun QOL", "Shotgun Safety On Tooltip", "The safety is on", "Customize the tooltip for the shotgun safety toggle (vanilla: 'Turn safety off').");
+            SafetyOffString = base.Config.Bind("Shotgun QOL", "Shotgun Safety Off Tooltip", "The safety is off", "Customize the tooltip for the shotgun safety toggle (vanilla: 'Turn safety on').");
             UnloadShells = base.Config.Bind("Shotgun QOL", "Unload Shells", false, "Allows you to eject shells already in the shotgun by pressing the reload button (E) while you have no shells to load in your inventory. Top-right tooltips are dynamically adjusted accordingly.");
             PickUpGunOrbit = base.Config.Bind("Shotgun QOL", "Pick Up Gun In Orbit", false, "Allows you to pick up the gun while the ship is in orbit.");
             PickUpShellsOrbit = base.Config.Bind("Shotgun QOL", "Pick Up Shells In Orbit", true, "Allows you to pick up shells while the ship is in orbit (enabled for ease of use with 'Unload Shells').");
 
             BlackoutOnApparatusRemoval = base.Config.Bind("Blackout", "Apparatus True Blackout", false, "Triggers a more comprehensive blackout on apparatus removal, affecting all lights inside and out, along with any emissive materials (does not affects sun).");
-            DisableTrapsOnApparatusRemoval = base.Config.Bind("Blackout", "Apparatus Hazard Blackout", false, "Also disables all traps/hazards on the map after removing the apparatus.");
+            DisableTrapsOnApparatusRemoval = base.Config.Bind("Blackout", "Apparatus Hazard Blackout", false, "Disables all traps/hazards on the map after removing the apparatus.");
+            DisableTrapsOnBreakerSwitch = base.Config.Bind("Blackout", "Breaker Hazard Blackout", false, "Also disables all traps/hazards on the map when the breaker power is switched off.");
             TrueBlackout = base.Config.Bind("Blackout", "MrovWeathers True Blackout", true, "Revamps MrovWeathers' blackout so emissive materials are also darkened (no white spots left over), more lights are included, and problematic ones are excluded (like map hazards and outdoor apparatuses).");
             TrueBlackoutNameBlacklist = base.Config.Bind("Blackout", "MrovWeathers True Blackout Name Blacklist", "GunBarrelPos, BulletParticleFlare, LightSphere, Landmine, AnimContainer, BlackoutIgnore, ItemShip, ThrusterContainer", "A blacklist of object names to leave untouched during a blackout. If a light object's parent has the same name as one of these names, it will be skipped. This must be a comma-separated list and is case-sensitive. It is highly recommended you do not remove any of the default values unless you really know what you're doing.");
             TrueBlackoutHierarchyBlacklist = base.Config.Bind("Blackout", "MrovWeathers True Blackout Hierarchy Blacklist", "", "A blacklist of objects to leave untouched during a blackout. If a light object is found anywhere underneath these names in the hierarchy, it will be skipped. This must be a comma-separated list and is case-sensitive. It is recommended to use Name Blacklist whenever possible for performance reasons.");
@@ -251,7 +259,7 @@ namespace ScienceBirdTweaks
             LLLUnlockSyncing = base.Config.Bind("Mod Tweaks", "LLL Unlock Syncing", false, "Sends the host's unlocked moons to the clients after they load in, so any moons unlocked by the host will be unlocked by the client as well.");
             VideoTapeInsertFix = base.Config.Bind("Mod Tweaks", "Wesley Moons Tape Insert Fix", false, "EXPERIMENTAL - For Wesley's Moons: attempts to fix an issue where clients are unable to insert cassette tapes into the projector (might also fix issues with registering story log items).");
             VideoTapeSkip = base.Config.Bind("Mod Tweaks", "Wesley Moons Video Tape Skip", false, "For Wesley's Moons: after inserting a casette tape on Galetry, you can interact with the cassette player again to skip the video and unlock the moon immediately.");
-            MrovWeatherTweaksAnnouncement = base.Config.Bind("Mod Tweaks", "Mrov Weather Tweaks Announcement Change", false, "Makes the wording more clear when a weather change is announced, stating the current weather and the weather it's going to be transitioned into.");
+            MrovWeatherTweaksAnnouncement = base.Config.Bind("Mod Tweaks", "Weather Tweaks Announcement Change", false, "Makes the wording more clear when a weather change is announced, stating the current weather and the weather it's going to be transitioned into.");
             SSSTerminalStock = base.Config.Bind("Mod Tweaks", "Smart Cupboard Mrov Terminal Stock", true, "If you are using both Self Sorting Storage (which adds the 'smart cupboard') and mrov's TerminalFormatter (which shows a count of items on the ship), items in the cupboard will be counted on the terminal display.");
             DiversityComputerBegone = base.Config.Bind("Mod Tweaks", "Diversity Computer Begone", false, "Removes the floppy reader computer from Diversity and any floppy disks that spawn (does nothing if Diversity isn't installed).");
             
@@ -336,9 +344,9 @@ namespace ScienceBirdTweaks
             {
                 MrovWeathersPatch.DoPatching();
             }
-            if (zigzagPresent && mrovPresent3 && SSSTerminalStock.Value)
+            if (zigzagPresent && ((mrovPresent3 && SSSTerminalStock.Value) || PreventWorthlessDespawn.Value || UsePreventDespawnList.Value))
             {
-                SSSPatch.DoPatching();
+                SSSPatches.DoPatching();
             }
             if (wesleyPresent && (VideoTapeSkip.Value || VideoTapeInsertFix.Value))
             {

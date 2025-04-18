@@ -108,7 +108,7 @@ namespace ScienceBirdTweaks.ZapGun
                     int num = 0;
                     switch (layerPriority[i])
                     {
-                        case "door":
+                        case "doors":
                             num = -1;
                             break;
                         case "enemies":
@@ -251,11 +251,6 @@ namespace ScienceBirdTweaks.ZapGun
         static void StopShockPrefix(PatcherTool __instance, bool failed, out float __state)
         {
             __state = __instance.timeSpentShocking;// normally time spent shocking is set to zero midway through this method, so we pass it through to our postfix
-            if (__instance.IsOwner && !doTutorialOverride)
-            { 
-                ScienceBirdTweaks.Logger.LogInfo($"Failed: {failed}");
-                ScienceBirdTweaks.Logger.LogInfo($"Time spent: {__instance.timeSpentShocking}");
-            }
         }
 
         [HarmonyPatch(typeof(PatcherTool), nameof(PatcherTool.StopShockingAnomalyOnClient))]
@@ -264,8 +259,6 @@ namespace ScienceBirdTweaks.ZapGun
         {
             if (__instance.IsOwner && !doTutorialOverride)
             {
-                ScienceBirdTweaks.Logger.LogInfo($"Failed: {failed}");
-                ScienceBirdTweaks.Logger.LogInfo($"Time spent: {__state}");
                 if (__instance.timeSpentShocking == 0f && failed && __state > 0.75f)// equivalent to vanilla check, but vanilla check usually fails due to time spent shocking getting reset to zero before this
                 {
                     __instance.SetFinishedShockMinigameTutorial();
@@ -318,17 +311,15 @@ namespace ScienceBirdTweaks.ZapGun
 
         private static int LayerSort(RaycastHit hit)
         {
-            int layer = hit.transform.gameObject.layer;
-            if (hit.transform.gameObject.name == "BigDoor")// the big doors are also on the map hazard layer since I don't want to include too many layers in my mask (which could accidentally include unintended targets), so I added doors as an edge case
+            int layer = 0;
+            layer = hit.transform.gameObject.layer;
+            if (hit.transform.gameObject.name == "BigDoor(Clone)")// the big doors are also on the map hazard layer since I don't want to include too many layers in my mask (which could accidentally include unintended targets), so I added doors as an edge case
             {
                 layer = -1;
             }
-            for (int i = 0; i < layersLength; i++)
+            if (layerDict.TryGetValue(layer, out int value))
             {
-                if (layerDict.TryGetValue(layer, out int value))
-                {
-                    return value;
-                }
+                return value;
             }
             return layersLength;
         }
@@ -366,13 +357,13 @@ namespace ScienceBirdTweaks.ZapGun
                         .ThenBy(x => x.distance)
                         .ToArray();
 
-                    foreach (RaycastHit hit in validHits)
-                    {
-                        if (hit.transform != null)
-                        {
-                            ScienceBirdTweaks.Logger.LogDebug($"{hit.transform.gameObject.name} ({hit.distance}, {hit.transform.gameObject.layer})");
-                        }
-                    }
+                    //foreach (RaycastHit hit in validHits)
+                    //{
+                    //    if (hit.transform != null)
+                    //    {
+                    //        ScienceBirdTweaks.Logger.LogDebug($"{hit.transform.gameObject.name} ({hit.distance}, {hit.transform.gameObject.layer}, {LayerSort(hit)})");
+                    //    }
+                    //}
 
                     for (int j = 0; j < validHits.Length; j++)
                     {

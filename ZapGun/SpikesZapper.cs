@@ -28,7 +28,6 @@ namespace ScienceBirdTweaks.ZapGun
         {
             mainObj = transform.parent.parent.gameObject;
             supportLights = mainObj.transform.Find("AnimContainer").Find("BaseSupport").gameObject;
-            ScienceBirdTweaks.Logger.LogDebug(mainObj.name);
             mainObj.layer = 21;
 
             light = GetComponent<Light>();

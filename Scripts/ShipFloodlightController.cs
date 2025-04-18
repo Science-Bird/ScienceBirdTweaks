@@ -8,7 +8,7 @@ namespace ScienceBirdTweaks.Scripts
 {
     public class ShipFloodlightController : MonoBehaviour
     {
-        public float rotationSpeed = 45.0f;
+        public float rotationSpeed = ScienceBirdTweaks.FloodLightRotationSpeed.Value;
 
         private const string ParentName = "ShipLightsPost";
         private const string PivotChildName = "Cube.006";
@@ -19,15 +19,19 @@ namespace ScienceBirdTweaks.Scripts
         private List<Transform> _rotationList = new List<Transform>();
         List<Light> _shipFloodlightLights = new List<Light>();
         private StartOfRound _startOfRoundInstance;
-        private bool _isRotating = false;
+        private TimeOfDay _timeOfDayInstance;
+        public bool _isRotating = false;
         private bool _initialized = false;
         private bool _initialStateSet = false;
         private bool _canRotate = false;
+        private Animator interactAnimator;
 
         private Vector3 playerPos = Vector3.zero;
         private Vector3 enemyPos = Vector3.zero;
         private float timeSinceLastCheck = 0f;
         private const float refreshInterval = 1f;
+        private bool awaitingSpin = false;
+        private bool rotatingLastFrame = false;
 
         private Dictionary<Transform, TransformState> _originalStates = new Dictionary<Transform, TransformState>();
 
@@ -44,12 +48,13 @@ namespace ScienceBirdTweaks.Scripts
             if (_startOfRoundInstance == null)
                 _startOfRoundInstance = StartOfRound.Instance;
 
+            if (_timeOfDayInstance == null)
+                _timeOfDayInstance = TimeOfDay.Instance;
+
             if (_startOfRoundInstance == null)
                 ScienceBirdTweaks.Logger.LogError("Failed to get StartOfRound instance! Spinner cannot check landing status.");
             else
                 ScienceBirdTweaks.Logger.LogDebug("ShipFloodlightController Start: Got StartOfRound reference. Waiting for initialization and landing.");
-
-            StartSpinning();
         }
 
         void Update()
@@ -122,7 +127,7 @@ namespace ScienceBirdTweaks.Scripts
 
             if (_initialized && ScienceBirdTweaks.FloodlightRotation.Value)
             {
-                bool isLanded = _startOfRoundInstance != null && _startOfRoundInstance.shipHasLanded;
+                bool isLanded = _startOfRoundInstance != null && _startOfRoundInstance.shipHasLanded && _timeOfDayInstance != null && (_timeOfDayInstance.currentDayTime / _timeOfDayInstance.totalTime) > 0.13f;// wait until certain time to ensure players synced
                 _canRotate = isLanded;
 
                 if (_pivotTransform == null)
@@ -136,13 +141,12 @@ namespace ScienceBirdTweaks.Scripts
                     {
                         timeSinceLastCheck += Time.deltaTime;
 
-                        if (timeSinceLastCheck >= refreshInterval)
+                        if (ScienceBirdTweaks.FloodlightPlayerFollow.Value && timeSinceLastCheck >= refreshInterval)
                         {
                             playerPos = GetClosestPlayerPosition(_pivotTransform);
                             timeSinceLastCheck = 0f;
                         }
 
-                        //Vector3 playerPos = GetClosestPlayerPosition(_pivotTransform);
                         //Vector3 enemyPos = GetClosestWhitelistedEnemy(_pivotTransform)?.transform.position ?? Vector3.zero;
 
                         if (playerPos != Vector3.zero)
@@ -159,8 +163,6 @@ namespace ScienceBirdTweaks.Scripts
                             {
                                 if (rotatingT != null)
                                     rotatingT.RotateAround(pivotPoint, Vector3.up, angleToRotate);
-                                else
-                                    ScienceBirdTweaks.Logger.LogWarning("Rotating sibling is null! Skipping rotation.");
 
                                 //ScienceBirdTweaks.Logger.LogDebug($"Rotating {rotatingT?.name}: Current Rotation = {rotatingT?.rotation.eulerAngles}");
                             }
@@ -175,33 +177,71 @@ namespace ScienceBirdTweaks.Scripts
                                     ScienceBirdTweaks.Logger.LogWarning($"Rotating sibling is null! Skipping rotation.");
                             }
                         }
+                        rotatingLastFrame = true;
+                    }
+                    else if (awaitingSpin && !rotatingLastFrame)
+                    {
+                        StartSpinning();
+                    }
+                    else
+                    {
+                        rotatingLastFrame = false;
                     }
                 }
+                else
+                {
+                    if (rotatingLastFrame || _isRotating)// stop spinning is only manually called by interaction, so this catches when spinning stops due to take-off (and updates boolean and animator accordingly)
+                    {
+                        StopSpinning();
+                    }
+                    rotatingLastFrame = false;
+                }
+            }
+        }
+
+        public void SetAnimatorBool(bool on)
+        {
+            if (interactAnimator == null)
+            {
+                ShipFloodlightInteractionHandler interactHandler = Object.FindObjectOfType<ShipFloodlightInteractionHandler>();
+                if (interactHandler != null)
+                {
+                    interactAnimator = interactHandler.interactAnimator;
+                }
+            }
+            if (interactAnimator != null)
+            {
+                interactAnimator.SetBool("on", on);
             }
         }
 
         public void StartSpinning()
         {
+            if (!_canRotate)
+            {
+                if (!_startOfRoundInstance.inShipPhase)
+                {
+                    awaitingSpin = true;// this queues up rotation to occur when it's next able to
+                }
+                return;
+            }
+
+            SetAnimatorBool(true);
+
             _isRotating = true;
             if (!this.enabled)
                 this.enabled = true;
 
-            if (_initialStateSet && _canRotate)
-                ScienceBirdTweaks.Logger.LogInfo($"Floodlight rotation enabled.");
-            else if
-                (_initialStateSet) ScienceBirdTweaks.Logger.LogDebug($"Rotation enabled, waiting for ship to land.");
-            else
-                ScienceBirdTweaks.Logger.LogDebug($"Rotation enabled, waiting for object initialization, initial state setup, and ship landing.");
+            ScienceBirdTweaks.Logger.LogDebug($"Floodlight rotation enabled.");
         }
 
         public void StopSpinning()
         {
+            SetAnimatorBool(false);
             _isRotating = false;
+            awaitingSpin = false;
 
-            if
-                (_parentTransform != null) ScienceBirdTweaks.Logger.LogDebug($"Rotation disabled.");
-            else
-                ScienceBirdTweaks.Logger.LogDebug($"Rotation explicitly disabled (target may not have been found).");
+            ScienceBirdTweaks.Logger.LogDebug($"Floodlight rotation disabled.");
         }
 
         public void SetRotationSpeed(float newSpeed) {
@@ -236,7 +276,7 @@ namespace ScienceBirdTweaks.Scripts
 
                     if (parentRenderer == null) continue;
 
-                    ScienceBirdTweaks.Logger.LogDebug($"Found parent renderer '{parentRenderer.name}'. Processing its materials...");
+                    //ScienceBirdTweaks.Logger.LogDebug($"Found parent renderer '{parentRenderer.name}'. Processing its materials...");
 
 
                     Material[] materials = parentRenderer.materials;
@@ -247,11 +287,11 @@ namespace ScienceBirdTweaks.Scripts
 
                         if (!mat.IsKeywordEnabled("_EMISSIVE_COLOR_MAP")) continue;
 
-                        ScienceBirdTweaks.Logger.LogDebug($"---> Found mat on renderer '{parentRenderer.name}'...");
+                        //ScienceBirdTweaks.Logger.LogDebug($"---> Found mat on renderer '{parentRenderer.name}'...");
 
                         Color originalEmissiveColor = mat.GetColor(Shader.PropertyToID("_EmissiveColor"));
 
-                        ScienceBirdTweaks.Logger.LogDebug($"---> Initial _EmissiveColor : {originalEmissiveColor}");
+                        //ScienceBirdTweaks.Logger.LogDebug($"---> Initial _EmissiveColor : {originalEmissiveColor}");
 
                         Color dimmedEmissiveColor = new Color(
                             9.026f * dimmingFactor,
@@ -259,7 +299,7 @@ namespace ScienceBirdTweaks.Scripts
                             7.750f * dimmingFactor,
                             12.05f * dimmingFactor);
 
-                        ScienceBirdTweaks.Logger.LogDebug($"---> Dimmed _EmissiveColor : {dimmedEmissiveColor}");
+                        //ScienceBirdTweaks.Logger.LogDebug($"---> Dimmed _EmissiveColor : {dimmedEmissiveColor}");
 
                         mat.SetFloat(Shader.PropertyToID("_EmissiveIntensity"), dimmedEmissiveColor.a);
                         mat.SetColor(Shader.PropertyToID("_EmissiveColor"), dimmedEmissiveColor);
@@ -278,51 +318,47 @@ namespace ScienceBirdTweaks.Scripts
         {
             SetFloodlightData((float)ScienceBirdTweaks.FloodLightIntensity.Value, (float)ScienceBirdTweaks.FloodLightAngle.Value, (float)ScienceBirdTweaks.FloodLightRange.Value);
 
-            if (ScienceBirdTweaks.FloodlightRotation.Value) // Reset rotations & positions once in orbit to prevent drift
+            awaitingSpin = false;// requests to start rotation shouldnt carry over to the next day
+
+            if (ScienceBirdTweaks.FloodlightRotation.Value)// Reset rotations & positions once in orbit to prevent drift
             {
-                ScienceBirdTweaks.Logger.LogDebug("Resetting floodlight position / rotation.");
-
-                if (ScienceBirdTweaks.FloodlightRotation.Value)
+                if (_originalStates.Count == 0)
                 {
-                    ScienceBirdTweaks.Logger.LogDebug("Resetting floodlight rotation.");
-
-                    if (_originalStates.Count == 0)
-                    {
-                        ScienceBirdTweaks.Logger.LogWarning("Original rotations not captured or dictionary empty. Cannot reset rotation state.");
-                        return;
-                    }
-
-                    //if (!_initialStateSet || _originalRotations.Count == 0)
-                    //{
-                    //    ScienceBirdTweaks.Logger.LogWarning("Original rotations not captured or dictionary empty. Cannot reset rotation state.");
-                    //    return;
-                    //}
-
-                    ScienceBirdTweaks.Logger.LogDebug($"Resetting floodlight rotation for : {_originalStates}");
-
-                    foreach (KeyValuePair<Transform, TransformState> entry in _originalStates)
-                    {
-                        Transform t = entry.Key;
-                        TransformState originalState = entry.Value;
-
-                        if (t != null)
-                        {
-                            t.localPosition = originalState.localPosition;
-                            t.localRotation = originalState.localRotation;
-                            ScienceBirdTweaks.Logger.LogDebug($"Reset {t.name} to Pos={t.localPosition}, Rot={t.localRotation.eulerAngles}");
-                        }
-                        else
-                        {
-                            ScienceBirdTweaks.Logger.LogWarning($"Attempted to reset rotation on a null transform (originally stored).");
-                        }
-                    }
-                    ScienceBirdTweaks.Logger.LogDebug("Floodlight rotation reset complete.");
+                    ScienceBirdTweaks.Logger.LogWarning("Original rotations not captured or dictionary empty. Cannot reset rotation state.");
+                    return;
                 }
-                else
+
+                //if (!_initialStateSet || _originalRotations.Count == 0)
+                //{
+                //    ScienceBirdTweaks.Logger.LogWarning("Original rotations not captured or dictionary empty. Cannot reset rotation state.");
+                //    return;
+                //}
+
+                ScienceBirdTweaks.Logger.LogDebug($"Resetting floodlight rotation for : {_originalStates}");
+
+                foreach (KeyValuePair<Transform, TransformState> entry in _originalStates)
                 {
-                    ScienceBirdTweaks.Logger.LogDebug("Floodlight rotation disabled in config, skipping rotation reset.");
+                    Transform t = entry.Key;
+                    TransformState originalState = entry.Value;
+
+                    if (t != null)
+                    {
+                        t.localPosition = originalState.localPosition;
+                        t.localRotation = originalState.localRotation;
+                        //ScienceBirdTweaks.Logger.LogDebug($"Reset {t.name} to Pos={t.localPosition}, Rot={t.localRotation.eulerAngles}");
+                    }
+                    else
+                    {
+                        ScienceBirdTweaks.Logger.LogWarning($"Attempted to reset rotation on a null transform (originally stored).");
+                    }
                 }
+                ScienceBirdTweaks.Logger.LogDebug("Floodlight rotation reset complete.");
             }
+            else
+            {
+                ScienceBirdTweaks.Logger.LogDebug("Floodlight rotation disabled in config, skipping rotation reset.");
+            }
+            
         }
 
         public static Vector3 GetClosestPlayerPosition(Transform _pivotTransform) // maybe this and enemy func should be merged $idk
@@ -343,7 +379,7 @@ namespace ScienceBirdTweaks.Scripts
                 }
             }
 
-            ScienceBirdTweaks.Logger.LogDebug($"Closest player position: {closestPos}");
+            //ScienceBirdTweaks.Logger.LogDebug($"Closest player position: {closestPos}");
 
             return closestPos;
         }

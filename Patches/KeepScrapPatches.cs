@@ -9,7 +9,7 @@ namespace ScienceBirdTweaks.Patches
     [HarmonyPatch]
     internal static class KeepScrapPatches
     {
-        private static bool _isInTargetContext = false;
+        public static bool _isInTargetContext = false;
         private static bool _isInsideResetShipFurnitureCall = false;
         public static bool extraLogs = false;
 
@@ -35,7 +35,7 @@ namespace ScienceBirdTweaks.Patches
                 CustomScanText.AddToBlacklist(item);
             }
 
-            ScienceBirdTweaks.Logger.LogInfo("Finished populating blacklists.");
+            ScienceBirdTweaks.Logger.LogInfo("Finished populating scrap keeping blacklists.");
         }
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ResetShipFurniture))]// set flag on fired to not prevent despawn
@@ -398,8 +398,7 @@ namespace ScienceBirdTweaks.Patches
             {
                 if (isHeld || isInShip)
                 {
-                    if (KeepScrapPatches.extraLogs)
-                        ScienceBirdTweaks.Logger.LogInfo($"Preventing despawn for '{itemName ?? grabbable.name}' because it meets criteria AND is held or in ship.");
+                    ScienceBirdTweaks.Logger.LogDebug($"Preventing despawn for '{itemName ?? grabbable.name}' because it meets criteria AND is held or in ship.");
 
                     if (ScienceBirdTweaks.ZeroDespawnPreventedItems.Value && isScrap && scrapValue > 0)
                     {
