@@ -35,8 +35,10 @@ namespace ScienceBirdTweaks.Patches
         {
             ScienceBirdTweaks.Logger.LogDebug("Breaker start ON!");
             if (ScienceBirdTweaks.DisableTrapsOnBreakerSwitch.Value)
+            {
                 hazardWait = 0.49f;
                 doingHazardStartup = true;
+            }
         }
 
 
@@ -46,8 +48,10 @@ namespace ScienceBirdTweaks.Patches
         {
             ScienceBirdTweaks.Logger.LogDebug("Breaker start! OFF");
             if (ScienceBirdTweaks.DisableTrapsOnBreakerSwitch.Value && !doingHazardShutdown)
+            {
                 hazardWait = 0.49f;
                 doingHazardShutdown = true;
+            }
         }
 
         [HarmonyPatch(typeof(BreakerBox), nameof(BreakerBox.SwitchBreaker))]

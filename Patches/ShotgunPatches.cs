@@ -28,17 +28,15 @@ namespace ScienceBirdTweaks.Patches
         {
             if (ScienceBirdTweaks.ShotgunMasterDisable.Value) { return; }
 
-            safetyOnText = ScienceBirdTweaks.SafetyOnString.Value;
-            safetyOffText = ScienceBirdTweaks.SafetyOffString.Value;
-
-
-                Item shotgun = Resources.FindObjectsOfTypeAll<Item>().Where(x => x.itemName == "Shotgun").First();
-                if (shotgun != null)
+            Item shotgun = Resources.FindObjectsOfTypeAll<Item>().Where(x => x.itemName == "Shotgun").First();
+            if (shotgun != null)
+            {
+                if (ScienceBirdTweaks.PickUpGunOrbit.Value)
                 {
-                    if (ScienceBirdTweaks.PickUpGunOrbit.Value)
-                    {
-                        shotgun.canBeGrabbedBeforeGameStart = true;
-                    }
+                    shotgun.canBeGrabbedBeforeGameStart = true;
+                }
+                if (shotgun.toolTips != null && shotgun.toolTips.Length == 3)
+                {
                     safetyOnText = ScienceBirdTweaks.SafetyOnString.Value + " " + shotgun.toolTips[2].Remove(0, shotgun.toolTips[2].IndexOf(":"));
                     safetyOffText = ScienceBirdTweaks.SafetyOffString.Value + " " + shotgun.toolTips[2].Remove(0, shotgun.toolTips[2].IndexOf(":"));
                     reloadString = "Reload" + " " + shotgun.toolTips[1].Remove(0, shotgun.toolTips[1].IndexOf(":"));
@@ -46,6 +44,25 @@ namespace ScienceBirdTweaks.Patches
                     ammoString1 = "(O)( ) Fire" + " " + shotgun.toolTips[0].Remove(0, shotgun.toolTips[0].IndexOf(":"));
                     ammoString2 = "(O)(O) Fire" + " " + shotgun.toolTips[0].Remove(0, shotgun.toolTips[0].IndexOf(":"));
                 }
+                else
+                {
+                    safetyOnText = ScienceBirdTweaks.SafetyOnString.Value + " : [Q]";
+                    safetyOffText = ScienceBirdTweaks.SafetyOffString.Value + " : [Q]";
+                    reloadString = "Reload" + " : [E]";
+                    ammoString0 = "( )( ) Fire" + " : [RMB]";
+                    ammoString1 = "(O)( ) Fire" + " : [RMB]";
+                    ammoString2 = "(O)(O) Fire" + " : [RMB]";
+                }
+            }
+            else
+            {
+                safetyOnText = ScienceBirdTweaks.SafetyOnString.Value + " : [Q]";
+                safetyOffText = ScienceBirdTweaks.SafetyOffString.Value + " : [Q]";
+                reloadString = "Reload" + " : [E]";
+                ammoString0 = "( )( ) Fire" + " : [RMB]";
+                ammoString1 = "(O)( ) Fire" + " : [RMB]";
+                ammoString2 = "(O)(O) Fire" + " : [RMB]";
+            }
             
             if (ScienceBirdTweaks.PickUpShellsOrbit.Value)
             {

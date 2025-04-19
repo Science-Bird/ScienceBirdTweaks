@@ -127,7 +127,7 @@ namespace ScienceBirdTweaks.Scripts
 
             if (_initialized && ScienceBirdTweaks.FloodlightRotation.Value)
             {
-                bool isLanded = _startOfRoundInstance != null && _startOfRoundInstance.shipHasLanded && _timeOfDayInstance != null && (_timeOfDayInstance.currentDayTime / _timeOfDayInstance.totalTime) > 0.13f;// wait until certain time to ensure players synced
+                bool isLanded = _startOfRoundInstance != null && _startOfRoundInstance.shipHasLanded && _timeOfDayInstance != null && (_timeOfDayInstance.currentDayTime / _timeOfDayInstance.totalTime) > 0.125f;// wait until certain time to ensure players synced
                 _canRotate = isLanded;
 
                 if (_pivotTransform == null)
@@ -181,6 +181,7 @@ namespace ScienceBirdTweaks.Scripts
                     }
                     else if (awaitingSpin && !rotatingLastFrame)
                     {
+                        //ScienceBirdTweaks.Logger.LogDebug($"AWAITED SPIN: {_timeOfDayInstance.currentDayTime / _timeOfDayInstance.totalTime}");
                         StartSpinning();
                     }
                     else
@@ -219,7 +220,7 @@ namespace ScienceBirdTweaks.Scripts
         {
             if (!_canRotate)
             {
-                if (!_startOfRoundInstance.inShipPhase)
+                if (!_startOfRoundInstance.inShipPhase && !_startOfRoundInstance.shipIsLeaving && !_startOfRoundInstance.shipLeftAutomatically)
                 {
                     awaitingSpin = true;// this queues up rotation to occur when it's next able to
                 }
