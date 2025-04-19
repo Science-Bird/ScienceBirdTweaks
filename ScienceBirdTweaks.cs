@@ -21,6 +21,7 @@ namespace ScienceBirdTweaks
     [BepInDependency("JacobG5.WesleyMoonScripts", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("JacobG5.JLLItemModule", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("imabatby.lethallevelloader", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("CodeRebirth", BepInDependency.DependencyFlags.SoftDependency)]
 
     public class ScienceBirdTweaks : BaseUnityPlugin
     {
@@ -99,7 +100,8 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<bool> UnloadShells;
         public static ConfigEntry<bool> PickUpGunOrbit;
         public static ConfigEntry<bool> PickUpShellsOrbit;
-        
+        public static ConfigEntry<bool> ForceRegisterShells;
+
         public static ConfigEntry<bool> DustSpaceClouds;
         public static ConfigEntry<bool> ThickDustClouds;
         public static ConfigEntry<float> DustCloudsThickness;
@@ -147,6 +149,7 @@ namespace ScienceBirdTweaks
         public static bool wesleyPresent = false;
         public static bool jacobPresent = false;
         public static bool batbyPresent = false;
+        public static bool xuPresent = false;
 
         public static Vector3 ConfigTeleporterSize;
 
@@ -238,6 +241,7 @@ namespace ScienceBirdTweaks
             UnloadShells = base.Config.Bind("Shotgun QOL", "Unload Shells", false, "Allows you to eject shells already in the shotgun by pressing the reload button (E) while you have no shells to load in your inventory. Top-right tooltips are dynamically adjusted accordingly.");
             PickUpGunOrbit = base.Config.Bind("Shotgun QOL", "Pick Up Gun In Orbit", false, "Allows you to pick up the gun while the ship is in orbit.");
             PickUpShellsOrbit = base.Config.Bind("Shotgun QOL", "Pick Up Shells In Orbit", true, "Allows you to pick up shells while the ship is in orbit (enabled for ease of use with 'Unload Shells').");
+            ForceRegisterShells = base.Config.Bind("Shotgun QOL", "Force Register Shells", false, "Troubleshooting option which manually networks shotgun shells so that they should appear on clients. Only enable this if you encounter errors and desyncs when unloading shells. These should normally be networked in vanilla, but certain combinations of mods can interfere with it.");
 
             BlackoutOnApparatusRemoval = base.Config.Bind("Blackout", "Apparatus True Blackout", false, "Triggers a more comprehensive blackout on apparatus removal, affecting all lights inside and out, along with any emissive materials (does not affects sun).");
             DisableTrapsOnApparatusRemoval = base.Config.Bind("Blackout", "Apparatus Hazard Blackout", false, "Disables all traps/hazards on the map after removing the apparatus.");
@@ -332,6 +336,11 @@ namespace ScienceBirdTweaks
                 {
                     Logger.LogDebug("Found batby!");
                     batbyPresent = true;
+                }
+                else if (assembly.GetName().Name == "CodeRebirth")
+                {
+                    Logger.LogDebug("Found xu!");
+                    xuPresent = true;
                 }
             }
 

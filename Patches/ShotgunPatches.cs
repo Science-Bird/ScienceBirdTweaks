@@ -21,6 +21,7 @@ namespace ScienceBirdTweaks.Patches
         public static bool showAmmo = true;
         public static bool holdingDown = false;
         public static float startTime;
+        private static bool shellRegistered = false;
 
         [HarmonyPatch(typeof(GameNetworkManager), nameof(GameNetworkManager.Start))]
         [HarmonyPostfix]
@@ -82,6 +83,24 @@ namespace ScienceBirdTweaks.Patches
             if (nutcracker != null)
             {
                 shellPrefab = nutcracker.shotgunShellPrefab;
+                if (shellPrefab.GetComponent<NetworkObject>().PrefabIdHash == 0)
+                {
+                    ScienceBirdTweaks.Logger.LogDebug("No shell found on initialization!");
+                    shellRegistered = false;
+                    if (ScienceBirdTweaks.xuPresent || ScienceBirdTweaks.ForceRegisterShells.Value)
+                    {
+                        ScienceBirdTweaks.Logger.LogInfo("Manually registering shell prefabs with network manager!");
+                        NetworkManager.Singleton.AddNetworkPrefab(shellPrefab);
+                        if (shellPrefab.GetComponent<NetworkObject>().PrefabIdHash != 0)
+                        {
+                            shellRegistered = true;
+                        }
+                    }
+                }
+                else
+                {
+                    shellRegistered = true;
+                }
             }
         }
 
@@ -97,11 +116,18 @@ namespace ScienceBirdTweaks.Patches
                     NutcrackerEnemyAI nutcracker = Resources.FindObjectsOfTypeAll<NutcrackerEnemyAI>().First();
                     if (nutcracker != null)
                     {
-                        ScienceBirdTweaks.Logger.LogDebug("Re-finding shell prefab!");
                         shellPrefab = nutcracker.shotgunShellPrefab;
+                        if (shellPrefab.GetComponent<NetworkObject>().PrefabIdHash == 0)
+                        {
+                            ScienceBirdTweaks.Logger.LogWarning("No shell found on load!");
+                            shellRegistered = false;
+                        }
+                        else
+                        {
+                            shellRegistered = true;
+                        }
                     }
                 }
-
             }
         }
 
@@ -226,7 +252,7 @@ namespace ScienceBirdTweaks.Patches
         {
             if (!ScienceBirdTweaks.ShotgunMasterDisable.Value && unloadEnabled && __instance.GetComponent<ShotgunItem>() && right && (__instance.GetComponent<ShotgunItem>().FindAmmoInInventory() == -1 || __instance.GetComponent<ShotgunItem>().shellsLoaded >= 2) && __instance.GetComponent<ShotgunItem>().shellsLoaded > 0)
             {
-                if (__instance.IsOwner && __instance.isHeld && !__instance.isPocketed && HUDManager.Instance.holdFillAmount <= 0f && __instance.playerHeldBy.cursorTip.text == "")// make sure player isn't doing some other kind of ongoing interaction
+                    if (__instance.IsOwner && __instance.isHeld && !__instance.isPocketed && HUDManager.Instance.holdFillAmount <= 0f && __instance.playerHeldBy.cursorTip.text == "")// make sure player isn't doing some other kind of ongoing interaction
                 {
                     LocalInteract(__instance.GetComponent<ShotgunItem>(), right);
                 }
@@ -296,6 +322,27 @@ namespace ScienceBirdTweaks.Patches
 
             if (unloadEnabled && right && (__instance.FindAmmoInInventory() == -1 || __instance.shellsLoaded >= 2) && __instance.shellsLoaded > 0)
             {
+                if (!shellRegistered)
+                {
+                    if (!NetworkManager.Singleton.NetworkConfig.Prefabs.Contains(shellPrefab))
+                    {
+                        NutcrackerEnemyAI nutcracker = Resources.FindObjectsOfTypeAll<NutcrackerEnemyAI>().First();
+                        if (nutcracker != null)
+                        {
+                            shellPrefab = nutcracker.shotgunShellPrefab;
+                            ScienceBirdTweaks.Logger.LogDebug("Re-finding shell prefab on interact...");
+                            if (shellPrefab.GetComponent<NetworkObject>().PrefabIdHash == 0)
+                            {
+                                ScienceBirdTweaks.Logger.LogError("Shell not registered on interaction due to an incompatibility. To avoid client de-syncs, enable the 'force register shells' config option. Please report this issue!");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        shellRegistered = true;
+                    }
+                }
+
                 ScienceBirdTweaks.Logger.LogDebug("Eject called!");
 
                 if (__instance.IsServer)

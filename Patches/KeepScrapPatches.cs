@@ -176,7 +176,6 @@ namespace ScienceBirdTweaks.Patches
             if (ScienceBirdTweaks.CustomWorthlessDisplayText.Value == "")
                 return;
 
-            ScienceBirdTweaks.Logger.LogDebug("Discard!");
             try
             {
                 switch (CustomScanText.DoSetSubtext(__instance))
