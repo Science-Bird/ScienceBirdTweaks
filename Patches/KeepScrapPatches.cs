@@ -185,11 +185,11 @@ namespace ScienceBirdTweaks.Patches
                             ScienceBirdTweaks.Logger.LogDebug($"DiscardItem Postfix: Conditions not met for item '{__instance.name}', skipping custom text override.");
                         return;
                     case 1:
-                        ScienceBirdTweaks.Logger.LogDebug("Setting subtext...");
+                        //ScienceBirdTweaks.Logger.LogDebug("Setting subtext...");
                         CustomScanText.SetSubtext(__instance, ScienceBirdTweaks.CustomWorthlessDisplayText.Value);
                         break;
                     case 2:
-                        ScienceBirdTweaks.Logger.LogDebug("Resetting subtext...");
+                        //ScienceBirdTweaks.Logger.LogDebug("Resetting subtext...");
                         CustomScanText.ResetSubtext(__instance);
                         break;
                 }
@@ -286,8 +286,6 @@ namespace ScienceBirdTweaks.Patches
                 if (KeepScrapPatches.extraLogs)
                     ScienceBirdTweaks.Logger.LogInfo($"SetScrapValue Postfix: Applied custom text '{customText}' to ScanNode for '{targetObject.name}'.");
             }
-            else
-                ScienceBirdTweaks.Logger.LogError($"SetScrapValue Postfix: Could not find ScanNodeProperties on '{targetObject.name}' to apply custom text!");
         }
 
         public static void ResetSubtext(GrabbableObject targetObject)
@@ -299,8 +297,6 @@ namespace ScienceBirdTweaks.Patches
                 if (KeepScrapPatches.extraLogs)
                     ScienceBirdTweaks.Logger.LogInfo($"ResetSubtext: Cleared custom text for '{targetObject.name}'.");
             }
-            else
-                ScienceBirdTweaks.Logger.LogError($"ResetSubtext: Could not find ScanNodeProperties on '{targetObject.name}' to clear custom text!");
         }
     }
 
@@ -415,8 +411,6 @@ namespace ScienceBirdTweaks.Patches
                             if (KeepScrapPatches.extraLogs)
                                 ScienceBirdTweaks.Logger.LogInfo($"Applied custom text for '{itemName ?? grabbable.name}' to '{customText}'.");
                         }
-                        else
-                            ScienceBirdTweaks.Logger.LogError($"Failed to apply custom text for '{itemName ?? grabbable.name}' ScanNodeProperties is null.");
                     }
 
                     return true;

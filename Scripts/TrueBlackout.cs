@@ -41,6 +41,7 @@ namespace ScienceBirdTweaks.Scripts
         private static readonly int surfaceTypeID = Shader.PropertyToID("_SurfaceType");
         private const string emissiveColorMapKeyword = "_EMISSIVE_COLOR_MAP";
         private static readonly Boolean extraLogs = ScienceBirdTweaks.ExtraLogs.Value;
+        private static readonly Boolean blacklistAnimators = ScienceBirdTweaks.BlacklistLightAnimators.Value;
         private static string[] nameBlacklist = InitializeBlacklist(ScienceBirdTweaks.TrueBlackoutNameBlacklist.Value);
         private static readonly int nameBlacklistLength = nameBlacklist.Length;
         private static string[] hierarchyBlacklist = InitializeBlacklist(ScienceBirdTweaks.TrueBlackoutHierarchyBlacklist.Value);
@@ -165,12 +166,13 @@ namespace ScienceBirdTweaks.Scripts
 
                 if (light.bakingOutput.lightmapBakeType == LightmapBakeType.Baked ||
                     HasParentWithInteractTrigger(light.gameObject) ||
-                    parent.GetComponentInChildren<LungProp>(true) != null)
+                    parent.GetComponentInChildren<LungProp>(true) != null ||
+                    (blacklistAnimators && HasParentWithAnimator(light.gameObject)))
                 {
                     lightObjectsBlacklist.Add(parent.gameObject);
                     
                     if (extraLogs)
-                        ScienceBirdTweaks.Logger.LogDebug($"Skipping light object {parent.gameObject.name} with path {path} due to baked lightmap or interact trigger");
+                        ScienceBirdTweaks.Logger.LogDebug($"Skipping light object {parent.gameObject.name} with path {path} due to baked lightmap, interact trigger, or animator");
 
                     if (lightObjects.Contains(parent.gameObject))
                         lightObjects.Remove(parent.gameObject);
@@ -499,7 +501,9 @@ namespace ScienceBirdTweaks.Scripts
             {
                 if (current.GetComponent<InteractTrigger>() != null)
                 {
-                    ScienceBirdTweaks.Logger.LogDebug($"Found InteractTrigger in {current.name} with path {GetObjectPath(current.gameObject)}");
+                    if (extraLogs)
+                        ScienceBirdTweaks.Logger.LogDebug($"Found InteractTrigger in {current.name} with path {GetObjectPath(current.gameObject)}");
+                    
                     return true;
                 }
 
@@ -508,7 +512,28 @@ namespace ScienceBirdTweaks.Scripts
 
             return false;
         }
-        
+
+        private static bool HasParentWithAnimator(GameObject obj)
+        {
+
+            Transform current = obj.transform;
+
+            while (current != null)
+            {
+                if (current.GetComponent<Animator>() != null)
+                {
+                    if (extraLogs)
+                        ScienceBirdTweaks.Logger.LogDebug($"Found Animator in {current.name} with path {GetObjectPath(current.gameObject)}");
+                    
+                    return true;
+                }
+
+                current = current.parent;
+            }
+
+            return false;
+        }
+
         public static List<Light> GetLightsInParent(Transform parent, bool includeInactive = true)
         {
             List<Light> lights = [];

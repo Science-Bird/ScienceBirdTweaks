@@ -22,6 +22,7 @@ namespace ScienceBirdTweaks.ZapGun
         public bool startRoutine = false;
         public bool masterZappable = true;
         public float multiplier = 0.25f;
+        private bool disabled = false;
 
         private void Start()
         {
@@ -44,6 +45,11 @@ namespace ScienceBirdTweaks.ZapGun
                 }
             }
             Animator mineAnimator = mine.gameObject.GetComponent<Animator>();
+            if (mineAnimator == null)
+            {
+                disabled = true;
+                return;
+            }
             mineAnimator.runtimeAnimatorController = HazardPatches.newController;
             masterZappable = ScienceBirdTweaks.ZappableMines.Value && ScienceBirdTweaks.ZapGunRework.Value;
             cooldown = ScienceBirdTweaks.MineZapBaseCooldown.Value;
@@ -52,7 +58,7 @@ namespace ScienceBirdTweaks.ZapGun
 
         bool IShockableWithGun.CanBeShocked()
         {
-            return !mine.hasExploded && !terminalObj.inCooldown && masterZappable;
+            return !mine.hasExploded && !terminalObj.inCooldown && masterZappable && !disabled;
         }
 
         float IShockableWithGun.GetDifficultyMultiplier()

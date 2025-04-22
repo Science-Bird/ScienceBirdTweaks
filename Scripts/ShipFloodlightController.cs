@@ -19,12 +19,12 @@ namespace ScienceBirdTweaks.Scripts
         private List<Transform> _rotationList = new List<Transform>();
         List<Light> _shipFloodlightLights = new List<Light>();
         private StartOfRound _startOfRoundInstance;
-        private TimeOfDay _timeOfDayInstance;
         public bool _isRotating = false;
         private bool _initialized = false;
         private bool _initialStateSet = false;
         private bool _canRotate = false;
         private Animator interactAnimator;
+        public bool spinResolved = false;
 
         private Vector3 playerPos = Vector3.zero;
         private Vector3 enemyPos = Vector3.zero;
@@ -47,9 +47,6 @@ namespace ScienceBirdTweaks.Scripts
 
             if (_startOfRoundInstance == null)
                 _startOfRoundInstance = StartOfRound.Instance;
-
-            if (_timeOfDayInstance == null)
-                _timeOfDayInstance = TimeOfDay.Instance;
 
             if (_startOfRoundInstance == null)
                 ScienceBirdTweaks.Logger.LogError("Failed to get StartOfRound instance! Spinner cannot check landing status.");
@@ -127,7 +124,7 @@ namespace ScienceBirdTweaks.Scripts
 
             if (_initialized && ScienceBirdTweaks.FloodlightRotation.Value)
             {
-                bool isLanded = _startOfRoundInstance != null && _startOfRoundInstance.shipHasLanded && _timeOfDayInstance != null && (_timeOfDayInstance.currentDayTime / _timeOfDayInstance.totalTime) > 0.125f;// wait until certain time to ensure players synced
+                bool isLanded = _startOfRoundInstance != null && _startOfRoundInstance.shipHasLanded;
                 _canRotate = isLanded;
 
                 if (_pivotTransform == null)
@@ -179,10 +176,14 @@ namespace ScienceBirdTweaks.Scripts
                         }
                         rotatingLastFrame = true;
                     }
-                    else if (awaitingSpin && !rotatingLastFrame)
+                    else if (awaitingSpin && !rotatingLastFrame && GameNetworkManager.Instance.localPlayerController != null && GameNetworkManager.Instance.localPlayerController.IsServer && !spinResolved)
                     {
-                        //ScienceBirdTweaks.Logger.LogDebug($"AWAITED SPIN: {_timeOfDayInstance.currentDayTime / _timeOfDayInstance.totalTime}");
-                        StartSpinning();
+                        ShipFloodlightInteractionHandler interactHandler = Object.FindObjectOfType<ShipFloodlightInteractionHandler>();
+                        if (interactHandler != null)
+                        {
+                            interactHandler.ToggleSpinningLocal(true);
+                            spinResolved = true;
+                        }
                     }
                     else
                     {
@@ -228,7 +229,7 @@ namespace ScienceBirdTweaks.Scripts
             }
 
             SetAnimatorBool(true);
-
+            spinResolved = false;
             _isRotating = true;
             if (!this.enabled)
                 this.enabled = true;

@@ -1,4 +1,5 @@
-﻿using Unity.Netcode;
+﻿using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace ScienceBirdTweaks.Scripts
@@ -34,7 +35,7 @@ namespace ScienceBirdTweaks.Scripts
             }
         }
 
-        public void ToggleSpinningLocal()
+        public void ToggleSpinningLocal(bool waitForSync = false)
         {
             if (controller == null)
             {
@@ -42,10 +43,25 @@ namespace ScienceBirdTweaks.Scripts
             }
             if (controller != null)
             {
-                ToggleSpinning();
-                sendingRPC = true;
-                ToggleSpinningServerRpc();
+                if (waitForSync)
+                {
+                    StartCoroutine(LandingSyncWait());
+                }
+                else
+                {
+                    ToggleSpinning();
+                    sendingRPC = true;
+                    ToggleSpinningServerRpc();
+                }
             }
+        }
+
+        public IEnumerator LandingSyncWait()
+        {
+            yield return new WaitForSeconds(3f);
+            ToggleSpinning();
+            sendingRPC = true;
+            ToggleSpinningServerRpc();
         }
 
         public void ToggleSpinning()

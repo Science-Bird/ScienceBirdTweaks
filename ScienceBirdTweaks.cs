@@ -15,7 +15,8 @@ namespace ScienceBirdTweaks
     [BepInDependency("BMX.LobbyCompatibility", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("mrov.WeatherRegistry", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("MrovWeathers", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency("mrov.TerminalFormatter", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("WeatherTweaks", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("TerminalFormatter", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("zigzag.SelfSortingStorage", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("JacobG5.WesleyMoons", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("JacobG5.WesleyMoonScripts", BepInDependency.DependencyFlags.SoftDependency)]
@@ -123,6 +124,7 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<int> BlackoutFloodLightRange;
         public static ConfigEntry<string> TrueBlackoutNameBlacklist;
         public static ConfigEntry<string> TrueBlackoutHierarchyBlacklist;
+        public static ConfigEntry<bool> BlacklistLightAnimators;
 
         public static ConfigEntry<string> CentipedeMode;
         public static ConfigEntry<float> CentipedeFixedDamage;
@@ -249,6 +251,7 @@ namespace ScienceBirdTweaks
             TrueBlackout = base.Config.Bind("Blackout", "MrovWeathers True Blackout", true, "Revamps MrovWeathers' blackout so emissive materials are also darkened (no white spots left over), more lights are included, and problematic ones are excluded (like map hazards and outdoor apparatuses).");
             TrueBlackoutNameBlacklist = base.Config.Bind("Blackout", "MrovWeathers True Blackout Name Blacklist", "GunBarrelPos, BulletParticleFlare, LightSphere, Landmine, AnimContainer, BlackoutIgnore, ItemShip, ThrusterContainer", "A blacklist of object names to leave untouched during a blackout. If a light object's parent has the same name as one of these names, it will be skipped. This must be a comma-separated list and is case-sensitive. It is highly recommended you do not remove any of the default values unless you really know what you're doing.");
             TrueBlackoutHierarchyBlacklist = base.Config.Bind("Blackout", "MrovWeathers True Blackout Hierarchy Blacklist", "", "A blacklist of objects to leave untouched during a blackout. If a light object is found anywhere underneath these names in the hierarchy, it will be skipped. This must be a comma-separated list and is case-sensitive. It is recommended to use Name Blacklist whenever possible for performance reasons.");
+            BlacklistLightAnimators = base.Config.Bind("Blackout", "Blacklist Animators", false, "Exclude any lights associated with animations (will not exclude any manually included animators, such as the vanilla light switches). With mods like Facility Meltdown (or any mod/moon which animates lights), this will allow the lights to animate as usual rather than being blacked out.");
             BlackoutFloodLightIntensity = base.Config.Bind("Blackout", "Ship Floodlight Intensity in Lumen", 30000, new ConfigDescription("Lumen value of the ship's floodlights during MrovWeathers' blackout, (vanilla is 2275 Lumens). Set to 0 to disable floodlights during blackouts.", new AcceptableValueRange<int>(0, 60000)));
             BlackoutFloodLightAngle = base.Config.Bind("Blackout", "Ship Floodlight Angle in degrees", 80, new ConfigDescription("Light angle (degrees) of the ship's floodlights during MrovWeathers' blackout, (vanilla is 115 degrees).", new AcceptableValueRange<int>(0, 180)));
             BlackoutFloodLightRange = base.Config.Bind("Blackout", "Ship Floodlight Range", 600, new ConfigDescription("Light range (meters) of the ship's floodlights during MrovWeathers' blackout, (vanilla is 44m)", new AcceptableValueRange<int>(0, 2000)));

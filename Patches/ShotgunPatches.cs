@@ -131,6 +131,27 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
+        public static bool AmmoInInventory(ShotgunItem shotgun)
+        {
+            for (int i = 0; i < shotgun.playerHeldBy.ItemSlots.Length; i++)
+            {
+                if (!(shotgun.playerHeldBy.ItemSlots[i] == null))
+                {
+                    GunAmmo gunAmmo = shotgun.playerHeldBy.ItemSlots[i] as GunAmmo;
+                    if (gunAmmo != null && gunAmmo.ammoType == shotgun.gunCompatibleAmmoID)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public static bool AllowedToEject(ShotgunItem shotgun)
+        {
+            return unloadEnabled && (!AmmoInInventory(shotgun) || shotgun.shellsLoaded >= 2) && shotgun.shellsLoaded > 0;
+        }
+
 
         [HarmonyPatch(typeof(ShotgunItem), nameof(ShotgunItem.SetControlTipsForItem))]
         [HarmonyPostfix]
@@ -150,7 +171,7 @@ namespace ScienceBirdTweaks.Patches
             {
                 ScienceBirdTweaks.Logger.LogDebug($"Safety: {__instance.safetyOn}, setting text to {changeTo}");
                 int num = 3;
-                if (ScienceBirdTweaks.UnloadShells.Value && __instance.shellsLoaded <= 0 && __instance.FindAmmoInInventory() == -1)
+                if (unloadEnabled && __instance.shellsLoaded <= 0 && !AllowedToEject(__instance))
                 {// in-case tooltips have been shifted up
                     num = 2;
                 }
@@ -199,7 +220,7 @@ namespace ScienceBirdTweaks.Patches
 
         public static void TooltipUpdate(ShotgunItem shotgun)
         {
-            if (ScienceBirdTweaks.ShotgunMasterDisable.Value || shotgun.isHeldByEnemy) { return; }
+            if (ScienceBirdTweaks.ShotgunMasterDisable.Value || shotgun.isHeldByEnemy || shotgun.playerHeldBy == null) { return; }
             if (shotgun.IsOwner)
             {
                 string[] toolTips = shotgun.itemProperties.toolTips;
@@ -228,7 +249,7 @@ namespace ScienceBirdTweaks.Patches
                 }
                 if (unloadEnabled)
                 {
-                    if (shotgun.FindAmmoInInventory() != -1 && shotgun.shellsLoaded < 2)
+                    if (AmmoInInventory(shotgun) && shotgun.shellsLoaded < 2)
                     {
                         toolTips[1] = reloadString;
                     }
@@ -250,7 +271,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         static bool InteractPrefix(GrabbableObject __instance, bool right)// this exists to interrupt the usual interaction event if the eject requirements are met, this is so the eject procedure can do some client-side checks and do the hold event before starting synced interaction with other clients
         {
-            if (!ScienceBirdTweaks.ShotgunMasterDisable.Value && unloadEnabled && __instance.GetComponent<ShotgunItem>() && right && (__instance.GetComponent<ShotgunItem>().FindAmmoInInventory() == -1 || __instance.GetComponent<ShotgunItem>().shellsLoaded >= 2) && __instance.GetComponent<ShotgunItem>().shellsLoaded > 0)
+            if (!ScienceBirdTweaks.ShotgunMasterDisable.Value && __instance.GetComponent<ShotgunItem>() && right && AllowedToEject(__instance.GetComponent<ShotgunItem>()))
             {
                     if (__instance.IsOwner && __instance.isHeld && !__instance.isPocketed && HUDManager.Instance.holdFillAmount <= 0f && __instance.playerHeldBy.cursorTip.text == "")// make sure player isn't doing some other kind of ongoing interaction
                 {
@@ -271,7 +292,7 @@ namespace ScienceBirdTweaks.Patches
 
         static void LocalInteract(ShotgunItem shotgun, bool right)// initialize local hold event
         {
-            if (unloadEnabled && shotgun.IsOwner && shotgun.isHeld && !shotgun.isPocketed && HUDManager.Instance.holdFillAmount <= 0f && shotgun.playerHeldBy.cursorTip.text == "" && right && (shotgun.FindAmmoInInventory() == -1 || shotgun.shellsLoaded >= 2) && shotgun.shellsLoaded > 0)
+            if (unloadEnabled && shotgun.IsOwner && shotgun.isHeld && !shotgun.isPocketed && HUDManager.Instance.holdFillAmount <= 0f && shotgun.playerHeldBy.cursorTip.text == "" && right && AllowedToEject(shotgun))
             {
                 holdingDown = true;
                 startTime = Time.realtimeSinceStartup;
@@ -320,7 +341,7 @@ namespace ScienceBirdTweaks.Patches
         {
             if (ScienceBirdTweaks.ShotgunMasterDisable.Value || __instance.isHeldByEnemy) { return; }
 
-            if (unloadEnabled && right && (__instance.FindAmmoInInventory() == -1 || __instance.shellsLoaded >= 2) && __instance.shellsLoaded > 0)
+            if (right && AllowedToEject(__instance))
             {
                 if (!shellRegistered)
                 {
