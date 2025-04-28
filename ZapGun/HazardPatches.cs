@@ -179,7 +179,7 @@ namespace ScienceBirdTweaks.ZapGun
             if (!ScienceBirdTweaks.MineDisableAnimation.Value && !ScienceBirdTweaks.ZapGunRework.Value) { return; }
 
             MineZapper zapper = __instance.GetComponent<MineZapper>();
-            if (zapper != null && !zapper.tempStun)
+            if (zapper != null && !zapper.tempStun && !zapper.disabled)
             {
                 if (!enabled)
                 {

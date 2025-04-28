@@ -22,7 +22,7 @@ namespace ScienceBirdTweaks.ZapGun
         public bool startRoutine = false;
         public bool masterZappable = true;
         public float multiplier = 0.25f;
-        private bool disabled = false;
+        public bool disabled = false;
 
         private void Start()
         {
