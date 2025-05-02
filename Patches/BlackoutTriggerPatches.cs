@@ -170,7 +170,7 @@ namespace ScienceBirdTweaks.Patches
             {
                 Landmine mine = terminalObj.gameObject.GetComponent<Landmine>();
                 Turret turret = terminalObj.gameObject.GetComponent<Turret>();
-                SpikeRoofTrap spikes = terminalObj.gameObject.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>();
+                Transform parent = terminalObj.gameObject.transform.parent;
                 terminalObj.mapRadarText.color = Color.gray;
                 terminalObj.mapRadarBox.color = Color.gray;
                 if (mine != null)
@@ -181,8 +181,9 @@ namespace ScienceBirdTweaks.Patches
                 {
                     turret.ToggleTurretEnabled(false);
                 }
-                else if (spikes != null)
+                else if (parent != null && parent.gameObject.GetComponentInChildren<SpikeRoofTrap>())
                 {
+                    SpikeRoofTrap spikes = parent.gameObject.GetComponentInChildren<SpikeRoofTrap>();
                     spikes.ToggleSpikesEnabled(false);
                 }
                 terminalObj.inCooldown = true;
@@ -191,7 +192,7 @@ namespace ScienceBirdTweaks.Patches
             {
                 Landmine mine = terminalObj.gameObject.GetComponent<Landmine>();
                 Turret turret = terminalObj.gameObject.GetComponent<Turret>();
-                SpikeRoofTrap spikes = terminalObj.gameObject.transform.parent.gameObject.GetComponentInChildren<SpikeRoofTrap>();
+                Transform parent = terminalObj.gameObject.transform.parent;
                 terminalObj.mapRadarText.color = Color.green;
                 terminalObj.mapRadarBox.color = Color.green;
                 if (mine != null)
@@ -202,8 +203,9 @@ namespace ScienceBirdTweaks.Patches
                 {
                     turret.ToggleTurretEnabled(true);
                 }
-                else if (spikes != null)
+                else if (parent != null && parent.gameObject.GetComponentInChildren<SpikeRoofTrap>())
                 {
+                    SpikeRoofTrap spikes = parent.gameObject.GetComponentInChildren<SpikeRoofTrap>();
                     spikes.ToggleSpikesEnabled(true);
                 }
                 terminalObj.inCooldown = false;
