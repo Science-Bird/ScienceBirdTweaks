@@ -41,7 +41,6 @@ namespace ScienceBirdTweaks.Patches
                     }
                     else// end fall immediately after we reach the end of our curve
                     {
-                        ScienceBirdTweaks.Logger.LogDebug("Fall complete!");
                         __instance.fallTime = 1.02f;
                     }
                 }

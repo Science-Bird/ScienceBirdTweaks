@@ -5,7 +5,7 @@
         <AssemblyName>ScienceBird.ScienceBirdTweaks</AssemblyName>
         <Product>ScienceBirdTweaks</Product>
         <!-- Change to whatever version you're currently on. -->
-        <Version>4.1.6</Version>
+        <Version>4.2.0</Version>
     </PropertyGroup>
 
     <!-- Project Properties -->
@@ -62,6 +62,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Reference Include="TestAccount666.GoodItemScan">
+        <HintPath>Dependencies\GoodItemScan.dll</HintPath>
+      </Reference>
       <Reference Include="JLL">
         <HintPath>JLL.dll</HintPath>
       </Reference>
@@ -76,6 +79,9 @@
       </Reference>
       <Reference Include="SelfSortingStorage">
         <HintPath>SelfSortingStorage.dll</HintPath>
+      </Reference>
+      <Reference Include="TestAccount666.ShipWindowsBeta">
+        <HintPath>Dependencies\ShipWindowsBeta.dll</HintPath>
       </Reference>
       <Reference Include="WeatherRegistry">
         <HintPath>WeatherRegistry.dll</HintPath>

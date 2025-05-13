@@ -22,10 +22,9 @@ namespace ScienceBirdTweaks.Scripts
         public bool _isRotating = false;
         private bool _initialized = false;
         private bool _initialStateSet = false;
-        private bool _canRotate = false;
-        private Animator interactAnimator;
-        public bool spinResolved = false;
+        public bool _canRotate = false;
 
+        private bool followPlayer = false;
         private Vector3 playerPos = Vector3.zero;
         private Vector3 enemyPos = Vector3.zero;
         private float timeSinceLastCheck = 0f;
@@ -33,7 +32,17 @@ namespace ScienceBirdTweaks.Scripts
         private bool awaitingSpin = false;
         private bool rotatingLastFrame = false;
 
+        private float[] speedStates = [22.5f, 32.14f, 41.8f, 51.43f, 61.07f, 70.71f, 80.36f, 90f];
+        private string[] stateTips = ["Rotation speed (0.5x) : [LMB]", "Rotation speed (0.7x) : [LMB]", "Rotation speed (1.0x) : [LMB]", "Rotation speed (1.15x) : [LMB]", "Rotation speed (1.35x) : [LMB]", "Rotation speed (1.55x) : [LMB]", "Rotation speed (1.8x) : [LMB]", "Rotation speed (2.0x) : [LMB]"];
+        private int speedState = 0;
+        private bool stopNext = false;
+        public bool RPCsent = false;
+
+        public bool queueBlackout = false;
+
         private Dictionary<Transform, TransformState> _originalStates = new Dictionary<Transform, TransformState>();
+
+        public ShipFloodlightInteractionHandler interactionHandler;
 
         private struct TransformState
         {
@@ -52,12 +61,16 @@ namespace ScienceBirdTweaks.Scripts
                 ScienceBirdTweaks.Logger.LogError("Failed to get StartOfRound instance! Spinner cannot check landing status.");
             else
                 ScienceBirdTweaks.Logger.LogDebug("ShipFloodlightController Start: Got StartOfRound reference. Waiting for initialization and landing.");
+
+            _initialized = false;
+            interactionHandler = Object.FindObjectOfType<ShipFloodlightInteractionHandler>();
         }
 
         void Update()
         {
             if (!_initialized)
             {
+                //ScienceBirdTweaks.Logger.LogDebug("NOT INITIALIZED");
                 if (_parentTransform == null)
                 {
                     GameObject parentObject = GameObject.Find(ParentName);
@@ -117,7 +130,22 @@ namespace ScienceBirdTweaks.Scripts
                             ScienceBirdTweaks.Logger.LogWarning("Attempted to store initial rotation for a null transform in _rotationList.");
                     }
 
+                    if (ScienceBirdTweaks.FloodlightExtraControls.Value)
+                    {
+                        float rotSpeed = ScienceBirdTweaks.FloodLightRotationSpeed.Value;
+                        for (int i = 0; i < speedStates.Length; i++)// speed value will vary from 0.5x the config default speed to 2.0x (in discrete states)
+                        {
+                            speedStates[i] = (rotSpeed / 2) + i * ((2 * rotSpeed - rotSpeed / 2) / 7);
+                        }
+                        SetRotationSpeed(speedStates[2]);
+                        speedState = 2;
+                    }
                     _initialized = true;
+                    if (queueBlackout)
+                    {
+                        SetFloodlightData(ScienceBirdTweaks.BlackoutFloodLightIntensity.Value, ScienceBirdTweaks.BlackoutFloodLightAngle.Value, ScienceBirdTweaks.BlackoutFloodLightRange.Value);
+                        queueBlackout = false;
+                    }
                 }
                 else return;
             }
@@ -125,12 +153,24 @@ namespace ScienceBirdTweaks.Scripts
             if (_initialized && ScienceBirdTweaks.FloodlightRotation.Value)
             {
                 bool isLanded = _startOfRoundInstance != null && _startOfRoundInstance.shipHasLanded;
-                _canRotate = isLanded;
+                if (isLanded != _canRotate && GameNetworkManager.Instance.localPlayerController != null && GameNetworkManager.Instance.localPlayerController.IsServer && !RPCsent)
+                {
+                    if (interactionHandler == null)
+                    {
+                        interactionHandler = Object.FindObjectOfType<ShipFloodlightInteractionHandler>();
+                    }
+                    if (interactionHandler != null)
+                    {
+                        RPCsent = true;
+                        interactionHandler.LandingSyncClientRpc(isLanded);// host sends synced call to other clients when ship lands or takes off
+                    }
+                }
 
                 if (_pivotTransform == null)
                     return;
 
                 Vector3 pivotPoint = _pivotTransform.position;
+
 
                 if (_canRotate)
                 {
@@ -138,7 +178,7 @@ namespace ScienceBirdTweaks.Scripts
                     {
                         timeSinceLastCheck += Time.deltaTime;
 
-                        if (ScienceBirdTweaks.FloodlightPlayerFollow.Value && timeSinceLastCheck >= refreshInterval)
+                        if (followPlayer && timeSinceLastCheck >= refreshInterval)
                         {
                             playerPos = GetClosestPlayerPosition(_pivotTransform);
                             timeSinceLastCheck = 0f;
@@ -146,8 +186,9 @@ namespace ScienceBirdTweaks.Scripts
 
                         //Vector3 enemyPos = GetClosestWhitelistedEnemy(_pivotTransform)?.transform.position ?? Vector3.zero;
 
-                        if (playerPos != Vector3.zero)
+                        if (followPlayer && playerPos != Vector3.zero)
                         {
+                            stopNext = false;
                             Vector3 toPlayer = playerPos - _pivotTransform.position;
                             toPlayer.y = 0f;
 
@@ -174,16 +215,47 @@ namespace ScienceBirdTweaks.Scripts
                                     ScienceBirdTweaks.Logger.LogWarning($"Rotating sibling is null! Skipping rotation.");
                             }
                         }
+                        if (stopNext)// stop when at original state
+                        {
+                            // this is the margin the floodlight needs to be within the original state to reset
+                            float rotMargin = Mathf.Clamp(1f - (rotationSpeed / 30f) * 0.001f + 0.0005f,0.99f, 0.9995f);
+                            bool flag = true;
+                            foreach (KeyValuePair<Transform, TransformState> entry in _originalStates)
+                            {
+                                Transform t = entry.Key;
+                                TransformState originalState = entry.Value;
+
+                                if (t != null)
+                                {
+                                    if (Mathf.Abs(Quaternion.Dot(t.localRotation, originalState.localRotation)) < rotMargin)
+                                    {
+                                        //ScienceBirdTweaks.Logger.LogDebug($"({t.localRotation}), ({originalState.localRotation}), [{Quaternion.Dot(t.localRotation, originalState.localRotation)}], {rotMargin}, {rotationSpeed}");
+                                        flag = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (flag)
+                            {
+                                foreach (KeyValuePair<Transform, TransformState> entry in _originalStates)
+                                {
+                                    Transform t = entry.Key;
+                                    TransformState originalState = entry.Value;
+
+                                    if (t != null)
+                                    {
+                                        t.localPosition = originalState.localPosition;
+                                        t.localRotation = originalState.localRotation;
+                                    }
+                                }
+                                StopSpinning();
+                            }
+                        }
                         rotatingLastFrame = true;
                     }
-                    else if (awaitingSpin && !rotatingLastFrame && GameNetworkManager.Instance.localPlayerController != null && GameNetworkManager.Instance.localPlayerController.IsServer && !spinResolved)
+                    else if (awaitingSpin && !rotatingLastFrame)
                     {
-                        ShipFloodlightInteractionHandler interactHandler = Object.FindObjectOfType<ShipFloodlightInteractionHandler>();
-                        if (interactHandler != null)
-                        {
-                            interactHandler.ToggleSpinningLocal(true);
-                            spinResolved = true;
-                        }
+                        StartSpinning();
                     }
                     else
                     {
@@ -201,22 +273,6 @@ namespace ScienceBirdTweaks.Scripts
             }
         }
 
-        public void SetAnimatorBool(bool on)
-        {
-            if (interactAnimator == null)
-            {
-                ShipFloodlightInteractionHandler interactHandler = Object.FindObjectOfType<ShipFloodlightInteractionHandler>();
-                if (interactHandler != null)
-                {
-                    interactAnimator = interactHandler.interactAnimator;
-                }
-            }
-            if (interactAnimator != null)
-            {
-                interactAnimator.SetBool("on", on);
-            }
-        }
-
         public void StartSpinning()
         {
             if (!_canRotate)
@@ -228,26 +284,97 @@ namespace ScienceBirdTweaks.Scripts
                 return;
             }
 
-            SetAnimatorBool(true);
-            spinResolved = false;
+            if (ButtonPanelController.Instance != null)
+            {
+                ButtonPanelController.Instance.GreenLightSet(true);
+            }
             _isRotating = true;
             if (!this.enabled)
                 this.enabled = true;
 
-            ScienceBirdTweaks.Logger.LogDebug($"Floodlight rotation enabled.");
+            //ScienceBirdTweaks.Logger.LogDebug($"Floodlight rotation enabled.");
         }
 
         public void StopSpinning()
         {
-            SetAnimatorBool(false);
+            if (ButtonPanelController.Instance != null)
+            {
+                ButtonPanelController.Instance.GreenLightSet(false);
+            }
+            stopNext = false;
             _isRotating = false;
             awaitingSpin = false;
 
-            ScienceBirdTweaks.Logger.LogDebug($"Floodlight rotation disabled.");
+            //ScienceBirdTweaks.Logger.LogDebug($"Floodlight rotation disabled.");
         }
 
-        public void SetRotationSpeed(float newSpeed) {
-            rotationSpeed = newSpeed;
+        public void SetRotationSpeed(float newSpeed = -1f, int state = -1) {
+            //ScienceBirdTweaks.Logger.LogDebug($"Set rotation speed: {newSpeed}, {state}");
+            if (newSpeed == -1f)
+            {
+                if (state == -1)
+                {
+                    speedState++;
+                }
+                else
+                {
+                    speedState = state;
+                }
+                speedState = speedState % speedStates.Length;
+                rotationSpeed = speedStates[speedState];
+                if (ButtonPanelController.Instance != null)
+                {
+                    ButtonPanelController.Instance.Knob1Tip(stateTips[speedState]);
+                }
+            }
+            else
+            {
+                rotationSpeed = newSpeed;
+            }
+            
+        }
+
+        public void ResetRotation()
+        {
+            if (_canRotate)
+            {
+                stopNext = true;
+                if (!_isRotating)
+                {
+                    bool flag = false;
+                    foreach (KeyValuePair<Transform, TransformState> entry in _originalStates)
+                    {
+                        Transform t = entry.Key;
+                        TransformState originalState = entry.Value;
+
+                        if (t != null)
+                        {
+                            if (Mathf.Abs(Quaternion.Dot(t.localRotation, originalState.localRotation)) < 0.999)
+                            {
+                                flag = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (flag)
+                    {
+                        StartSpinning();
+                    }
+                    else
+                    {
+                        stopNext = false;
+                    }
+                }
+            }
+        }
+
+        public void SetTargeting()
+        {
+            followPlayer = !followPlayer;
+            if (ButtonPanelController.Instance != null)
+            {
+                ButtonPanelController.Instance.BlueLightSet(followPlayer);
+            }
         }
 
         public void SetFloodlightData(float intensity, float angle, float range)
@@ -313,6 +440,7 @@ namespace ScienceBirdTweaks.Scripts
             else
             {
                 ScienceBirdTweaks.Logger.LogWarning("No floodlight lights found to set data.");
+                queueBlackout = true;
             }
         }
 
@@ -374,7 +502,7 @@ namespace ScienceBirdTweaks.Scripts
                     continue;
 
                 float dist = Vector3.Distance(_pivotTransform.position, player.transform.position);
-                if (dist < minDistance)
+                if (dist < minDistance && dist < 80f)// only include players within 80 units
                 {
                     minDistance = dist;
                     closestPos = player.transform.position;

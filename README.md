@@ -29,6 +29,8 @@ All this tweak does is ensure all ship furniture/unlockables will be parented to
 - **Only Fix Vanilla Objects**: This is a setting to avoid any unwanted errors with attempting (or failing) to fix modded furniture items.
 >*Default: ON*
 
+*(If you do want to fix modded items, a configurable blacklist or whitelist is provided to only include certain modded items or exclude certain modded items from this fix)*
+
 - **Alternate Fix Logic (EXPERIMENTAL)**: If you end up having any unexpected issues with furniture while using this tweak, you can try this. It's not super thoroughly tested, but it should simplify the code a bit to reduce possible points of failure or incompatibilities with other mods.
 >*Default: OFF*
 
@@ -47,34 +49,6 @@ All this tweak does is ensure all ship furniture/unlockables will be parented to
 Same as Fixed Ship Objects, but for suits: properly parents them so they are selectable easily on takeoff and landing without jitter.
 
 ![FixedSuits](https://imgur.com/D0Y5lFF.png)
-
-</details>
-
-### Rotating Floodlight
-
-<details>
-<summary>Details</summary>
-<br />
-
->*Default: OFF - All clients*
-
-Ever wanted the ship to be a bit more dynamic? Well, the big spotlights spin now.
-
-![FloodlightSpinDemonstration](https://imgur.com/qYCJYxP.gif)
-
-This is toggled by a button next to the ship's lever, and works especially well with "blackout" effects (see associated section) or generally dark moons, making the ship easier to spot and providing dynamic lighting to the surroundings. The exact rotation speed, brightness, etc. are all configurable.
-
-Other configurable modes:
-
-- **Rotate On Landing**: The floodlight will start rotating automatically once the ship lands.
->*Default: OFF - All clients*
-
-- **Follow Players (EXPERIMENTAL)**: The floodlight will rotate to face the closest player outside the ship (this is a bit weird currently since the two lights point outwards, meaning the player facing them will actually be between the lights).
->*Default: OFF - All clients*
-
-At some point this might be turned into a purchasable upgrade, but for now it's just something you can enable.
-
-*`Credit for this tweak goes to xameryn`*
 
 </details>
 
@@ -156,6 +130,101 @@ Under "Ship Tweaks Removals" in config, you will find a list of items you can re
 - Air filter (in the corner by the monitors)
 - Batteries (on the counter by the monitors)
 
+Although not *on* the ship exactly, it's similar enough to be grouped here:
+- The clipboard manual which comes with the Company Cruiser
+
+</details>
+
+## SHIP ADDITIONS
+
+### Fancy Button Panel
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: OFF - All clients*
+
+Do you need something shiny and clicky to distract you from the tedium of your job? Good news! The company will now provide you with a realistic, interactable, and dynamically animating panel at the front of your ship! You may now press buttons and turn knobs to your heart's content.
+
+The lights on this panel will also change and animate depending on the ship's state. Specifically: when taking off, routing, or landing, when the doors are closed, when a player is being teleported, when a signal is being transmitted, when the time goes past 10:00pm, and when being fired.
+
+![ShipFancyPanel](https://imgur.com/VRblh4G.png)
+
+If you really want functions for these buttons and knobs other than something to fidget with, some uses are provided by the following Rotating Floodlight addition (see it below for details). Though it's not quite a "function", you can also change what tooltips display for each button in the config.
+
+I've made it very simple to patch the functions on each button and knob, so other mods can easily interface with it if they'd like to (a map of button names is provided on the [GitHub](https://github.com/Science-Bird/ScienceBirdTweaks), along with all the source code). I'm also open to adding more functions for these myself, so feel free to suggest something (my Discord thread is linked at the bottom of the page).
+
+</details>
+
+### Rotating Floodlight
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: OFF - All clients*
+
+Something to make your ship experience more dynamic: the big top-mounted floodlight can rotate.
+
+![FloodlightSpinDemonstration](https://imgur.com/qYCJYxP.gif)
+
+This is toggled by a button next to the ship's lever, and works especially well with "blackout" effects (see associated section) or generally dark moons, making the ship easier to spot and providing dynamic lighting to the surroundings.
+
+**Floodlight Configuration Controls**: In addition to changing properties such as speed, brightness, and angle in the config, some can be adjusted in-game via the ship's main panel:
+>*Default: ON - All clients*
+
+- **Reset Position Button**: Resets the floodlight to its default orientation.
+
+- **Rotation Speed Knob**: Adjust the speed of rotation on the fly, up to twice your configured speed or as low as half the configured speed.
+
+- **Player Targeting Toggle (EXPERIMENTAL)**: Switches to a mode where the floodlight will face towards the closest player outside the ship (within a certain distance). This is separately configurable from the other controls.
+>*Default: OFF - All clients*
+
+One additional configurable mode:
+
+- **Rotate On Landing**: The floodlight will start rotating automatically once the ship lands.
+    
+    >*Default: OFF - All clients*
+
+At some point this might be turned into a purchasable upgrade, but for now it's just something you can enable.
+
+*`Credit for this tweak goes to xameryn`*
+
+</details>
+
+### Dynamic Occupancy Sign
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: OFF - All clients*
+
+With so many cooks in the kitchen, it seems like the company fire code may need some updating! This adds additional "maximum occupancy posters" (up to 16), which will dynamically update as players join the lobby (or can be manually set to some specific value in config).
+
+These come in two styles, see if you prefer the amateur or professional flavour:
+
+![OccupanyComparison](https://imgur.com/HXEyNNm.png)
+
+</details>
+
+### Player Death Effects
+
+<details>
+<summary>Details</summary>
+<br />
+
+These are two additions that try different approaches to give more information about how many of your crewmates are left alive:
+
+- **Broadcast Death Notification**: All living players will hear a quick series of beeps indicating somebody has died (you can imagine this like a distress call or network disconnection). It's up to you to listen carefully and keep track of how many have fallen.
+>*Default: OFF - All clients*
+
+- **Auto Teleport Bodies**: If your ship has a teleporter, bodies will be teleported immediately after death and collected in the ship as scrap. This collection notification is a more clear way of notifying other players of their passing. In addition, players whose bodies cannot be recovered by teleporter will show a similar notification for an "unrecoverable body".
+>*Default: OFF - All clients*
+
+Like the rotating floodlight, these may someday be re-imagined as full ship upgrades.
+
 </details>
 
 ## GENERAL TWEAKS
@@ -169,6 +238,56 @@ Under "Ship Tweaks Removals" in config, you will find a list of items you can re
 >*Default: ON - Client-side*
 
 Changes the name of the "big bolt" to reflect what it actually is (a big screw).
+
+</details>
+
+### Missing Hover Tip Fix
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - Client-side*
+
+Have you ever noticed that if you start holding down interact before you actually get to the trigger, the interact icon and text won't appear like they would if you started the interact after hovering over the trigger? Maybe I'm just crazy for this one, but either way here's a tweak.
+
+</details>
+
+### Smoke Particle Fix
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - Client-side (?)*
+
+The exhaust smoke from the company cruiser, smoke trail left by old birds, and smoke from explosions are now affected by fog, and thus don't stick out strangely when seen from far away. This comes with the compromise of the particles not looking quite as nice as vanilla, but it's a subtle difference.
+
+![SmokeFixDemo](https://imgur.com/vv7kB6H.png)
+
+</details>
+
+### Bridge Items Fix
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - All clients*
+
+If a bridge falls and you've left an item up there, have no fear! Items on vanilla collapsing bridges will now fall down with them.
+
+</details>
+
+### Clean Belt Bag UI
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - Client-side*
+
+Clears all the scan nodes on your screen when opening the belt bag's menu, to keep everything from looking cluttered (since scan nodes will appear over top of the belt bag interface).
 
 </details>
 
@@ -200,6 +319,42 @@ Fixes a vanilla issue where after stepping on a deactivated mine then leaving th
 
 </details>
 
+### Crouch Damage Fix
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - Client-side (?)*
+
+Disables the damage animation when a player is crouched. This animation would cause the player to briefly stand up when taking damage, which can be quite awkward and deadly in some situations.
+
+</details>
+
+### Configurable Starting Moon
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: Experimentation - All clients*
+
+At last, you can configure the starting moon (on new save or after being fired) to whatever you want! Just put in the name of the moon (no numbers needed), and whether it's paid, free, vanilla, or modded, that will be the new starting moon.
+
+</details>
+
+### Scrap Muting
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: Nothing - All clients*
+
+Provided in the config is a list of items that will have their passive noise effects disabled. This covers a variety of different noisemaking items from the animating ones that make noise when picked up, to special items like the clock and laughing masks, and even includes some weird modded edge cases like Magic Wesley's radioactive barrels. Muting an item this way means dogs won't hear them either.
+
+</details>
+
 ### Falling Rotation Fix
 
 <details>
@@ -215,6 +370,20 @@ The only immediate consequence of this bug is the visual effect of objects stran
 In any case, this tweak scales this rotation so it will finish while the object is still in the air and its falling state will end normally.
 
 *The default value of this tweak has been changed to OFF after some reports of issues (the fix is so small that it's really not worth risking). However, its code has remained unchanged for a long time and I've never encountered any issues nor recieved any other reports, making it likely a mod incompatibility. So, it should be safe to enable this in most cases, but if you do end up having issues please send the details to me.*
+
+</details>
+
+### Pause Menu Flicker Fix
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: OFF - Client-side*
+
+I call this a "fix", but it's more like a janky work-around. If you've had an issue with the "Resume" button flickering when you open the pause menu, this will resolve that by making the currently selected option always highlighted. This does look a little strange in-game, but it's better than flickering at least.
+
+The flickering isn't a vanilla issue (at least to a meaningful extent), but I'm uncertain what mod(s) cause it or how widespread it is. Either way, this is a tweak that exists.
 
 </details>
 
@@ -234,17 +403,105 @@ ButteryStancakes has a more [extensively customizable version of this feature](h
 
 </details>
 
-### Pause Menu Flicker Fix
+## ENEMY TWEAKS
+
+### Coilhead Elevator Fix
 
 <details>
 <summary>Details</summary>
 <br />
 
->*Default: OFF - Client-side*
+>*Default: ON - All clients*
 
-I call this a "fix", but it's more like a janky work-around. If you've had an issue with the "Resume" button flickering when you open the pause menu, this will resolve that by making the currently selected option always highlighted. This does look a little strange in-game, but it's better than flickering at least.
+Fixes an issue with elevators that would cause player sightlines to not be properly communicated to other clients, meaning coilheads could sometimes move when a player in an elevator was looking at them. This took a lot of trial and error to figure out, so please enjoy this fix.
 
-The flickering isn't a vanilla issue (at least to a meaningful extent), but I'm uncertain what mod(s) cause it or how widespread it is. Either way, this is a tweak that exists.
+</details>
+
+### Gimme That Mask
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: OFF - All clients*
+
+When a mask is killed you can now grab that mask right off their face! This is very similar to the mod [TakeThatMaskOff](https://thunderstore.io/c/lethal-company/p/SillySquad/TakeThatMaskOff/), but unlike that mod, this should (hopefully) not cause any de-syncs or other bugs.
+
+This should be compatible with most common masked changing mods like [Mirage](https://thunderstore.io/c/lethal-company/p/qwbarch/Mirage/), the various mods fixing masked behaviour, and any mods adding tragedy masked enemies, but it does rely on there actually being a mask on the enemy. So, **if you have any configuration enabled which removes the masks from masked enemies, this tweak won't do anything**.
+
+The average scrap value of these recoverable masks is also configurable (default is 25, set fairly low so mask farming doesn't become too powerful).
+
+![GrabbableMaskDemonstration](https://imgur.com/PskfkCv.png)
+
+This is also compatible with the "oni" masked from [s1ckboy's Seichi](https://thunderstore.io/c/lethal-company/p/s1ckboy/Seichi/)!
+
+</details>
+
+### Snare Flea Forgiveness Options
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: Vanilla - All clients*
+
+Provides some alternatives to the vanilla behaviour of the snare flea/centipede:
+
+- **Second chance:** provides players with a second chance, as the snare flea will leave them alone one time after bringing them to low health (default/vanilla is 15 HP).
+    - This is equivalent to the singleplayer mechanic, just implemented in multiplayer (any config changes to this mechanic will also affect the singleplayer mechanic as well).
+
+- **Fixed damage:** The snare flea will do a fixed portion (default 50%) of a player's maximum health before dropping off them (when set at 50%, players will always be killed on their second encounter if their health is above half, and killed on their first encounter if it's below half).
+    - To account for Lethal Company's built-in "extra life" when a player reaches critical health (saving them from lethal damage once), a snare flea will always damage a player when they are at critical HP.
+
+These come with config options like the low health threshold for second chance and the health % for fixed damage.
+
+</details>
+
+### Earth Leviathan Burrowing Tweaks
+
+<details>
+<summary>Details</summary>
+<br />
+
+There are two included options for customizing earth leviathans:
+
+- **More Surfaces**: Allows earth leviathans to burrow through more surfaces rather that just the default "natural" surfaces of grass, gravel, and snow (exact list of added surfaces is configurable).
+
+>*Default: OFF - All clients*
+
+- **Quicksand Holes**: Earth leviathans leave behind patches of quicksand where they emerge from and enter the ground (for surfaces which support quicksand), making them more impactful on the map environment.
+
+>*Default: OFF - All clients*
+
+</details>
+
+### Maneater Difficulty Options
+
+<details>
+<summary>Details</summary>
+<br />
+
+There are plenty of mods that make maneaters easier to deal with, but what about harder?
+
+- **Transformation Interruption**: When hit while transforming, the maneater will immediately enter its chase mode.
+
+>*Default: OFF - All clients*
+
+- **Faster Doors**: Maneaters will open doors a bit quicker.
+
+>*Default: OFF - All clients*
+
+</details>
+
+### Tulip Snake Quiet Laugh
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: OFF - All clients*
+
+If you think the tulip snake noises attracting dogs was a bridge too far, well, this is the tweak for you.
 
 </details>
 
@@ -450,7 +707,7 @@ Improves the readability of shotgun tooltips:
 
 </details>
 
-### Unloading Shells
+### Unloading & Checking Shells
 
 <details>
 <summary>Details</summary>
@@ -458,9 +715,17 @@ Improves the readability of shotgun tooltips:
 
 >*Default: OFF - All clients*
 
-When you have no shells in your inventory or when the shotgun is full, you can hold down the reload button and it will act as an "eject shells" button, with the tooltip dynamically updating accordingly. This will drop the loaded ammunition onto the ground so you can redistribute or store shotgun shells as you please.
+When the shotgun is unable to be reloaded, you can use the reload button to open up the chambers of the shotgun (with the tooltip dynamically updating accordingly). This acts as a more natural way of checking how much ammo you have.
+
+![OpenChamberAnim](https://imgur.com/pwHv8YM.png)
+
+If you keep holding down the button for a short time with the chambers open, you will eject all your currently loaded shells onto the ground, allowing you to redistribute them as you please.
 
 ![EjectedShells](https://imgur.com/J44BjUC.png)
+
+The opening chambers part of this sequence is ported from [LCAmmoCheck](https://thunderstore.io/c/lethal-company/p/axd1x8a/LCAmmoCheck/) by [Axd1x8a / Aъ / FeeeeK](https://github.com/feeeek/) with their permission. Thank you for allowing me to integrate this here!
+
+The unloading and shotgun animating parts of this are separately configurable, so you can check ammunition without the eject functionality, or simply hold down to eject without any animation.
 
 </details>
 
@@ -503,6 +768,7 @@ This is a total rewrite of the blackout weather from [MrovWeathers](https://thun
 - Configurable blacklists of what kinds of lights/parent objects should be excluded from the blackout routine.
 - Configurable ship floodlight properties during a blackout (brightness, angle, etc.).
 - Highly optimized performance (especially compared to the previous experimental version of this tweak) which batches the lights to shut off in cycles rather than all at once.
+- Fun new (configurable) sound effect!
 
 In-fact, this feature has come such a long way that it's become hard to justify not merging it into Mrov Weathers itself, so that may happen in the future.
 
@@ -524,7 +790,7 @@ The same logic is used in the Apparatus True Blackout tweak in the following sec
 
 Some optional adjustments to make vanilla power outages more thorough:
 
-- **Apparatus Blackout**: When removing the apparatus, lights both inside and out will be shut off, along with any emissive textures (using the same logic as the above Mrov Weathers True Blackout tweak). This of course does not include the sun.
+- **Apparatus True Blackout**: When removing the apparatus, lights both inside and out will be shut off, along with any emissive textures (using the same logic as the above Mrov Weathers True Blackout tweak). This of course does not include the sun.
 
 >*Default: OFF - All clients*
 
@@ -535,6 +801,10 @@ Some optional adjustments to make vanilla power outages more thorough:
 - **Breaker Hazard Blackout**: Same as above, but when the breaker is switched off (everything reactivates when the breaker is turned back on).
 
 >*Default: OFF - All clients*
+
+- **Blackout Sound Effect**: Plays a "powering down" sound effect upon a blackout occuring (includes both Mrov Weathers' blackout and the above Apparatus True Blackout).
+
+>*Default: ON - Client-side*
 
 </details>
 
@@ -588,29 +858,9 @@ These should be compatible with [Zigzag's SelfSortingStorage](https://thundersto
 
 *`Credit for these tweaks goes to xameryn`*
 
-## GAMEPLAY TWEAKS
+## BALANCING TOOLS
 
-### Snare Flea Forgiveness Options
-
-<details>
-<summary>Details</summary>
-<br />
-
->*Default: Vanilla - All clients*
-
-Provides some alternatives to the vanilla behaviour of the snare flea/centipede:
-
-- **Second chance:** provides players with a second chance, as the snare flea will leave them alone one time after bringing them to low health (default/vanilla is 15 HP).
-    - This is equivalent to the singleplayer mechanic, just implemented in multiplayer (any config changes to this mechanic will also affect the singleplayer mechanic as well).
-
-- **Fixed damage:** The snare flea will do a fixed portion (default 50%) of a player's maximum health before dropping off them (when set at 50%, players will always be killed on their second encounter if their health is above half, and killed on their first encounter if it's below half).
-    - To account for Lethal Company's built-in "extra life" when a player reaches critical health (saving them from lethal damage once), a snare flea will always damage a player when they are at critical HP.
-
-These come with config options like the low health threshold for second chance and the health % for fixed damage.
-
-</details>
-
-### Gimme That Mask
+### Interior Scrap Analysis and Bonuses
 
 <details>
 <summary>Details</summary>
@@ -618,13 +868,17 @@ These come with config options like the low health threshold for second chance a
 
 >*Default: OFF - All clients*
 
-When a mask is killed you can now grab that mask right off their face! This is very similar to the mod [TakeThatMaskOff](https://thunderstore.io/c/lethal-company/p/SillySquad/TakeThatMaskOff/), but unlike that mod, this should (hopefully) not cause any de-syncs or other bugs.
+**REQUIRES LETHAL LEVEL LOADER TO BE USED**
 
-This should be compatible with most common masked changing mods like [Mirage](https://thunderstore.io/c/lethal-company/p/qwbarch/Mirage/) and the various mods fixing masked behaviour, but it does rely on there actually being a mask on the enemy. So, if you have any configuration enabled which removes the masks from masked enemies, this tweak won't do anything.
+A set of two tools designed to be used together to help balance interiors:
 
-The average scrap value of these recoverable masks is also configurable (default is 25, set fairly low so mask farming doesn't become too powerful).
+- **Interior Scrap Density Logging**: Found under the technical configuration menu, this will log various bits of information about how scrap generated in an interior, including total number of scrap, average scrap per tile, and average scrap per unit area. It's not recommended to use this for regular play due to potentional performance losses on initial generation (especially for large interiors), but feel free to test and let me know how it runs.
 
-![GrabbableMaskDemonstration](https://imgur.com/PskfkCv.png)
+- **Interior Scrap Bonuses**: This is its own config section, and allows you to add a fixed scrap bonus to a given interior whenever it generates (an alternative to attempting to change an interior's size). Modded interiors added via LLL are included here too. This config section generates automatically after starting a lobby.
+
+![InteriorLogExample](https://imgur.com/dmIp8JC.png)
+
+This is still an early prototype, so I'll see how useful this ends up being. In the future I might add an option to inject a dynamic amount of scrap depending how dense an interior typically is.
 
 </details>
 
@@ -645,6 +899,9 @@ Some quick patches I put in for issues and inconveniences I've encountered:
 
 - **LLL Unlock Syncing**: Manually applies the host's unlocked moons to all clients, so any moons the host has, the clients will have too (addressing an issue where unlocks in Wesley's Moons could become desynced).
 >*Default: OFF - All clients*
+
+- **LLL Ship Lever Fix**: Fixes the ship lever being interactable while routing with LLL installed.
+>*Default: ON - Client-side (?)*
 
 - **Wesley's Moons Tape Insert Fix (EXPERIMENTAL)**: A quick patch which attempts to fix a problem where clients would be unable to interact with the casette tape loader or story log machine. I only did fairly light testing with 2 players, and this involves a lot of messing around with player IDs, so I can't be certain how this will operate in varied multiplayer circumstances. 
 >*Default: OFF - All clients*
@@ -699,6 +956,18 @@ Try scrolling around or re-entering the store menu if you have any issues with t
 
 </details>
 
+### Ship Windows Shutter Fix - ShipWindowsBeta
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - All clients*
+
+Fixes an apparent bug in [ShipWindowsBeta](https://thunderstore.io/c/lethal-company/p/TestAccount666/ShipWindowsBeta/) where the shutters would never close when taking off, only on landing or routing.
+
+</details>
+
 ### Diversity Computer Begone - Diversity
 
 <details>
@@ -722,6 +991,8 @@ A major update for Diversity fixing its outstanding issues and possibly adding c
 **All work on this mod is done by myself and my friend xameryn.**
 
 Thank you to all the wonderful mod creators mentioned throughout that have inspired me to learn how their mods work so I could add things myself!
+
+I'd like to especially thank [Axd1x8a / Aъ / FeeeeK](https://github.com/feeeek/) who allowed me to port their mod [LCAmmoCheck](https://thunderstore.io/c/lethal-company/p/axd1x8a/LCAmmoCheck/) into this one.
 
 Many of these tweaks were originally suggested or improved by various users in my Discord thread, thank you for your contributions as well.
 

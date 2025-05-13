@@ -10,6 +10,7 @@ using UnityEngine.SceneManagement;
 using ScienceBirdTweaks.Scripts;
 using System.IO;
 using static UnityEngine.ParticleSystem.PlaybackState;
+using ScienceBirdTweaks.Patches;
 
 namespace ScienceBirdTweaks.Scripts
 {
@@ -369,13 +370,31 @@ namespace ScienceBirdTweaks.Scripts
                 }
             }
 
-
-
-
+            trueBlackoutInstance.StartCoroutine(trueBlackoutInstance.PlayAudioAfterWait());
             trueBlackoutInstance.StartCoroutine(trueBlackoutInstance.DisableLightsOverFrames(lightObjects));
 
             totalStopwatch.Stop();
             ScienceBirdTweaks.Logger.LogDebug($"[TIMER] Material Assignment finished at {totalStopwatch.ElapsedMilliseconds}ms");
+        }
+
+        IEnumerator PlayAudioAfterWait()
+        {
+            if (!StartOfRound.Instance.shipHasLanded)
+            {
+                yield return new WaitForSeconds(3f);
+            }
+            if (ScienceBirdTweaks.BlackoutSFX.Value && BlackoutTriggerPatches.powerDownClip != null)
+            {
+                ScienceBirdTweaks.Logger.LogDebug($"Playing blackout audio!");
+                Vector3 randomPositionInRadius = RoundManager.Instance.GetRandomPositionInRadius(GameNetworkManager.Instance.localPlayerController.transform.position, 6f, 9f);
+                SoundManager.Instance.ambienceAudio.transform.position = randomPositionInRadius;
+                SoundManager.Instance.ambienceAudio.volume = 1f;
+                SoundManager.Instance.ambienceAudio.clip = BlackoutTriggerPatches.powerDownClip;
+                if (!SoundManager.Instance.ambienceAudio.isPlaying)
+                {
+                    SoundManager.Instance.ambienceAudio.Play();
+                }
+            }
         }
 
         IEnumerator DisableLightsOverFrames(IEnumerable<GameObject> lightObjectsEnumerable)

@@ -7,35 +7,19 @@ namespace ScienceBirdTweaks.Scripts
     public class ShipFloodlightInteractionHandler : NetworkBehaviour
     {
         public static ShipFloodlightController controller;
-        public Animator interactAnimator;
+        public ButtonPanelController panelController;
         private bool sendingRPC = false;
 
-        public void Start()
+        public void Start()// this class has been largely replaced by ButtonPanelController, but still serves some niche RPC calls since FloodlightController is a monobehaviour
         {
-            controller = FindObjectOfType<ShipFloodlightController>();
+            if (ScienceBirdTweaks.FloodlightRotation.Value)
+            {
+                controller = FindObjectOfType<ShipFloodlightController>();
+            }
         }
-
-        [ServerRpc(RequireOwnership = false)]
-        public void ToggleSpinningServerRpc()
-        {
-            ToggleSpinningClientRpc(); 
-        }
-
 
         [ClientRpc]
-        public void ToggleSpinningClientRpc()
-        {
-            if (sendingRPC)
-            {
-                sendingRPC = false;
-            }
-            else
-            {
-                ToggleSpinning();
-            }
-        }
-
-        public void ToggleSpinningLocal(bool waitForSync = false)
+        public void LandingSyncClientRpc(bool rotate)
         {
             if (controller == null)
             {
@@ -43,25 +27,18 @@ namespace ScienceBirdTweaks.Scripts
             }
             if (controller != null)
             {
-                if (waitForSync)
-                {
-                    StartCoroutine(LandingSyncWait());
-                }
-                else
-                {
-                    ToggleSpinning();
-                    sendingRPC = true;
-                    ToggleSpinningServerRpc();
-                }
+                StartCoroutine(LandingSyncWait(rotate));
             }
         }
 
-        public IEnumerator LandingSyncWait()
+        public IEnumerator LandingSyncWait(bool rotate)
         {
-            yield return new WaitForSeconds(3f);
-            ToggleSpinning();
-            sendingRPC = true;
-            ToggleSpinningServerRpc();
+            if (rotate)
+            {
+                yield return new WaitForSeconds(2f);
+            }
+            controller._canRotate = rotate;
+            controller.RPCsent = false;
         }
 
         public void ToggleSpinning()
@@ -72,7 +49,7 @@ namespace ScienceBirdTweaks.Scripts
             }
             if (controller != null)
             {
-                if (interactAnimator.GetBool("on"))
+                if (controller._isRotating)
                 {
                     controller.StopSpinning();
                 }

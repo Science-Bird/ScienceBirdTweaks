@@ -1,0 +1,133 @@
+using GameNetcodeStuff;
+using HarmonyLib;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using System.Collections;
+using Unity.Netcode;
+using ScienceBirdTweaks.Patches;
+
+namespace ScienceBirdTweaks.Scripts
+{
+    public class AutoTeleportScript : MonoBehaviour
+    {
+        private bool doingRoutine = false;
+
+        public static ShipTeleporter teleporter;
+
+        public void StartTeleportRoutine(ShipTeleporter shipTeleporter, int player)
+        {
+            teleporter = shipTeleporter;
+            if (!doingRoutine)
+            {
+                StartCoroutine(TeleportBodyToShip(player));
+            }
+        }
+
+        private IEnumerator TeleportBodyToShip(int player)// recreation of vanilla teleport routine, but only containing what's needed for dead bodies
+        {
+            doingRoutine = true;
+            teleporter.shipTeleporterAudio.PlayOneShot(teleporter.teleporterSpinSFX);
+            PlayerControllerB playerToBeamUp = StartOfRound.Instance.allPlayerScripts[player];
+            if (playerToBeamUp == null)
+            {
+                ScienceBirdTweaks.Logger.LogDebug("Targeted player is null");
+                yield break;
+            }
+            if (playerToBeamUp.deadBody != null)
+            {
+                if (playerToBeamUp.deadBody.beamUpParticle == null)
+                {
+                    yield break;
+                }
+                playerToBeamUp.deadBody.beamUpParticle.Play();
+                playerToBeamUp.deadBody.bodyAudio.PlayOneShot(teleporter.beamUpPlayerBodySFX);
+            }
+            //ScienceBirdTweaks.Logger.LogDebug("Teleport A");
+            yield return new WaitForSeconds(3f);
+            bool flag = false;
+            if (playerToBeamUp.deadBody != null)
+            {
+                if (playerToBeamUp.deadBody.grabBodyObject == null || !playerToBeamUp.deadBody.grabBodyObject.isHeldByEnemy)
+                {
+                    flag = true;
+                    playerToBeamUp.deadBody.attachedTo = null;
+                    playerToBeamUp.deadBody.attachedLimb = null;
+                    playerToBeamUp.deadBody.secondaryAttachedLimb = null;
+                    playerToBeamUp.deadBody.secondaryAttachedTo = null;
+                    playerToBeamUp.deadBody.SetRagdollPositionSafely(teleporter.teleporterPosition.position, disableSpecialEffects: true);
+                    playerToBeamUp.deadBody.transform.SetParent(StartOfRound.Instance.elevatorTransform, worldPositionStays: true);
+                    if (playerToBeamUp.deadBody.grabBodyObject != null)// this part ensures the body actually gets collected without needing to be picked up
+                    {
+                        GrabbableObject bodyGrabbable = playerToBeamUp.deadBody.grabBodyObject;
+                        RoundManager.Instance.scrapCollectedInLevel += bodyGrabbable.scrapValue;
+                        RoundManager.Instance.CollectNewScrapForThisRound(bodyGrabbable);
+                        bodyGrabbable.OnBroughtToShip();
+                        StartOfRound.Instance.currentShipItemCount++;
+                        if (bodyGrabbable.isHeld && bodyGrabbable.playerHeldBy != null)
+                        {
+                            bodyGrabbable.playerHeldBy.DropAllHeldItems();
+                        }
+                    }
+                }
+            }
+            //ScienceBirdTweaks.Logger.LogDebug("Teleport B");
+            teleporter.SetPlayerTeleporterId(playerToBeamUp, -1);
+            if (flag)
+            {
+                teleporter.shipTeleporterAudio.PlayOneShot(teleporter.teleporterBeamUpSFX);
+                if (GameNetworkManager.Instance.localPlayerController.isInHangarShipRoom)
+                {
+                    HUDManager.Instance.ShakeCamera(ScreenShakeType.Big);
+                }
+            }
+            if (playerToBeamUp.deadBody == null && playerToBeamUp.isPlayerDead)
+            {
+                DisplayCustomScrapBox();
+            }
+            //ScienceBirdTweaks.Logger.LogDebug("Teleport C");
+            doingRoutine = false;
+        }
+
+        private void DisplayCustomScrapBox()// recreation of scrap display method, using custom mesh and text
+        {
+            HUDManager HUD = HUDManager.Instance;
+
+            HUD.UIAudio.PlayOneShot(PlayerDeathPatches.HUDWarning, 0.5f);
+            GameObject gameObject = UnityEngine.Object.Instantiate(PlayerDeathPatches.questionMark, HUD.ScrapItemBoxes[HUD.nextBoxIndex].itemObjectContainer);
+            gameObject.transform.localPosition = new Vector3(0f,0f,-1f);
+            gameObject.transform.localScale = gameObject.transform.localScale * 3.5f;
+            gameObject.transform.rotation = Quaternion.Euler(-90f,0f,0f);
+            Renderer[] componentsInChildren = gameObject.GetComponentsInChildren<Renderer>();
+            for (int i = 0; i < componentsInChildren.Length; i++)
+            {
+                if (componentsInChildren[i].gameObject.layer != 22)
+                {
+                    Material[] sharedMaterials = componentsInChildren[i].sharedMaterials;
+                    componentsInChildren[i].rendererPriority = 70;
+                    for (int j = 0; j < sharedMaterials.Length; j++)
+                    {
+                        sharedMaterials[j] = HUD.hologramMaterial;
+                    }
+                    componentsInChildren[i].sharedMaterials = sharedMaterials;
+                    componentsInChildren[i].gameObject.layer = 5;
+                }
+            }
+            HUD.ScrapItemBoxes[HUD.nextBoxIndex].itemDisplayAnimator.SetTrigger("collect");
+            HUD.ScrapItemBoxes[HUD.nextBoxIndex].headerText.text = "Body unrecoverable!";
+            HUD.ScrapItemBoxes[HUD.nextBoxIndex].valueText.text = "";
+            if (HUD.boxesDisplaying > 0)
+            {
+                HUD.ScrapItemBoxes[HUD.nextBoxIndex].UIContainer.anchoredPosition = new Vector2(HUD.ScrapItemBoxes[HUD.nextBoxIndex].UIContainer.anchoredPosition.x, HUD.ScrapItemBoxes[HUD.bottomBoxIndex].UIContainer.anchoredPosition.y - 124f);
+            }
+            else
+            {
+                HUD.ScrapItemBoxes[HUD.nextBoxIndex].UIContainer.anchoredPosition = new Vector2(HUD.ScrapItemBoxes[HUD.nextBoxIndex].UIContainer.anchoredPosition.x, HUD.bottomBoxYPosition);
+            }
+            HUD.bottomBoxIndex = HUD.nextBoxIndex;
+            StartCoroutine(HUD.displayScrapTimer(gameObject));
+            HUD.playScrapDisplaySFX();
+            HUD.boxesDisplaying++;
+            HUD.nextBoxIndex = (HUD.nextBoxIndex + 1) % 3;
+        }
+    }
+}

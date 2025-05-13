@@ -13,6 +13,8 @@ namespace ScienceBirdTweaks.Patches
         public static GameObject furniturePrefab;
         public static List<int> idBlacklist = new List<int>();
         public static int[] vanillaIDs = [5, 6, 9, 10, 12, 13, 14, 17, 18, 19, 20, 21, 22, 23];// most vanilla furniture items
+        public static List<int> moddedIDs;
+        public static string moddedListMode = "blacklist";
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.PositionSuitsOnRack))]
         [HarmonyPostfix]
@@ -102,18 +104,48 @@ namespace ScienceBirdTweaks.Patches
             GameObject hangarShip = GameObject.Find("/Environment/HangarShip");
             if (hangarShip == null) { return; }
 
+            if (!ScienceBirdTweaks.OnlyFixDefault.Value && ScienceBirdTweaks.ModdedListMode.Value != "Don't Use List" && ScienceBirdTweaks.ModdedUnlockableList.Value != "" && (moddedIDs == null || moddedIDs.Count <= 0))
+            {
+                moddedIDs = new List<int>();
+                string[] unlockableNames = ScienceBirdTweaks.ModdedUnlockableList.Value.Replace(", ",",").Split(",");
+                foreach (string name in unlockableNames)
+                {
+                    UnlockableItem targetUnlockable = round.unlockablesList.unlockables.Find(x => x.unlockableName.ToLower() == name.ToLower());
+                    if (targetUnlockable != null)
+                    {
+                        moddedIDs.Add(round.unlockablesList.unlockables.IndexOf(targetUnlockable));
+                    }
+                }
+            }
+
             if (ScienceBirdTweaks.ClientsideMode.Value || ScienceBirdTweaks.AlternateFixLogic.Value)// alternate/clientside logic just parents objects to the ship directly, without using the container object
             {
                 if (ScienceBirdTweaks.OnlyFixDefault.Value && Array.IndexOf(vanillaIDs, index) == -1)
                 {
                     return;
                 }
+                if (!ScienceBirdTweaks.OnlyFixDefault.Value && moddedIDs != null && moddedIDs.Count > 0)
+                {
+                    if (ScienceBirdTweaks.ModdedListMode.Value == "Whitelist" && !moddedIDs.Contains(index))
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        ScienceBirdTweaks.Logger.LogDebug($"Whitelisted index {index}!");
+                    }
+                    if (ScienceBirdTweaks.ModdedListMode.Value == "Blacklist" && moddedIDs.Contains(index))
+                    {
+                        ScienceBirdTweaks.Logger.LogDebug($"Blacklisted index {index}!");
+                        return;
+                    }
+                }
                 if (idBlacklist.Contains(index))
                 {
                     return;
                 }
                 UnlockableItem unlockable = round.unlockablesList.unlockables[index];
-                if (unlockable != null && unlockable.spawnPrefab)
+                if (unlockable != null && unlockable.spawnPrefab && unlockable.prefabObject != null)
                 {
                     GameObject gameObj = GameObject.Find(unlockable.prefabObject.name + "(Clone)");
                     if (gameObj.transform.parent != null && gameObj.transform.parent == hangarShip.transform)
@@ -164,12 +196,28 @@ namespace ScienceBirdTweaks.Patches
                 {
                     return;
                 }
+                if (!ScienceBirdTweaks.OnlyFixDefault.Value && moddedIDs != null && moddedIDs.Count > 0)
+                {
+                    if (ScienceBirdTweaks.ModdedListMode.Value == "Whitelist" && !moddedIDs.Contains(index))
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        ScienceBirdTweaks.Logger.LogDebug($"Whitelisted index {index}!");
+                    }
+                    if (ScienceBirdTweaks.ModdedListMode.Value == "Blacklist" && moddedIDs.Contains(index))
+                    {
+                        ScienceBirdTweaks.Logger.LogDebug($"Blacklisted index {index}!");
+                        return;
+                    }
+                }
                 if (idBlacklist.Contains(index))
                 {
                     return;
                 }
                 UnlockableItem unlockable = round.unlockablesList.unlockables[index];
-                if (unlockable != null && unlockable.spawnPrefab)
+                if (unlockable != null && unlockable.spawnPrefab && unlockable.prefabObject != null)
                 {
                     GameObject gameObj = GameObject.Find(unlockable.prefabObject.name + "(Clone)");
                     if (gameObj.transform.parent != null && gameObj.transform.parent == furniture.transform)

@@ -3,7 +3,7 @@ using Unity.Netcode;
 using System.Reflection;
 using ScienceBirdTweaks.ModPatches;
 
-namespace ScienceBirdTweaks
+namespace ScienceBirdTweaks.Scripts
 {
     public class WesleyTapeSkip : NetworkBehaviour
     {

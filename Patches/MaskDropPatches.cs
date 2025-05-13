@@ -13,6 +13,7 @@ namespace ScienceBirdTweaks.Patches
     {
         public static GameObject tragedyPrefab;
         public static GameObject comedyPrefab;
+        public static GameObject oniPrefab;
         public static GameObject maskScriptPrefab;
         public static bool patchingMask = false;
         public static Dictionary<int, (Vector3, Quaternion, int)> maskBuffer;
@@ -35,24 +36,53 @@ namespace ScienceBirdTweaks.Patches
         {
             if (!ScienceBirdTweaks.DropMasks.Value)
                 return;
-            
-                if (tragedyPrefab == null || comedyPrefab == null)
-            {
-                Item tragedy = Resources.FindObjectsOfTypeAll<Item>().Where(x => x.itemName == "Tragedy").First();
-                Item comedy = Resources.FindObjectsOfTypeAll<Item>().Where(x => x.itemName == "Comedy").First();
-                if (tragedy != null)
-                {
-                    ScienceBirdTweaks.Logger.LogDebug("Found tragedy!");
-                    tragedyPrefab = tragedy.spawnPrefab;
-                }
-                if (comedy != null)
-                {
-                    ScienceBirdTweaks.Logger.LogDebug("Found comedy!");
-                    comedyPrefab = comedy.spawnPrefab;
-                }
-            }
+
+            FindMaskPrefabs(true);
             maskBuffer = new Dictionary<int, (Vector3, Quaternion, int)>();
             MaskDropScript.activeMasks = new List<MaskInstance>();
+        }
+
+        private static void FindMaskPrefabs(bool doOniCheck = false)
+        {
+            if (tragedyPrefab == null)
+            {
+                GrabbableObject[] tragedySet = Resources.FindObjectsOfTypeAll<GrabbableObject>().Where(x => x is HauntedMaskItem && x.itemProperties != null && x.itemProperties.itemName == "Tragedy").ToArray();
+                foreach (GrabbableObject tragedy in tragedySet)
+                {
+                    if (tragedy.gameObject.GetComponent<NetworkObject>() && tragedy.gameObject.GetComponent<NetworkObject>().PrefabIdHash != 0)
+                    {
+                        ScienceBirdTweaks.Logger.LogDebug("Found tragedy!");
+                        tragedyPrefab = tragedy.gameObject;
+                        break;
+                    }
+                }
+            }
+            if (comedyPrefab == null)
+            {
+                GrabbableObject[] comedySet = Resources.FindObjectsOfTypeAll<GrabbableObject>().Where(x => x is HauntedMaskItem && x.itemProperties != null && x.itemProperties.itemName == "Comedy").ToArray();
+                foreach (GrabbableObject comedy in comedySet)
+                {
+                    if (comedy.gameObject.GetComponent<NetworkObject>() && comedy.gameObject.GetComponent<NetworkObject>().PrefabIdHash != 0)
+                    {
+                        ScienceBirdTweaks.Logger.LogDebug("Found comedy!");
+                        comedyPrefab = comedy.gameObject;
+                        break;
+                    }
+                }
+            }
+            if (doOniCheck && oniPrefab == null)
+            {
+                GrabbableObject[] oniSet = Resources.FindObjectsOfTypeAll<GrabbableObject>().Where(x => x is HauntedMaskItem && x.itemProperties != null && x.itemProperties.itemName == "OniMask").ToArray();
+                foreach (GrabbableObject oni in oniSet)
+                {
+                    if (oni.gameObject.GetComponent<NetworkObject>() && oni.gameObject.GetComponent<NetworkObject>().PrefabIdHash != 0)
+                    {
+                        ScienceBirdTweaks.Logger.LogDebug("Found oni!");
+                        oniPrefab = oni.gameObject;
+                        break;
+                    }
+                }
+            }
         }
 
         [HarmonyPatch(typeof(MaskedPlayerEnemy), nameof(MaskedPlayerEnemy.KillEnemy))]
@@ -62,36 +92,42 @@ namespace ScienceBirdTweaks.Patches
             if (!ScienceBirdTweaks.DropMasks.Value || !__instance.gameObject.GetComponentInChildren<RandomPeriodicAudioPlayer>())
                 return;
 
-            ScienceBirdTweaks.Logger.LogDebug($"Found valid mask!");
             GameObject mask = __instance.gameObject.GetComponentsInChildren<RandomPeriodicAudioPlayer>().Where(x => x.gameObject.activeInHierarchy).First().gameObject;// this is the mask worn on the mask enemy
-            GameObject maskMesh = mask.transform.Find("Mesh").gameObject;
+            GameObject? maskMesh = mask.transform.Find("Mesh") ? mask.transform.Find("Mesh").gameObject : null;
+
+            if (maskMesh == null && mask.name == "HeadOni")
+            {
+                maskMesh = mask;
+            }
+
+            if (maskMesh == null || maskMesh.GetComponent<MeshRenderer>() == null)
+            {
+                ScienceBirdTweaks.Logger.LogDebug($"Null mesh! {maskMesh}");
+                return;
+            }
+
             GameObject? maskPrefab = null;
             MaskDropScript maskScript = Object.FindObjectOfType<MaskDropScript>();
             if (__instance.IsServer)
             {
-                if (mask.name.Contains("Tragedy"))
+                MeshRenderer maskRenderer = maskMesh.GetComponent<MeshRenderer>();
+                switch (maskRenderer.material.name)
                 {
-                    if (tragedyPrefab == null)
-                    {
-                        Item tragedy = Resources.FindObjectsOfTypeAll<Item>().Where(x => x.itemName == "Tragedy").First();// just in case not found earlier
-                        if (tragedy != null)
-                        {
-                            tragedyPrefab = tragedy.spawnPrefab;
-                        }
-                    }
-                    maskPrefab = tragedyPrefab;
-                }
-                else if (mask.name.Contains("Comedy"))
-                {
-                    if (comedyPrefab == null)
-                    {
-                        Item comedy = Resources.FindObjectsOfTypeAll<Item>().Where(x => x.itemName == "Comedy").First();
-                        if (comedy != null)
-                        {
-                            comedyPrefab = comedy.spawnPrefab;
-                        }
-                    }
-                    maskPrefab = comedyPrefab;
+                    case "ComedyMaskMat (Instance)":
+                        FindMaskPrefabs();
+                        //ScienceBirdTweaks.Logger.LogDebug("Selected comedy!");
+                        maskPrefab = comedyPrefab;
+                        break;
+                    case "TragedyMaskMat (Instance)":
+                        FindMaskPrefabs();
+                        //ScienceBirdTweaks.Logger.LogDebug("Selected tragedy!");
+                        maskPrefab = tragedyPrefab;
+                        break;
+                    case "oni (Instance)":
+                        FindMaskPrefabs(true);
+                        //ScienceBirdTweaks.Logger.LogDebug("Selected oni!");
+                        maskPrefab = oniPrefab;
+                        break;
                 }
                 if (maskScript == null)
                 {

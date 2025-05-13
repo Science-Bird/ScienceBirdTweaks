@@ -15,7 +15,17 @@ namespace ScienceBirdTweaks.Patches
         private static float hazardWait = -1f;
         private static bool breakerDone = false;
 
-        [HarmonyPatch(typeof(LungProp), nameof(LungProp.EquipItem))]
+        public static AudioClip powerDownClip;
+
+        public static void LoadAssets()
+        {
+            if (ScienceBirdTweaks.BlackoutSFX.Value && (ScienceBirdTweaks.TrueBlackout.Value || ScienceBirdTweaks.BlackoutOnApparatusRemoval.Value))
+            {
+                powerDownClip = (AudioClip)ScienceBirdTweaks.TweaksAssets.LoadAsset("PowerDown");
+            }
+        }
+
+            [HarmonyPatch(typeof(LungProp), nameof(LungProp.EquipItem))]
         [HarmonyPrefix]
         static void OnApparatusGrab(LungProp __instance)
         {

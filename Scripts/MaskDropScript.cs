@@ -90,7 +90,14 @@ namespace ScienceBirdTweaks.Scripts
                 MaskDropPatches.maskBuffer.Add(id, (position, rotation, value));
                 if (wornMask != null)
                 {
-                    Object.Destroy(wornMask.transform.parent.gameObject);
+                    if (wornMask.name == "HeadOni")
+                    {
+                        Object.Destroy(wornMask);
+                    }
+                    else
+                    {
+                        Object.Destroy(wornMask.transform.parent.gameObject);
+                    }
                 }
             }
         }
