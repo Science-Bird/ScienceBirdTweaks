@@ -17,8 +17,9 @@ namespace ScienceBirdTweaks.Scripts
         public void StartTeleportRoutine(ShipTeleporter shipTeleporter, int player)
         {
             teleporter = shipTeleporter;
-            if (!doingRoutine)
+            if (!doingRoutine && StartOfRound.Instance.allPlayerScripts[player].redirectToEnemy == null)
             {
+                ScienceBirdTweaks.Logger.LogDebug($"no enemy: {StartOfRound.Instance.allPlayerScripts[player].redirectToEnemy}");
                 StartCoroutine(TeleportBodyToShip(player));
             }
         }
@@ -26,8 +27,15 @@ namespace ScienceBirdTweaks.Scripts
         private IEnumerator TeleportBodyToShip(int player)// recreation of vanilla teleport routine, but only containing what's needed for dead bodies
         {
             doingRoutine = true;
-            teleporter.shipTeleporterAudio.PlayOneShot(teleporter.teleporterSpinSFX);
             PlayerControllerB playerToBeamUp = StartOfRound.Instance.allPlayerScripts[player];
+            yield return new WaitForSeconds(3f);
+            if (playerToBeamUp.redirectToEnemy != null)
+            {
+                ScienceBirdTweaks.Logger.LogDebug("Found enemy!");
+                yield break;
+            }
+            teleporter.shipTeleporterAudio.PlayOneShot(teleporter.teleporterSpinSFX);
+            
             if (playerToBeamUp == null)
             {
                 ScienceBirdTweaks.Logger.LogDebug("Targeted player is null");
@@ -88,7 +96,7 @@ namespace ScienceBirdTweaks.Scripts
             doingRoutine = false;
         }
 
-        private void DisplayCustomScrapBox()// recreation of scrap display method, using custom mesh and text
+        public void DisplayCustomScrapBox()// recreation of scrap display method, using custom mesh and text
         {
             HUDManager HUD = HUDManager.Instance;
 

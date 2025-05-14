@@ -28,7 +28,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void ReplaceButtonPanel(StartOfRound __instance, string sceneName)// load new button interaction
         {
-            if ((!ScienceBirdTweaks.FloodlightRotation.Value && !ScienceBirdTweaks.FancyPanel.Value) || panelPrefab == null)
+            if (ScienceBirdTweaks.ClientsideMode.Value || (!ScienceBirdTweaks.FloodlightRotation.Value && !ScienceBirdTweaks.FancyPanel.Value) || panelPrefab == null)
             {
                 return;
             }
@@ -57,7 +57,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         static void OnDisconnect(GameNetworkManager __instance)// make panel despawning on disconnect less jarring looking by re-enabling base panel
         {
-            if (!ScienceBirdTweaks.FancyPanel.Value && !ScienceBirdTweaks.FloodlightRotation.Value) { return; }
+            if (ScienceBirdTweaks.ClientsideMode.Value || !ScienceBirdTweaks.FancyPanel.Value && !ScienceBirdTweaks.FloodlightRotation.Value) { return; }
             GameObject buttonPanel = GameObject.Find("Environment/HangarShip/ControlPanelWTexture");
             if (buttonPanel != null)
             {
@@ -69,7 +69,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void ResetLights()
         {
-            if (!ScienceBirdTweaks.FancyPanel.Value) { return; }
+            if (ScienceBirdTweaks.ClientsideMode.Value || !ScienceBirdTweaks.FancyPanel.Value || ButtonPanelController.Instance == null) { return; }
             ButtonPanelController.Instance.GreenLight1Set(false);
             ButtonPanelController.Instance.GreenLight2Set(false);
             ButtonPanelController.Instance.GreenLight3Set(false);
@@ -82,7 +82,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         static void OnResetShip(StartOfRound __instance)
         {
-            if (!ScienceBirdTweaks.FancyPanel.Value) { return; }
+            if (ScienceBirdTweaks.ClientsideMode.Value || !ScienceBirdTweaks.FancyPanel.Value || ButtonPanelController.Instance == null) { return; }
             ButtonPanelController.Instance.GreenLight1Set(false);
             ButtonPanelController.Instance.GreenLight2Set(false);
             ButtonPanelController.Instance.GreenLight3Set(false);
@@ -91,11 +91,11 @@ namespace ScienceBirdTweaks.Patches
             ButtonPanelController.Instance.RedLightSet(false);
         }
 
-            [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.FirePlayersAfterDeadlineClientRpc))]
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.FirePlayersAfterDeadlineClientRpc))]
         [HarmonyPostfix]
         static void FiredLights()
         {
-            if (!ScienceBirdTweaks.FancyPanel.Value) { return; }
+            if (ScienceBirdTweaks.ClientsideMode.Value || !ScienceBirdTweaks.FancyPanel.Value || ButtonPanelController.Instance == null) { return; }
             ButtonPanelController.Instance.OrangeTallSet(true);
         }
 
@@ -103,7 +103,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         static void DoorLight(HangarShipDoor __instance, bool closed)
         {
-            if (ScienceBirdTweaks.FancyPanel.Value && __instance.buttonsEnabled && !StartOfRound.Instance.inShipPhase)
+            if (!ScienceBirdTweaks.ClientsideMode.Value && ScienceBirdTweaks.FancyPanel.Value && __instance.buttonsEnabled && !StartOfRound.Instance.inShipPhase && ButtonPanelController.Instance != null)
             {
                 if (closed && !__instance.shipDoorsAnimator.GetBool("Closed"))
                 {
@@ -116,19 +116,23 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
-        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ChangeLevelClientRpc))]
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ChangeLevel))]
         [HarmonyPostfix]
-        static void StartRoute()
+        [HarmonyAfter("zigzag.randommoonfx")]
+        static void StartRoute(StartOfRound __instance)
         {
-            if (!ScienceBirdTweaks.FancyPanel.Value) { return; }
-            ButtonPanelController.Instance.GreenLight1Set(true);
+            if (ScienceBirdTweaks.ClientsideMode.Value || !ScienceBirdTweaks.FancyPanel.Value || ButtonPanelController.Instance == null) { return; }
+            if (__instance.travellingToNewLevel)
+            {
+                ButtonPanelController.Instance.GreenLight1Set(true);
+            }
         }
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ArriveAtLevel))]
         [HarmonyPostfix]
         static void EndRoute()
         {
-            if (!ScienceBirdTweaks.FancyPanel.Value) { return; }
+            if (ScienceBirdTweaks.ClientsideMode.Value || !ScienceBirdTweaks.FancyPanel.Value || ButtonPanelController.Instance == null) { return; }
             ButtonPanelController.Instance.GreenLight1Set(false);
         }
 
@@ -136,7 +140,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void OnStart(bool landingShip)
         {
-            if (!ScienceBirdTweaks.FancyPanel.Value || !landingShip) { return; }
+            if (ScienceBirdTweaks.ClientsideMode.Value || !ScienceBirdTweaks.FancyPanel.Value || !landingShip || ButtonPanelController.Instance == null) { return; }
             ButtonPanelController.Instance.GreenLight3Set(true);
         }
 
@@ -144,7 +148,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void OnLand()
         {
-            if (!ScienceBirdTweaks.FancyPanel.Value) { return; }
+            if (ScienceBirdTweaks.ClientsideMode.Value || !ScienceBirdTweaks.FancyPanel.Value || ButtonPanelController.Instance == null) { return; }
             ButtonPanelController.Instance.GreenLight3Set(false);
         }
 
@@ -152,7 +156,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void OnTakeoff()
         {
-            if (!ScienceBirdTweaks.FancyPanel.Value) { return; }
+            if (ScienceBirdTweaks.ClientsideMode.Value || !ScienceBirdTweaks.FancyPanel.Value || ButtonPanelController.Instance == null) { return; }
             ButtonPanelController.Instance.GreenLight2Set(true);
         }
 
@@ -160,7 +164,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void LeavingDialogue()
         {
-            if (!ScienceBirdTweaks.FancyPanel.Value) { return; }
+            if (ScienceBirdTweaks.ClientsideMode.Value || !ScienceBirdTweaks.FancyPanel.Value || ButtonPanelController.Instance == null) { return; }
             if (TimeOfDay.Instance.shipLeavingAlertCalled)
             {
                 ButtonPanelController.Instance.RedLightSet(true);
@@ -171,7 +175,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void OnTeleport()
         {
-            if (!ScienceBirdTweaks.FancyPanel.Value) { return; }
+            if (ScienceBirdTweaks.ClientsideMode.Value || !ScienceBirdTweaks.FancyPanel.Value || ButtonPanelController.Instance == null) { return; }
             ButtonPanelController.Instance.BlueLight1Set(true);
             ButtonPanelController.Instance.SetLightAfterDelay(0, 5f, false);
         }
@@ -180,7 +184,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void OnTransmit()
         {
-            if (!ScienceBirdTweaks.FancyPanel.Value) { return; }
+            if (ScienceBirdTweaks.ClientsideMode.Value || !ScienceBirdTweaks.FancyPanel.Value || ButtonPanelController.Instance == null) { return; }
             ButtonPanelController.Instance.BlueLight2Set(true);
             ButtonPanelController.Instance.SetLightAfterDelay(1, 4f, false);
         }

@@ -1,62 +1,53 @@
 using System.Linq;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 
 namespace ScienceBirdTweaks.Patches
 {
     [HarmonyPatch]
     public class BigScrew
     {
-        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.PlayerLoadedClientRpc))]
+        [HarmonyPatch(typeof(GameNetworkManager), nameof(GameNetworkManager.Start))]
         [HarmonyPostfix]
-        static void FindScrewsOnLoad(StartOfRound __instance)// client-side
+        static void FindScrewsOnLoad(StartOfRound __instance)
         {
             if (!ScienceBirdTweaks.BigScrew.Value)
             {
                 return;
             }
-            GameObject[] objectList = Resources.FindObjectsOfTypeAll<GameObject>().Where(obj => obj.name == "BigBolt(Clone)").ToArray();
+            GrabbableObject[] bigBolts = Resources.FindObjectsOfTypeAll<GrabbableObject>().Where(obj => obj.itemProperties != null && obj.itemProperties.itemName == "Big bolt").ToArray();
 
-            foreach(GameObject obj in objectList)
+            foreach (GrabbableObject bolt in bigBolts)
             {
-                obj.GetComponentInChildren<ScanNodeProperties>().headerText = "Big screw";
-                obj.GetComponentInChildren<GrabbableObject>().itemProperties.itemName = "Big screw";
-            }
-        }
-
-        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.LoadShipGrabbableItems))]
-        [HarmonyPostfix]
-        static void FindScrewsShip(StartOfRound __instance)// server-side
-        {
-            if (!ScienceBirdTweaks.BigScrew.Value)
-            {
-                return;
-            }
-            GameObject[] objectList = Resources.FindObjectsOfTypeAll<GameObject>().Where(obj => obj.name == "BigBolt(Clone)").ToArray();
-
-            foreach (GameObject obj in objectList)
-            {
-                obj.GetComponentInChildren<ScanNodeProperties>().headerText = "Big screw";
-                obj.GetComponentInChildren<GrabbableObject>().itemProperties.itemName = "Big screw";
-            }
-        }
-
-        [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.SetScrapValue))]
-        [HarmonyPostfix]
-        [HarmonyBefore("zigzag.SelfSortingStorage")]
-        static void UpdateScrewName(GrabbableObject __instance)// this should handle most cases, including weird ones like present spawning or modded storage stuff
-        {
-            if (!ScienceBirdTweaks.BigScrew.Value)
-            {
-                return;
-            }
-            if (__instance.itemProperties != null && (__instance.itemProperties.itemName == "Big bolt" || __instance.itemProperties.itemName == "Big screw"))
-            {
-                __instance.itemProperties.itemName = "Big screw";
-                ScanNodeProperties node = __instance.gameObject.GetComponentInChildren<ScanNodeProperties>();
-                if (node != null)
+                if (bolt.gameObject.GetComponentInChildren<ScanNodeProperties>() != null)
                 {
-                    node.headerText = "Big screw";
+                    bolt.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText = "Big screw";
+                }
+                bolt.itemProperties.itemName = "Big screw";
+            }
+        }
+
+
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SceneManager_OnLoadComplete1))]
+        [HarmonyPostfix]
+        static void FindScrewsOnLoad(StartOfRound __instance, string sceneName)
+        {
+            if (!ScienceBirdTweaks.BigScrew.Value)
+            {
+                return;
+            }
+            if (sceneName == "SampleSceneRelay")
+            {
+                GrabbableObject[] bigBolts = Resources.FindObjectsOfTypeAll<GrabbableObject>().Where(obj => obj.itemProperties != null && obj.itemProperties.itemName == "Big bolt").ToArray();
+
+                foreach (GrabbableObject bolt in bigBolts)
+                {
+                    if (bolt.gameObject.GetComponentInChildren<ScanNodeProperties>() != null)
+                    {
+                        bolt.gameObject.GetComponentInChildren<ScanNodeProperties>().headerText = "Big screw";
+                    }
+                    bolt.itemProperties.itemName = "Big screw";
                 }
             }
         }

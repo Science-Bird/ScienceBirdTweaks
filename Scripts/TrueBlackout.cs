@@ -39,6 +39,7 @@ namespace ScienceBirdTweaks.Scripts
         private static readonly int emissionMapID = Shader.PropertyToID("_EmissionMap");
         private static readonly int emissionColorID = Shader.PropertyToID("_EmissionColor");
         private static readonly int emissiveIntensityID = Shader.PropertyToID("_EmissiveIntensity");
+        private static readonly int useEmissiveIntensityID = Shader.PropertyToID("_UseEmissiveIntensity");
         private static readonly int surfaceTypeID = Shader.PropertyToID("_SurfaceType");
         private const string emissiveColorMapKeyword = "_EMISSIVE_COLOR_MAP";
         private static readonly Boolean extraLogs = ScienceBirdTweaks.ExtraLogs.Value;
@@ -46,8 +47,8 @@ namespace ScienceBirdTweaks.Scripts
         private static string[] nameBlacklist = InitializeBlacklist(ScienceBirdTweaks.TrueBlackoutNameBlacklist.Value);
         private static readonly int nameBlacklistLength = nameBlacklist.Length;
         private static string[] hierarchyBlacklist = InitializeBlacklist(ScienceBirdTweaks.TrueBlackoutHierarchyBlacklist.Value);
-        private static readonly int hierarchyBlacklistLength = hierarchyBlacklist.Length;
-        private static readonly Boolean doContainsCheck = hierarchyBlacklistLength > 0;
+        private static int hierarchyBlacklistLength = hierarchyBlacklist.Length;
+        private static bool doContainsCheck = hierarchyBlacklistLength > 0;
 
         private static string[] InitializeBlacklist(string configValue)
         {
@@ -89,9 +90,38 @@ namespace ScienceBirdTweaks.Scripts
             return false;
         }
 
+        static void AddToBlacklist(string item)
+        {
+            doContainsCheck = true;
+            if (hierarchyBlacklist.Length <= 0)
+            {
+                hierarchyBlacklist = [$"{item}"];
+                
+            }
+            else
+            {
+                hierarchyBlacklist = hierarchyBlacklist.Append(item).ToArray();
+            }
+            hierarchyBlacklistLength = hierarchyBlacklist.Length;
+            foreach (string entry in hierarchyBlacklist)
+            {
+                ScienceBirdTweaks.Logger.LogDebug(entry);
+            }
+        }
+
         public static void DoBlackout(Boolean? disableSun)
         {
             var totalStopwatch = Stopwatch.StartNew();
+
+            if (ScienceBirdTweaks.BlacklistEmergency.Value)
+            {
+                doContainsCheck = true;
+                AddToBlacklist("ExitDoor");
+            }
+            if (ScienceBirdTweaks.BlacklistPoles.Value)
+            {
+                AddToBlacklist("GuidancePole");
+            }
 
             ScienceBirdTweaks.Logger.LogInfo("Doing blackout!");
             Scene scene = SceneManager.GetActiveScene();
@@ -110,6 +140,71 @@ namespace ScienceBirdTweaks.Scripts
                 GameObject blackoutHandler = new GameObject("BlackoutManager");
                 trueBlackoutInstance = blackoutHandler.AddComponent<TrueBlackout>();
             }
+
+
+            if (disableSun == true)
+            {
+                try
+                {
+                    UnityEngine.GameObject sun = UnityEngine.GameObject.Find("Sun");
+                    if (sun != null)
+                        sun.SetActive(false);
+                }
+                catch (Exception ex)
+                {
+                    ScienceBirdTweaks.Logger.LogWarning($"Error disabling sun: {ex.Message}");
+                }
+
+                try
+                {
+                    ScienceBirdTweaks.Logger.LogDebug($"Setting spotlight lighting for Blackout");
+
+                    ShipFloodlightController shipFloodlightController = GameObject.FindObjectOfType<ShipFloodlightController>();
+
+                    if (shipFloodlightController != null)
+                    {
+                        shipFloodlightController.SetFloodlightData(
+                            ScienceBirdTweaks.BlackoutFloodLightIntensity.Value,
+                            ScienceBirdTweaks.BlackoutFloodLightAngle.Value,
+                            ScienceBirdTweaks.BlackoutFloodLightRange.Value
+                        );
+                    }
+                    else
+                    {
+                        ScienceBirdTweaks.Logger.LogWarning("ShipFloodlightController instance not found in the scene.");
+                    }
+                }
+                catch (Exception arg)
+                {
+                    ScienceBirdTweaks.Logger.LogWarning($"Error while trying to modify floodlights: {arg}");
+                }
+
+                if (ScienceBirdTweaks.BlackoutOnlySun.Value)
+                {
+                    return;
+                }
+
+                GameObject spriteObject = GameObject.Find("LightBehindDoor");
+
+                if (spriteObject != null)
+                {
+                    SpriteRenderer spriteRenderer = spriteObject.GetComponent<SpriteRenderer>();
+                    ScienceBirdTweaks.Logger.LogDebug($"Found sprite object {spriteObject.name} with path {GetObjectPath(spriteObject)}");
+
+                    if (spriteRenderer != null)
+                    {
+                        spriteRenderer.color = Color.black;
+                        ScienceBirdTweaks.Logger.LogDebug($"Set color of sprite object {spriteObject.name} to black with path {GetObjectPath(spriteObject)}");
+                    }
+                    else
+                        ScienceBirdTweaks.Logger.LogWarning($"SpriteRenderer not found on {spriteObject.name} with path {GetObjectPath(spriteObject)}");
+                }
+                else
+                {
+                    ScienceBirdTweaks.Logger.LogWarning($"Sprite object not found in scene");
+                }
+            }
+
 
             List<Light> allLights;
 
@@ -226,65 +321,6 @@ namespace ScienceBirdTweaks.Scripts
                 ScienceBirdTweaks.Logger.LogWarning($"Error handling breaker box: {ex.Message}");
             }
 
-            if (disableSun == true)
-            {
-                try
-                {
-                    UnityEngine.GameObject sun = UnityEngine.GameObject.Find("Sun");
-                    if (sun != null)
-                        sun.SetActive(false);
-                }
-                catch (Exception ex)
-                {
-                    ScienceBirdTweaks.Logger.LogWarning($"Error disabling sun: {ex.Message}");
-                }
-
-                try
-                {
-                    ScienceBirdTweaks.Logger.LogDebug($"Setting spotlight lighting for Blackout");
-
-                    ShipFloodlightController shipFloodlightController = GameObject.FindObjectOfType<ShipFloodlightController>();
-
-                    if (shipFloodlightController != null)
-                    {
-                        shipFloodlightController.SetFloodlightData(
-                            ScienceBirdTweaks.BlackoutFloodLightIntensity.Value,
-                            ScienceBirdTweaks.BlackoutFloodLightAngle.Value,
-                            ScienceBirdTweaks.BlackoutFloodLightRange.Value
-                        );
-                    }
-                    else
-                    {
-                        ScienceBirdTweaks.Logger.LogWarning("ShipFloodlightController instance not found in the scene.");
-                    }
-                }
-                catch (Exception arg)
-                {
-                    ScienceBirdTweaks.Logger.LogWarning($"Error while trying to modify floodlights: {arg}");
-                }
-
-                GameObject spriteObject = GameObject.Find("LightBehindDoor");
-
-                if (spriteObject != null)
-                {
-                    SpriteRenderer spriteRenderer = spriteObject.GetComponent<SpriteRenderer>();
-                    ScienceBirdTweaks.Logger.LogDebug($"Found sprite object {spriteObject.name} with path {GetObjectPath(spriteObject)}");
-
-                    if (spriteRenderer != null)
-                    {
-                        spriteRenderer.color = Color.black;
-                        ScienceBirdTweaks.Logger.LogDebug($"Set color of sprite object {spriteObject.name} to black with path {GetObjectPath(spriteObject)}");
-                    }
-                    else
-                        ScienceBirdTweaks.Logger.LogWarning($"SpriteRenderer not found on {spriteObject.name} with path {GetObjectPath(spriteObject)}");
-                }
-                else
-                {
-                    ScienceBirdTweaks.Logger.LogWarning($"Sprite object not found in scene");
-                }
-            }
-
-
             // edge cases for specific moons and interiors
             if (StartOfRound.Instance.currentLevel.PlanetName == "85 Rend" || StartOfRound.Instance.currentLevel.PlanetName == "20 Adamance")
             {
@@ -381,7 +417,7 @@ namespace ScienceBirdTweaks.Scripts
         {
             if (!StartOfRound.Instance.shipHasLanded)
             {
-                yield return new WaitForSeconds(3f);
+                yield return new WaitForSeconds(7f);
             }
             if (ScienceBirdTweaks.BlackoutSFX.Value && BlackoutTriggerPatches.powerDownClip != null)
             {
@@ -448,7 +484,11 @@ namespace ScienceBirdTweaks.Scripts
                             bool hasEmissionColor = mat.HasProperty(emissionColorID);
                             bool hasEmissiveIntensity = mat.HasProperty(emissiveIntensityID);
                             bool isEmissiveKeywordEnabled = mat.IsKeywordEnabled(emissiveColorMapKeyword);
-                            bool isFloatSet = mat.GetFloat("_UseEmissiveIntensity") == 1f;
+                            bool isFloatSet = false;
+                            if (mat.HasProperty(useEmissiveIntensityID))
+                            {
+                                isFloatSet = mat.GetFloat("_UseEmissiveIntensity") == 1f;
+                            }
                             bool hasLightName = FastContains(mat.name, "Light") || FastContains(mat.name, "LED");
                             bool isPureColour = mat.color.a == 1f && (mat.color.r == 1f || mat.color.g == 1f || mat.color.b == 1f);
 

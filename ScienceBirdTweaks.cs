@@ -46,7 +46,7 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<bool> FancyPanel;
         public static ConfigEntry<bool> DynamicOccupancySign, OccupancyScribble;
         public static ConfigEntry<string> OccupancyFixedValue;
-        public static ConfigEntry<bool> PlayGlobalDeathSFX, AutoTeleportBody;
+        public static ConfigEntry<bool> PlayGlobalDeathSFX, AutoTeleportBody, UnrecoverableNotification;
         public static ConfigEntry<string> Red1Tip, Red2Tip, Black1Tip, Black2Tip, Knob1Tip, Knob2Tip, Knob3Tip, SmallKnobTip, SmallRedTip, SmallGreenTip;
 
         public static ConfigEntry<bool> BigScrew, MissingHoverTipFix, SmokeFix, BridgeItemsFix, CleanBeltBagUI, ClientShipItems, LandmineFix, CrouchDamageAnimation, PauseMenuFlickerFix, FallingRotationFix, OldHalloweenElevatorMusic;
@@ -77,7 +77,7 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<bool> PreventWorthlessDespawn, UsePreventDespawnList, ZeroDespawnPreventedItems;
         public static ConfigEntry<string> PreventedDespawnList, CustomWorthlessDisplayText, WorthlessDisplayTextBlacklist;
 
-        public static ConfigEntry<bool> TrueBlackout, BlackoutOnApparatusRemoval, DisableTrapsOnApparatusRemoval, DisableTrapsOnBreakerSwitch, BlackoutSFX, BlacklistLightAnimators;
+        public static ConfigEntry<bool> TrueBlackout, BlackoutOnApparatusRemoval, DisableTrapsOnApparatusRemoval, DisableTrapsOnBreakerSwitch, BlackoutSFX, BlacklistLightAnimators, BlackoutOnlySun, BlacklistPoles, BlacklistEmergency;
         public static ConfigEntry<int> BlackoutFloodLightIntensity, BlackoutFloodLightAngle, BlackoutFloodLightRange;
         public static ConfigEntry<string> TrueBlackoutNameBlacklist, TrueBlackoutHierarchyBlacklist;
 
@@ -150,6 +150,7 @@ namespace ScienceBirdTweaks
             OccupancyFixedValue = base.Config.Bind("2. Ship Additions", "Occupancy Sign Fixed Value", "None", new ConfigDescription("Pick a maximum occupancy here if you'd rather a single fixed value rather than one which updates dynamically.", new AcceptableValueList<string>(["None", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "Infinite"])));
             PlayGlobalDeathSFX = base.Config.Bind("2. Ship Additions", "Broadcast Death Notification", false, "All players will recieve a quick succession of beeps to let them know that somebody has just died.");
             AutoTeleportBody = base.Config.Bind("2. Ship Additions", "Auto Teleport Bodies", false, "If the ship has a teleporter, it will automatically teleport a player's body back upon their death, letting all players know via the scrap collected notification. If the player's body has been destroyed, an alternative notification will appear instead.");
+            UnrecoverableNotification = base.Config.Bind("2. Ship Additions", "Unrecoverable Body Notification", false, "Whenever a player is teleported but their body cannot be recovered, an alternative notification to the 'body collected' scrap notification will appear. This happens when the above auto teleport feature cannot recover a body, but enabling it here will make it happen on player-initiated teleports as well, and even if the above feature is disabled.");
             Red1Tip = base.Config.Bind("2. Ship Additions", "Fancy Panel Tooltips III Bottom Right Red", "", "If using fancy button panel, the tooltip for the bottom right red button (overriden by rotating floodlight).");
             Red2Tip = base.Config.Bind("2. Ship Additions", "Fancy Panel Tooltips III Middle Right Red", "", "If using fancy button panel, the tooltip for the smaller middle right red button.");
             Black1Tip = base.Config.Bind("2. Ship Additions", "Fancy Panel Tooltips III Bottom Middle Black", "", "If using fancy button panel, the tooltip for the bottom middle black button (overriden by floodlight configuration controls).");
@@ -182,7 +183,7 @@ namespace ScienceBirdTweaks
             CentipedeFixedDamage = base.Config.Bind("4. Enemy Tweaks", "Snare Flea Fixed Damage", 0.5f, new ConfigDescription("The proportion of a player's maximum health to take if using the 'Fixed Damage' mode. When set to 50% or above, this effectively gives the player a second chance only if they're above half health (the lower this is set, the more chances).", new AcceptableValueRange<float>(0f, 1f)));
             CentipedeSecondChanceThreshold = base.Config.Bind("4. Enemy Tweaks", "Snare Flea Second Chance Threshold", 15, new ConfigDescription("At what threshold of health should the snare flea drops off the player if it's using the 'Second Chance' mode (vanilla value in singleplayer is 15 HP).", new AcceptableValueRange<int>(0, 100)));
             LeviathanSurfacePatch = base.Config.Bind("4. Enemy Tweaks", "Earth Leviathan More Surfaces", false, "Allows the earth leviathan to burrow through and emerge from more types of surfaces, using the list below.");
-            LeviathanNaturalSurfaces = base.Config.Bind("4. Enemy Tweaks", "Earth Leviathan Surface List", "Wood, Tiles, Aluminum, Rock, Catwalk, Concrete, Metal", "Surface tags (tied to footstep sounds) earth leviathans should be able to burrow through if above option is enabled (in addition to the default tags Grass, Gravel, and Snow)");
+            LeviathanNaturalSurfaces = base.Config.Bind("4. Enemy Tweaks", "Earth Leviathan Surfaces List", "Wood, Tiles, Aluminum, Rock, Catwalk, Concrete, Metal, Carpet, Puddle, Untagged", "Surface tags (tied to footstep sounds) earth leviathans should be able to burrow through if above option is enabled (in addition to the default tags Grass, Gravel, and Snow)");
             LeviathanQuicksand = base.Config.Bind("4. Enemy Tweaks", "Earth Leviathan Quicksand", false, "Earth leviathans will leave behind patches of quicksand where they emerge and enter the ground (note that quicksand cannot appear on every type of surface).");
             ManeaterTransformInterrupt = base.Config.Bind("4. Enemy Tweaks", "Maneater Transformation Interrupt", false, "Hitting the maneater while it's transforming will cause it to immediately exit its state and become active.");
             ManeaterFastDoors = base.Config.Bind("4. Enemy Tweaks", "Maneater Fast Doors", false, "The maneater will move more quickly through doors.");
@@ -233,10 +234,13 @@ namespace ScienceBirdTweaks
             DisableTrapsOnApparatusRemoval = base.Config.Bind("9. Blackout", "Apparatus Hazard Blackout", false, "Disables all traps/hazards on the map after removing the apparatus.");
             DisableTrapsOnBreakerSwitch = base.Config.Bind("9. Blackout", "Breaker Hazard Blackout", false, "Also disables all traps/hazards on the map when the breaker power is switched off.");
             TrueBlackout = base.Config.Bind("9. Blackout", "MrovWeathers True Blackout", true, "Revamps MrovWeathers' blackout so emissive materials are also darkened (no white spots left over), more lights are included, and problematic ones are excluded (like map hazards and outdoor apparatuses).");
-            TrueBlackoutNameBlacklist = base.Config.Bind("9. Blackout", "MrovWeathers True Blackout Name Blacklist", "GunBarrelPos, BulletParticleFlare, LightSphere, Landmine, AnimContainer, BlackoutIgnore, ItemShip, ThrusterContainer", "A blacklist of object names to leave untouched during a blackout. If a light object's parent has the same name as one of these names, it will be skipped. This must be a comma-separated list and is case-sensitive. It is highly recommended you do not remove any of the default values unless you really know what you're doing.");
-            TrueBlackoutHierarchyBlacklist = base.Config.Bind("9. Blackout", "MrovWeathers True Blackout Hierarchy Blacklist", "", "A blacklist of objects to leave untouched during a blackout. If a light object is found anywhere underneath these names in the hierarchy, it will be skipped. This must be a comma-separated list and is case-sensitive. It is recommended to use Name Blacklist whenever possible for performance reasons.");
-            BlacklistLightAnimators = base.Config.Bind("9. Blackout", "Blacklist Animators", false, "Exclude any lights associated with animations (will not exclude any manually included animators, such as the vanilla light switches). With mods like Facility Meltdown (or any mod/moon which animates lights), this will allow the lights to animate as usual rather than being blacked out.");
             BlackoutSFX = base.Config.Bind("9. Blackout", "Blackout Sound Effect", true, "Plays a global sound effect when a blackout of any kind occurs.");
+            TrueBlackoutNameBlacklist = base.Config.Bind("9. Blackout", "MrovWeathers True Blackout Name Blacklist", "GunBarrelPos, BulletParticleFlare, LightSphere, Landmine, AnimContainer, BlackoutIgnore, ItemShip, ThrusterContainer", "A blacklist of object names to leave untouched during a blackout. If a light object's parent has the same name as one of these names, it will be skipped. This must be a comma-separated list and is case-sensitive. It is highly recommended you do not remove any of the default values unless you really know what you're doing.");
+            TrueBlackoutHierarchyBlacklist = base.Config.Bind("9. Blackout", "MrovWeathers True Blackout Hierarchy Blacklist", "", "A blacklist of objects to leave untouched during a blackout. If a light object is found anywhere underneath these names in the hierarchy, it will be skipped. This must be a comma-separated list and is case-sensitive. It is recommended to use Name Blacklist whenever possible for performance reasons."); 
+            BlacklistLightAnimators = base.Config.Bind("9. Blackout", "Ignore Animators", false, "Exclude any lights associated with animations (will not exclude any manually included animators, such as the vanilla light switches). With mods like Facility Meltdown (or any mod/moon which animates lights), this will allow the lights to animate as usual rather than being blacked out.");
+            BlacklistPoles = base.Config.Bind("9. Blackout", "Ignore Guidance Poles", false, "Exclude the guidance pole lights found on moons like Rend, Dine, and Titan.");
+            BlacklistEmergency = base.Config.Bind("9. Blackout", "Ignore Emergency Exit Lights", false, "Exclude the red lights mounted on interior emergency exits.");
+            BlackoutOnlySun = base.Config.Bind("9. Blackout", "Only Blackout Sun", false, "The blackout weather will only blackout the sun and no other lights.");
             BlackoutFloodLightIntensity = base.Config.Bind("9. Blackout", "Ship Floodlight Intensity in Lumen", 30000, new ConfigDescription("Lumen value of the ship's floodlights during MrovWeathers' blackout, (vanilla is 2275 Lumens). Set to 0 to disable floodlights during blackouts.", new AcceptableValueRange<int>(0, 60000)));
             BlackoutFloodLightAngle = base.Config.Bind("9. Blackout", "Ship Floodlight Angle in degrees", 80, new ConfigDescription("Light angle (degrees) of the ship's floodlights during MrovWeathers' blackout, (vanilla is 115 degrees).", new AcceptableValueRange<int>(0, 180)));
             BlackoutFloodLightRange = base.Config.Bind("9. Blackout", "Ship Floodlight Range", 600, new ConfigDescription("Light range (meters) of the ship's floodlights during MrovWeathers' blackout, (vanilla is 44m)", new AcceptableValueRange<int>(0, 2000)));
@@ -246,7 +250,7 @@ namespace ScienceBirdTweaks
             LLLShipLeverFix = base.Config.Bind("A. Mod Tweaks", "LLL Ship Lever Fix", true, "Fixes the ship lever remaining interactable while routing.");
             VideoTapeInsertFix = base.Config.Bind("A. Mod Tweaks", "Wesley Moons Tape Insert Fix", false, "EXPERIMENTAL - For Wesley's Moons: attempts to fix an issue where clients are unable to insert cassette tapes into the projector (might also fix issues with registering story log items).");
             VideoTapeSkip = base.Config.Bind("A. Mod Tweaks", "Wesley Moons Video Tape Skip", false, "For Wesley's Moons: after inserting a casette tape on Galetry, you can interact with the cassette player again to skip the video and unlock the moon immediately.");
-            ShipWindowsShutterFix = base.Config.Bind("A. Mod Tweaks", "ShipWindowsBeta Shutter Fix", true, "Closes the ship window shutters when taking off from a planet.");
+            ShipWindowsShutterFix = base.Config.Bind("A. Mod Tweaks", "ShipWindowsBeta Shutter Fix", true, "Closes the ship window shutters when taking off from a planet (requires you to have 'Hide Moon Transitions' enabled in ShipWindowsBeta config).");
             MrovWeatherTweaksAnnouncement = base.Config.Bind("A. Mod Tweaks", "Weather Tweaks Announcement Change", true, "Makes the wording more clear when a weather change is announced, stating the current weather and the weather it's going to be transitioned into.");
             SSSTerminalStock = base.Config.Bind("A. Mod Tweaks", "Smart Cupboard Mrov Terminal Stock", true, "If you are using both Self Sorting Storage (which adds the 'smart cupboard') and mrov's TerminalFormatter (which shows a count of items on the ship), items in the cupboard will be counted on the terminal display.");
             DiversityComputerBegone = base.Config.Bind("A. Mod Tweaks", "Diversity Computer Begone", false, "Removes the floppy reader computer from Diversity and any floppy disks that spawn (does nothing if Diversity isn't installed).");
@@ -261,7 +265,7 @@ namespace ScienceBirdTweaks
             ConfigLeverSize = new Vector3(LargerLeverSizeX.Value, LargerLeverSizeY.Value, LargerLeverSizeZ.Value);
 
             KeepScrapPatches.Initialize();
-
+            
             string sAssemblyLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             TweaksAssets = AssetBundle.LoadFromFile(Path.Combine(sAssemblyLocation, "tweaksassets"));
@@ -405,27 +409,15 @@ namespace ScienceBirdTweaks
                 foreach (var method in methods)
                 {
                     // skipping un-patched methods
-                    if (method.Name.Contains("CheckUnlocksClientRpc") && !batbyPresent)
+                    if ((method.Name.Contains("CheckUnlocksClientRpc") || method.Name.Contains("ConfigLoader")) && !batbyPresent)
                     {
                         continue;
                     }
-                    if (method.Name.Contains("CollectDataServerRpc") && !zigzagPresent)
+                    if ((method.Name.Contains("CollectDataServerRpc") || method.Name.Contains("SendDataClientRpc") || method.Name.Contains("ResetDictClientRpc")) && !zigzagPresent)
                     {
                         continue;
                     }
-                    if (method.Name.Contains("SendDataClientRpc") && !zigzagPresent)
-                    {
-                        continue;
-                    }
-                    if (method.Name.Contains("ResetDictClientRpc") && !zigzagPresent)
-                    {
-                        continue;
-                    }
-                    if (method.Name.Contains("StopTapeServerRpc") && !wesleyPresent)
-                    {
-                        continue;
-                    }
-                    if (method.Name.Contains("StopTapeClientRpc") && !wesleyPresent)
+                    if ((method.Name.Contains("StopTapeServerRpc") || method.Name.Contains("StopTapeClientRpc")) && !wesleyPresent)
                     {
                         continue;
                     }

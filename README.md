@@ -964,7 +964,7 @@ Try scrolling around or re-entering the store menu if you have any issues with t
 
 >*Default: ON - All clients*
 
-Fixes an apparent bug in [ShipWindowsBeta](https://thunderstore.io/c/lethal-company/p/TestAccount666/ShipWindowsBeta/) where the shutters would never close when taking off, only on landing or routing.
+Adds a function to [ShipWindowsBeta](https://thunderstore.io/c/lethal-company/p/TestAccount666/ShipWindowsBeta/) where the shutters will now also close when taking off (if "Hide Moon Transitions" is enabled in ShipWindowsBeta config), in addition to closing when landing or routing. This may be absent in ShipWindowsBeta due to issues with shutter voice lines, but without voice lines it seems to work fine.
 
 </details>
 

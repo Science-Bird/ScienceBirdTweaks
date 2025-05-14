@@ -191,7 +191,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         public static void InitializeAssets()
         {
-            if (ScienceBirdTweaks.ShotgunMasterDisable.Value) { return; }
+            if (ScienceBirdTweaks.ClientsideMode.Value || ScienceBirdTweaks.ShotgunMasterDisable.Value) { return; }
 
             unloadEnabled = ScienceBirdTweaks.UnloadShells.Value;
             ammoCheck = ScienceBirdTweaks.DoAmmoCheck.Value;
@@ -253,7 +253,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void ShellPrefabCheck(StartOfRound __instance, string sceneName)// some mods cause the network registration of this prefab to be delayed, so it's double-checked here
         {
-            if (ScienceBirdTweaks.ShotgunMasterDisable.Value || !unloadEnabled) { return; }
+            if (ScienceBirdTweaks.ClientsideMode.Value || ScienceBirdTweaks.ShotgunMasterDisable.Value || !unloadEnabled) { return; }
 
             if (sceneName == "SampleSceneRelay")
             {
@@ -317,7 +317,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         static void InteractPrefix(GrabbableObject __instance, bool right)// this exists to interrupt the usual interaction event if the eject requirements are met, this is so the eject procedure can do some client-side checks and do the hold event before starting synced interaction with other clients
         {
-            if (!ScienceBirdTweaks.ShotgunMasterDisable.Value && (unloadEnabled || ammoCheck) && __instance.GetComponent<ShotgunItem>() && right && !__instance.GetComponent<ShotgunItem>().isReloading && (!AmmoInInventory(__instance.GetComponent<ShotgunItem>()) || __instance.GetComponent<ShotgunItem>().shellsLoaded >= 2))
+            if (!ScienceBirdTweaks.ClientsideMode.Value && !ScienceBirdTweaks.ShotgunMasterDisable.Value && (unloadEnabled || ammoCheck) && __instance.GetComponent<ShotgunItem>() && right && !__instance.GetComponent<ShotgunItem>().isReloading && (!AmmoInInventory(__instance.GetComponent<ShotgunItem>()) || __instance.GetComponent<ShotgunItem>().shellsLoaded >= 2))
             {
                 ShotgunItem shotgun = __instance.GetComponent<ShotgunItem>();
                 bool ejecting = AllowedToEject(shotgun);
@@ -347,7 +347,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void ShellRotationPatch(GrabbableObject __instance)// randomly rotate spawned shells
         {
-            if (ScienceBirdTweaks.ShotgunMasterDisable.Value) { return; }
+            if (ScienceBirdTweaks.ClientsideMode.Value || ScienceBirdTweaks.ShotgunMasterDisable.Value) { return; }
 
             if (__instance.gameObject.GetComponent<GunAmmo>())
             {
@@ -359,7 +359,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         public static void StopUsingGunPrefix(ShotgunItem __instance)
         {
-            if (!ScienceBirdTweaks.ShotgunMasterDisable.Value && (ammoCheck || unloadEnabled))
+            if (!ScienceBirdTweaks.ClientsideMode.Value && !ScienceBirdTweaks.ShotgunMasterDisable.Value && (ammoCheck || unloadEnabled))
             {
                 PlayerControllerB player = __instance.playerHeldBy ?? __instance.previousPlayerHeldBy;
                 if (ammoCheck)

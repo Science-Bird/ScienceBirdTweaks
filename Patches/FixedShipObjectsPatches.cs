@@ -60,7 +60,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         public static void InitializePrefab()
         {
-            if (!ScienceBirdTweaks.ClientsideMode.Value && !ScienceBirdTweaks.AlternateFixLogic.Value)
+            if (ScienceBirdTweaks.FixedShipObjects.Value && !ScienceBirdTweaks.ClientsideMode.Value && !ScienceBirdTweaks.AlternateFixLogic.Value)
             {
                 ScienceBirdTweaks.Logger.LogDebug("Initializing furniture holder!");
                 furniturePrefab = (GameObject)ScienceBirdTweaks.TweaksAssets.LoadAsset("Furniture");

@@ -68,7 +68,28 @@ namespace ScienceBirdTweaks.Patches
                     teleportScript.StartTeleportRoutine(teleporter, playerId);// teleporter stuff offloaded to a monobehaviour
                 }
             }
+        }
 
+        [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.TeleportPlayer))]
+        [HarmonyPostfix]
+        static void OnBeamUp(PlayerControllerB __instance)
+        {
+            if (ScienceBirdTweaks.UnrecoverableNotification.Value && __instance.shipTeleporterId != -1 && __instance.isPlayerDead)
+            {
+                if (teleportScript == null)
+                {
+                    teleportScript = GameObject.FindObjectOfType<AutoTeleportScript>();
+                    if (teleportScript == null)
+                    {
+                        GameObject teleportHandler = new GameObject("AutoTeleportScript");
+                        teleportScript = teleportHandler.AddComponent<AutoTeleportScript>();
+                    }
+                }
+                if (teleportScript != null)
+                {
+                    teleportScript.DisplayCustomScrapBox();
+                }
+            }
         }
     }
 }
