@@ -26,7 +26,6 @@ namespace ScienceBirdTweaks.ZapGun
         {
             turret = GetComponent<Turret>();
             terminalObj = GetComponent<TerminalAccessibleObject>();
-            ScienceBirdTweaks.Logger.LogDebug(turret);
             masterZappable = ScienceBirdTweaks.ZappableTurrets.Value && ScienceBirdTweaks.ZapGunRework.Value;
             cooldown = ScienceBirdTweaks.TurretZapBaseCooldown.Value;
             multiplier = ScienceBirdTweaks.ZapScalingFactor.Value;

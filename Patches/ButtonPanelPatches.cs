@@ -171,7 +171,7 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
-        [HarmonyPatch(typeof(ShipTeleporter), nameof(ShipTeleporter.PressTeleportButtonClientRpc))]
+        [HarmonyPatch(typeof(ShipTeleporter), nameof(ShipTeleporter.PressButtonEffects))]
         [HarmonyPostfix]
         static void OnTeleport()
         {

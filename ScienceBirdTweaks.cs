@@ -64,7 +64,7 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<bool> TulipSnakeMuteLaugh;
 
         public static ConfigEntry<bool> MineDisableAnimation, SpikeTrapDisableAnimation, ZapGunTutorialRevamp, ZapGunRework, ZappableTurrets, ZappableMines, ZappableSpikeTraps, ZappableBigDoors, PlayerLethalBigDoors, EnemyLethalBigDoors;
-        public static ConfigEntry<string> ZapGunTutorialMode, ZapScanPriority;
+        public static ConfigEntry<string> ZapGunTutorialMode, ZapScanPriority, MineSoundEffect;
         public static ConfigEntry<int> ZapGunTutorialCount;
         public static ConfigEntry<float> ZapGunBattery, TurretZapBaseCooldown, MineZapBaseCooldown, SpikeTrapBaseCooldown, ZapScalingFactor;
 
@@ -82,6 +82,7 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<string> TrueBlackoutNameBlacklist, TrueBlackoutHierarchyBlacklist;
 
         public static ConfigEntry<bool> JLLNoisemakerFix, LLLUnlockSyncing, LLLShipLeverFix, VideoTapeInsertFix, VideoTapeSkip, ShipWindowsShutterFix, SSSTerminalStock, DiversityComputerBegone, MrovWeatherTweaksAnnouncement;
+        public static ConfigEntry<string> ShipWindowsShutterAudio;
         public static ConfigEntry<bool> ClientsideMode, DebugMode, ExtraLogs, DisableWarnings, InteriorLogging;
 
         public static bool doLobbyCompat = false;
@@ -190,6 +191,7 @@ namespace ScienceBirdTweaks
             TulipSnakeMuteLaugh = base.Config.Bind("4. Enemy Tweaks", "Quiet Tulip Snakes", false, "Tulip snake chuckles will no longer alert eyeless dogs.");
 
             MineDisableAnimation = base.Config.Bind("5. Zap Gun & Hazards", "Mine Cooldown Animation", false, "Changes mine lights and sound effects to reflect that it's been disabled (by terminal or otherwise). This is automatically enabled if using the zap gun rework.");
+            MineSoundEffect = base.Config.Bind("5. Zap Gun & Hazards", "Mine Cooldown Sound Effect", "Click", new ConfigDescription("The repeating sound effect that will play when a mine is disabled: either a clicking noise, a beeping noise, or no sound effect at all.", new AcceptableValueList<string>(["Click", "Beep", "None"])));
             SpikeTrapDisableAnimation = base.Config.Bind("5. Zap Gun & Hazards", "Spike Trap Cooldown Animation", false, "Changes spike trap lights to reflect that it's been disabled (by terminal or otherwise). This is automatically enabled if using the zap gun rework.");
             ZapGunTutorialMode = base.Config.Bind("5. Zap Gun & Hazards", "Zap Gun Tutorial Mode", "Only First Time", new ConfigDescription("'Only First Time': All players will see the tutorial arrow their first few times using the zap gun and never again (I assume this is what's supposed to happen in vanilla). - 'Every Session': All players will see the tutorial arrow the first few times using the zap gun every time they restart the game. - 'Always': All players will always see the tutorial arrow whenever they use the zap gun. - 'Vanilla': Some players (generally the host) always see the tutorial arrow, while others never see it.", new AcceptableValueList<string>(["Only First Time", "Every Session", "Always", "Vanilla"])));
             ZapGunTutorialCount = base.Config.Bind("5. Zap Gun & Hazards", "Zap Gun Tutorial Count", 2, new ConfigDescription("How many times the tutorial arrow should be displayed (if using 'Only First Time' or 'Every Session' in above config. Vanilla is 2.", new AcceptableValueRange<int>(1, 15)));
@@ -247,10 +249,11 @@ namespace ScienceBirdTweaks
 
             JLLNoisemakerFix = base.Config.Bind("A. Mod Tweaks", "JLL Noisemaker Fix", true, "Fixes an inconsistent issue where JLL spawners wouldn't initialize items correctly, resulting in errors and the item not functioning correctly (for example: Wesley's Moons audio logs not playing when used).");
             LLLUnlockSyncing = base.Config.Bind("A. Mod Tweaks", "LLL Unlock Syncing", false, "Sends the host's unlocked moons to the clients after they load in, so any moons unlocked by the host will be unlocked by the client as well.");
-            LLLShipLeverFix = base.Config.Bind("A. Mod Tweaks", "LLL Ship Lever Fix", true, "Fixes the ship lever remaining interactable while routing.");
+            LLLShipLeverFix = base.Config.Bind("A. Mod Tweaks", "LLL Ship Lever Fix", true, "Fixes the ship lever remaining interactable while routing. NOTICE: This should be disabled when RandomMoonFX is installed.");
             VideoTapeInsertFix = base.Config.Bind("A. Mod Tweaks", "Wesley Moons Tape Insert Fix", false, "EXPERIMENTAL - For Wesley's Moons: attempts to fix an issue where clients are unable to insert cassette tapes into the projector (might also fix issues with registering story log items).");
             VideoTapeSkip = base.Config.Bind("A. Mod Tweaks", "Wesley Moons Video Tape Skip", false, "For Wesley's Moons: after inserting a casette tape on Galetry, you can interact with the cassette player again to skip the video and unlock the moon immediately.");
             ShipWindowsShutterFix = base.Config.Bind("A. Mod Tweaks", "ShipWindowsBeta Shutter Fix", true, "Closes the ship window shutters when taking off from a planet (requires you to have 'Hide Moon Transitions' enabled in ShipWindowsBeta config).");
+            ShipWindowsShutterAudio = base.Config.Bind("A. Mod Tweaks", "ShipWindowsBeta Shutter Sound Effect", "Unchanged", new ConfigDescription("Allows you to change the sound effect of the shutter switch (unrelated to the voice lines) to either use only one of its two sound effects or make no noise at all.", new AcceptableValueList<string>(["Unchanged","Only Open", "Only Close", "Muted"])));
             MrovWeatherTweaksAnnouncement = base.Config.Bind("A. Mod Tweaks", "Weather Tweaks Announcement Change", true, "Makes the wording more clear when a weather change is announced, stating the current weather and the weather it's going to be transitioned into.");
             SSSTerminalStock = base.Config.Bind("A. Mod Tweaks", "Smart Cupboard Mrov Terminal Stock", true, "If you are using both Self Sorting Storage (which adds the 'smart cupboard') and mrov's TerminalFormatter (which shows a count of items on the ship), items in the cupboard will be counted on the terminal display.");
             DiversityComputerBegone = base.Config.Bind("A. Mod Tweaks", "Diversity Computer Begone", false, "Removes the floppy reader computer from Diversity and any floppy disks that spawn (does nothing if Diversity isn't installed).");
@@ -372,7 +375,7 @@ namespace ScienceBirdTweaks
             {
                 JLLPatches.DoPatching();
             }
-            if (test1Present && ShipWindowsShutterFix.Value)
+            if (test1Present)
             {
                 ShipWindowsPatch.DoPatching();
             }

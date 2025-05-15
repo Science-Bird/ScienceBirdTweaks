@@ -52,7 +52,7 @@ namespace ScienceBirdTweaks.Patches
             {
                 if (!HUDManager.Instance.UIAudio.isPlaying)
                 {
-                    HUDManager.Instance.UIAudio.PlayOneShot(globalDeathSFX, 0.3f);
+                    HUDManager.Instance.UIAudio.PlayOneShot(globalDeathSFX, 0.45f);
                 }
                 if (ScienceBirdTweaks.FancyPanel.Value && ButtonPanelController.Instance != null)
                 {

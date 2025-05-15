@@ -35,7 +35,7 @@ namespace ScienceBirdTweaks.ZapGun
                 __instance.gameObject.AddComponent<MineZapper>();
                 Scripts.MineAudio audioScript = __instance.gameObject.AddComponent<Scripts.MineAudio>();
                 audioScript.audioSource = __instance.gameObject.GetComponent<AudioSource>();
-                audioScript.beepClip = HazardPatches.disabledBeep;
+                audioScript.beepClip = HazardPatches.disabledSFX;
             }
         }
 

@@ -897,7 +897,7 @@ Some quick patches I put in for issues and inconveniences I've encountered:
 - **JLL Noisemaker Fix**: Fixes occasional noisemaking item malfunctions (e.g. Wesley audio logs not playing) by initializing the RNG functions of JLL objects when a moon loads to avoid an occasional bug with null RNG functions.
 >*Default: ON - Client-side*
 
-- **LLL Unlock Syncing**: Manually applies the host's unlocked moons to all clients, so any moons the host has, the clients will have too (addressing an issue where unlocks in Wesley's Moons could become desynced).
+- **LLL Unlock Syncing**: Manually applies the host's unlocked moons to all clients, so any moons the host has, the clients will have too (addressing an issue where unlocks in Wesley's Moons could become desynced). **This should be disabled when RandomMoonFX is installed**.
 >*Default: OFF - All clients*
 
 - **LLL Ship Lever Fix**: Fixes the ship lever being interactable while routing with LLL installed.

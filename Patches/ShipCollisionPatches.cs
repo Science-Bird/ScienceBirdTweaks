@@ -6,6 +6,9 @@ namespace ScienceBirdTweaks.Patches
     [HarmonyPatch]
     public class ShipCollisionPatches
     {
+        public static bool doTeleporter = false;
+        public static bool doInverse = false;
+
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SceneManager_OnLoadComplete1))]
         [HarmonyPostfix]
         static void ReplaceRailingCollision(StartOfRound __instance, string sceneName)
@@ -27,10 +30,6 @@ namespace ScienceBirdTweaks.Patches
                         catwalkCollider.sharedMesh = newCatwalkMesh.sharedMesh;
                     }
                 }
-                else
-                {
-                    ScienceBirdTweaks.Logger.LogError("Couldn't find catwalk!");
-                }
             }
         }
 
@@ -51,7 +50,6 @@ namespace ScienceBirdTweaks.Patches
                 {
                     leverCollider.size = ScienceBirdTweaks.ConfigLeverSize;
                 }
-
             }
         }
 
@@ -111,23 +109,50 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.BuyShipUnlockableClientRpc))]
+        [HarmonyPostfix]
+        static void TeleporterBuildOnBuy(StartOfRound __instance, int unlockableID)
+        {
+            if (ScienceBirdTweaks.TinyTeleporterCollision.Value)
+            {
+                if (unlockableID == 5)
+                {
+                    doTeleporter = true;
+                }
+                else if (unlockableID == 19)
+                {
+                    doInverse = true;
+                }
+            }
+        }
+
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SceneManager_OnLoadComplete1))]
         [HarmonyPostfix]
         static void TeleporterBuildOnLoad(StartOfRound __instance)
         {
             if (ScienceBirdTweaks.TinyTeleporterCollision.Value)
             {
-                TeleporterBuildCollision();
+                if (doTeleporter && GameObject.Find("Teleporter(Clone)/AnimContainer/PlacementCollider"))
+                {
+                    TeleporterBuildCollision();
+                    doTeleporter = false;
+                }
+                if (doInverse && GameObject.Find("InverseTeleporter(Clone)/AnimContainer/PlacementCollider"))
+                {
+                    TeleporterBuildCollision();
+                    doInverse = false;
+                }
             }
         }
 
-        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.BuyShipUnlockableClientRpc))]
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Update))]
         [HarmonyPostfix]
-        static void TeleporterBuildOnBuy(StartOfRound __instance)
+        static void OnUpdate(StartOfRound __instance)
         {
-            if (ScienceBirdTweaks.TinyTeleporterCollision.Value)
+            if (doTeleporter)
             {
                 TeleporterBuildCollision();
+                doTeleporter = false;
             }
         }
 

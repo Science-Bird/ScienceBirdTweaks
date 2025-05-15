@@ -15,7 +15,7 @@ namespace ScienceBirdTweaks.ZapGun
     {
         public static GameObject doorPrefab;
         public static Color spikesGreen = new Color(0.3254902f, 1f, 0.3679014f, 1f);
-        public static AudioClip disabledBeep;
+        public static AudioClip disabledSFX;
         public static Material disabledMat;
         public static Material offMat;
         public static RuntimeAnimatorController newController;
@@ -30,7 +30,16 @@ namespace ScienceBirdTweaks.ZapGun
             doorPrefab = (GameObject)ScienceBirdTweaks.TweaksAssets.LoadAsset("DoorKillTrigger");
             disabledMat = (Material)ScienceBirdTweaks.TweaksAssets.LoadAsset("SpikeRoofTrapDisabledMat");
             offMat = (Material)ScienceBirdTweaks.TweaksAssets.LoadAsset("SpikeRoofTrapOffMat");
-            disabledBeep = (AudioClip)ScienceBirdTweaks.TweaksAssets.LoadAsset("SingleBeep");
+            disabledSFX = (AudioClip)ScienceBirdTweaks.TweaksAssets.LoadAsset("SingleClick");
+            switch (ScienceBirdTweaks.MineSoundEffect.Value)
+            {
+                case "Beep":
+                    disabledSFX = (AudioClip)ScienceBirdTweaks.TweaksAssets.LoadAsset("SingleBeep");
+                    break;
+                case "None":
+                    disabledSFX = (AudioClip)ScienceBirdTweaks.TweaksAssets.LoadAsset("SingleSilence");
+                    break;
+            }
             newController = (RuntimeAnimatorController)ScienceBirdTweaks.TweaksAssets.LoadAsset("landmineAltController");
         }
 

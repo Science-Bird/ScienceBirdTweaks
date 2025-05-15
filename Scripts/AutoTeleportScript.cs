@@ -35,7 +35,7 @@ namespace ScienceBirdTweaks.Scripts
                 yield break;
             }
             teleporter.shipTeleporterAudio.PlayOneShot(teleporter.teleporterSpinSFX);
-            
+
             if (playerToBeamUp == null)
             {
                 ScienceBirdTweaks.Logger.LogDebug("Targeted player is null");
@@ -102,9 +102,9 @@ namespace ScienceBirdTweaks.Scripts
 
             HUD.UIAudio.PlayOneShot(PlayerDeathPatches.HUDWarning, 0.5f);
             GameObject gameObject = UnityEngine.Object.Instantiate(PlayerDeathPatches.questionMark, HUD.ScrapItemBoxes[HUD.nextBoxIndex].itemObjectContainer);
-            gameObject.transform.localPosition = new Vector3(0f,0f,-1f);
+            gameObject.transform.localPosition = new Vector3(0f, 0f, -1f);
             gameObject.transform.localScale = gameObject.transform.localScale * 3.5f;
-            gameObject.transform.rotation = Quaternion.Euler(-90f,0f,0f);
+            gameObject.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
             Renderer[] componentsInChildren = gameObject.GetComponentsInChildren<Renderer>();
             for (int i = 0; i < componentsInChildren.Length; i++)
             {
