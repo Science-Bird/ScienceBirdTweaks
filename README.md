@@ -253,6 +253,18 @@ Have you ever noticed that if you start holding down interact before you actuall
 
 </details>
 
+### Stretched Hand Icon Fix
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - Client-side*
+
+Fixes a common issue on modded moons where the hand icons on doors or other interactable objects become stretched incorrectly.
+
+</details>
+
 ### Smoke Particle Fix
 
 <details>
@@ -264,18 +276,6 @@ Have you ever noticed that if you start holding down interact before you actuall
 The exhaust smoke from the company cruiser, smoke trail left by old birds, and smoke from explosions are now affected by fog, and thus don't stick out strangely when seen from far away. This comes with the compromise of the particles not looking quite as nice as vanilla, but it's a subtle difference.
 
 ![SmokeFixDemo](https://imgur.com/vv7kB6H.png)
-
-</details>
-
-### Bridge Items Fix
-
-<details>
-<summary>Details</summary>
-<br />
-
->*Default: ON - All clients*
-
-If a bridge falls and you've left an item up there, have no fear! Items on vanilla collapsing bridges will now fall down with them.
 
 </details>
 
@@ -291,6 +291,18 @@ Clears all the scan nodes on your screen when opening the belt bag's menu, to ke
 
 </details>
 
+### Bridge Items Fix
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - All clients*
+
+If a bridge falls and you've left an item up there, have no fear! Items on vanilla collapsing bridges will now fall down with them.
+
+</details>
+
 ### Joining Clients Item Fix
 
 <details>
@@ -302,6 +314,22 @@ Clears all the scan nodes on your screen when opening the belt bag's menu, to ke
 This fixes a vanilla issue where when players join, the fact that all the items are in the ship isn't updated. For example, if a client picks up an item after joining, it would act as if it had been collected in the ship for the first time.
 
 I believe this is also fixed by other mods, but it's included here for better compatibility with some of the scrap keeping tweaks (see associated section).
+
+</details>
+
+### Replace Null Items
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - All clients*
+
+If a moon or interior hasn't registered its items properly, those items will enter a bugged state when leaving the moon or reloading a save. This mainly entails the item becoming invisible and can lead to errors when other mods try to interface with the item.
+
+This tweak will check for items with null properties on level transitions and attempt to find the intended item properties and swap the items out with new ones. This may not consistently solve the issue under all circumstances, but it's certainly better than nothing.
+
+If you are certain you will never encounter bugged items like this, you are free to disable this (it may have a slight performance impact on level transitions).
 
 </details>
 
@@ -609,7 +637,9 @@ The big doors are a bit different: zapping a closed big door will "jam" it open 
 
 <br />
 
-A few properties of the zap gun are also configurable:
+A few properties of the zap gun and hazards are also configurable:
+
+- Sound effect for the mine cooldown animation
     
 - Battery life of the zap gun
     

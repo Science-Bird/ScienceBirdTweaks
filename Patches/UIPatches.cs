@@ -1,5 +1,7 @@
+using System.Linq;
 using GameNetcodeStuff;
 using HarmonyLib;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace ScienceBirdTweaks.Patches
@@ -7,6 +9,40 @@ namespace ScienceBirdTweaks.Patches
     [HarmonyPatch]
     public class UIPatches
     {
+        public static Sprite handSprite;
+        public static Sprite pointSprite;
+        private static readonly string[] vanillaMoons = ["20 Adamance", "68 Artifice", "220 Assurance", "71 Gordion", "7 Dine", "5 Embrion", "41 Experimentation", "44 Liquidation", "61 March", "21 Offense", "85 Rend", "8 Titan", "56 Vow"];
+
+        [HarmonyPatch(typeof(GameNetworkManager), nameof(GameNetworkManager.Start))]
+        [HarmonyPostfix]
+        static void InitialLoad()
+        {
+            if (ScienceBirdTweaks.StretchedHoverIconFix.Value)
+            {
+                handSprite = (Sprite)ScienceBirdTweaks.TweaksAssets.LoadAsset("HandIcon");
+                pointSprite = (Sprite)ScienceBirdTweaks.TweaksAssets.LoadAsset("HandIconPoint");
+            }
+        }
+
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.FinishGeneratingLevel))]
+        [HarmonyPostfix]
+        static void OnLevelReady()
+        {
+            if (!ScienceBirdTweaks.StretchedHoverIconFix.Value || vanillaMoons.Contains(StartOfRound.Instance.currentLevel.PlanetName)) { return; }
+
+            InteractTrigger[] handInteracts = Object.FindObjectsOfType<InteractTrigger>(true).Where(x => x.hoverIcon != null && x.hoverIcon.name == "HandIcon").ToArray();
+            InteractTrigger[] pointInteracts = Object.FindObjectsOfType<InteractTrigger>(true).Where(x => x.hoverIcon != null && x.hoverIcon.name == "HandIconPoint").ToArray();
+
+            for (int i = 0; i < handInteracts.Length; i++)
+            {
+                handInteracts[i].hoverIcon = handSprite;
+            }
+            for (int i = 0; i < pointInteracts.Length; i++)
+            {
+                pointInteracts[i].hoverIcon = pointSprite;
+            }
+        }
+
         [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.Update))]
         [HarmonyPostfix]
         static void PauseUpdate(QuickMenuManager __instance)

@@ -19,7 +19,7 @@ namespace ScienceBirdTweaks.Scripts
             teleporter = shipTeleporter;
             if (!doingRoutine && StartOfRound.Instance.allPlayerScripts[player].redirectToEnemy == null)
             {
-                ScienceBirdTweaks.Logger.LogDebug($"no enemy: {StartOfRound.Instance.allPlayerScripts[player].redirectToEnemy}");
+                //ScienceBirdTweaks.Logger.LogDebug($"no enemy: {StartOfRound.Instance.allPlayerScripts[player].redirectToEnemy}");
                 StartCoroutine(TeleportBodyToShip(player));
             }
         }

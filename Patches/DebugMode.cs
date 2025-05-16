@@ -57,6 +57,17 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
+        [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SetHoverTipAndCurrentInteractTrigger))]
+        [HarmonyPostfix]
+        static void SuitTooltip(PlayerControllerB __instance)
+        {
+            if (ScienceBirdTweaks.DebugMode.Value && __instance.cursorTip.text != "" && __instance.cursorTip.text.Contains("_Suit"))
+            {
+                __instance.cursorTip.text = __instance.cursorTip.text.Replace("_Suit", " suit");
+                __instance.cursorTip.text = __instance.cursorTip.text.Replace("WineRed", " Wine red");
+            }
+        }
+
         [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.StopHoldInteractionOnTrigger))]
         [HarmonyPostfix]
         static void OnInteractFail(PlayerControllerB __instance)
@@ -74,7 +85,6 @@ namespace ScienceBirdTweaks.Patches
 
         //}
 
-
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SceneManager_OnLoadComplete1))]
         [HarmonyPostfix]
         static void FixNoiseSuppression(StartOfRound __instance)
@@ -85,7 +95,6 @@ namespace ScienceBirdTweaks.Patches
             }
             VoiceSettings.Instance.BackgroundSoundRemovalEnabled = false;
         }
-
     }
 }
 
