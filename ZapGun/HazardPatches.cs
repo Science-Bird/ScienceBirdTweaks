@@ -47,24 +47,24 @@ namespace ScienceBirdTweaks.ZapGun
         [HarmonyPostfix]
         static void BigDoorsPatch(TerminalAccessibleObject __instance)
         {
-            if (!__instance.isBigDoor || (!ScienceBirdTweaks.PlayerLethalBigDoors.Value && !ScienceBirdTweaks.EnemyLethalBigDoors.Value) || !ScienceBirdTweaks.ZapGunRework.Value)
+            if (!__instance.isBigDoor || (!ScienceBirdTweaks.PlayerLethalBigDoors.Value && !ScienceBirdTweaks.EnemyLethalBigDoors.Value && !ScienceBirdTweaks.ZappableBigDoors.Value) || !ScienceBirdTweaks.ZapGunRework.Value)
             {
                 return;
             }
-            if (!__instance.gameObject.transform.Find("DoorKillTrigger(Clone)"))
-            {
-                InitializeBigDoors(__instance);
-            }
+            InitializeBigDoors(__instance);
             __instance.gameObject.AddComponent<DoorZapper>();
         }
 
         public static void InitializeBigDoors(TerminalAccessibleObject terminalObj)
         {
-            GameObject doorObj = Object.Instantiate(doorPrefab, Vector3.zero, Quaternion.Euler(-90f, 0f, 0f));
-            doorObj.transform.SetParent(terminalObj.gameObject.transform, false);
-            GameObject doorTrigger = doorObj.transform.Find("Trigger").gameObject;
-            doorTrigger.transform.localPosition = new Vector3(0f, 2f, -2.623f);
-            doorTrigger.AddComponent<KillOnStay>();
+            if ((ScienceBirdTweaks.PlayerLethalBigDoors.Value || ScienceBirdTweaks.EnemyLethalBigDoors.Value) && !terminalObj.gameObject.transform.Find("DoorKillTrigger(Clone)"))
+            {
+                GameObject doorObj = Object.Instantiate(doorPrefab, Vector3.zero, Quaternion.Euler(-90f, 0f, 0f));
+                doorObj.transform.SetParent(terminalObj.gameObject.transform, false);
+                GameObject doorTrigger = doorObj.transform.Find("Trigger").gameObject;
+                doorTrigger.transform.localPosition = new Vector3(0f, 2f, -2.623f);
+                doorTrigger.AddComponent<KillOnStay>();
+            }
             Transform door1 = terminalObj.gameObject.transform.Find("BigDoorLeft");
             Transform door2 = terminalObj.gameObject.transform.Find("BigDoorRight");
             door1.gameObject.layer = 21;
