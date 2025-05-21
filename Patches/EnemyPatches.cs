@@ -302,7 +302,7 @@ namespace ScienceBirdTweaks.Patches
             RadMechAI[] oldBirds = UnityEngine.Resources.FindObjectsOfTypeAll<RadMechAI>().ToArray();
             foreach (RadMechAI oldBirdEnemy in oldBirds)
             {
-                ParticleSystem[] particleSystems = oldBirdEnemy.gameObject.GetComponentsInChildren<ParticleSystem>();
+                ParticleSystem[] particleSystems = oldBirdEnemy.gameObject.GetComponentsInChildren<ParticleSystem>(true);
                 foreach (ParticleSystem particleSystem in particleSystems)
                 {
                     ParticleSystemRenderer renderer = particleSystem.GetComponent<ParticleSystemRenderer>();
@@ -317,7 +317,7 @@ namespace ScienceBirdTweaks.Patches
             GameObject[] objectList = Resources.FindObjectsOfTypeAll<GameObject>().Where(x => x.name == "LargeExplosionEffect").ToArray();// this includes old bird missiles
             foreach (GameObject explosionObject in objectList)
             {
-                ParticleSystem[] particleSystems = explosionObject.GetComponentsInChildren<ParticleSystem>();
+                ParticleSystem[] particleSystems = explosionObject.GetComponentsInChildren<ParticleSystem>(true);
                 foreach (ParticleSystem particleSystem in particleSystems)
                 {
                     ParticleSystemRenderer renderer = particleSystem.GetComponent<ParticleSystemRenderer>();

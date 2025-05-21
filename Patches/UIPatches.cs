@@ -24,11 +24,39 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
+        [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
+        [HarmonyPrefix]
+        static void FixOnSpawn(PlayerControllerB __instance)
+        {
+            if ((__instance.IsOwner && __instance.isPlayerControlled && (!__instance.IsServer || __instance.isHostPlayerObject)) || __instance.isTestingPlayer)
+            {
+                if (__instance.isCameraDisabled)
+                {
+                    FixHandIcons();
+                }
+            }
+        }
+
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.FinishGeneratingLevel))]
         [HarmonyPostfix]
-        static void OnLevelReady()
+        static void FixOnGenerate()
         {
-            if (!ScienceBirdTweaks.StretchedHoverIconFix.Value || vanillaMoons.Contains(StartOfRound.Instance.currentLevel.PlanetName)) { return; }
+            if (vanillaMoons.Contains(StartOfRound.Instance.currentLevel.PlanetName)) { return; }
+            FixHandIcons();
+        }
+
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SceneManager_OnLoadComplete1))]
+        [HarmonyPostfix]
+        static void FixOnLoad(StartOfRound __instance, string sceneName)
+        {
+            if (sceneName == "SampleSceneRelay" || (sceneName == __instance.currentLevel.sceneName && vanillaMoons.Contains(__instance.currentLevel.PlanetName))) { return; }
+            FixHandIcons();
+        }
+
+        static void FixHandIcons()
+        {
+            if (!ScienceBirdTweaks.StretchedHoverIconFix.Value) { return; }
+            ScienceBirdTweaks.Logger.LogDebug("Doing hand icon fix!");
 
             InteractTrigger[] handInteracts = Object.FindObjectsOfType<InteractTrigger>(true).Where(x => x.hoverIcon != null && x.hoverIcon.name == "HandIcon").ToArray();
             InteractTrigger[] pointInteracts = Object.FindObjectsOfType<InteractTrigger>(true).Where(x => x.hoverIcon != null && x.hoverIcon.name == "HandIconPoint").ToArray();

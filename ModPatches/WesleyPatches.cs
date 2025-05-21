@@ -110,7 +110,7 @@ namespace ScienceBirdTweaks.ModPatches
         public static void StartLoad(LevelCassetteLoader __instance, PlayerControllerB player)
         {
             if (!ScienceBirdTweaks.VideoTapeInsertFix.Value) { return; }
-            if (ScienceBirdTweaks.DebugMode.Value)
+            if (ScienceBirdTweaks.ExtraLogs.Value)
             {
                 ScienceBirdTweaks.Logger.LogDebug($"Log cycle 1:");
 
@@ -134,7 +134,7 @@ namespace ScienceBirdTweaks.ModPatches
         public static void LoadClient(LevelCassetteLoader __instance, ref int playerWhoSent)
         {
             if (!ScienceBirdTweaks.VideoTapeInsertFix.Value) { return; }
-            if (ScienceBirdTweaks.DebugMode.Value)
+            if (ScienceBirdTweaks.ExtraLogs.Value)
             {
                 ScienceBirdTweaks.Logger.LogDebug($"Log cycle 2:");
                 foreach (PlayerControllerB playerScript in RoundManager.Instance.playersManager.allPlayerScripts)
@@ -158,7 +158,7 @@ namespace ScienceBirdTweaks.ModPatches
                 bufferID = 115;
                 accessID = 115;
             }
-            if (ScienceBirdTweaks.DebugMode.Value)
+            if (ScienceBirdTweaks.ExtraLogs.Value)
             {
                 foreach (PlayerControllerB playerScript in RoundManager.Instance.playersManager.allPlayerScripts)
                 {

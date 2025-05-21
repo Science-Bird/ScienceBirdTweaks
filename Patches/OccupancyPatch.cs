@@ -33,7 +33,7 @@ namespace ScienceBirdTweaks.Patches
         {
             if (!ScienceBirdTweaks.DynamicOccupancySign.Value && ScienceBirdTweaks.OccupancyFixedValue.Value == "None") { return; }
 
-            playerCount = round.connectedPlayersAmount;
+            playerCount = round.connectedPlayersAmount + 1;
             GameObject occupancyPoster = GameObject.Find("HangarShip/Plane.001");
             Material[] mats = occupancyPoster.GetComponent<MeshRenderer>().materials;
             if (ScienceBirdTweaks.OccupancyFixedValue.Value != "None")// fixed value override

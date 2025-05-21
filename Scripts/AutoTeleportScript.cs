@@ -34,8 +34,8 @@ namespace ScienceBirdTweaks.Scripts
                 ScienceBirdTweaks.Logger.LogDebug("Found enemy!");
                 yield break;
             }
+            teleporter.teleporterAnimator.SetTrigger("useTeleporter");
             teleporter.shipTeleporterAudio.PlayOneShot(teleporter.teleporterSpinSFX);
-
             if (playerToBeamUp == null)
             {
                 ScienceBirdTweaks.Logger.LogDebug("Targeted player is null");

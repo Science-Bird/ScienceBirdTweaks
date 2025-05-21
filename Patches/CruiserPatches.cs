@@ -30,13 +30,28 @@ namespace ScienceBirdTweaks.Patches
             VehicleController[] vehicles = UnityEngine.Resources.FindObjectsOfTypeAll<VehicleController>();
             foreach (VehicleController vehicle in vehicles)
             {
-                ParticleSystem[] particleSystems = vehicle.GetComponentsInChildren<ParticleSystem>();
+                ParticleSystem[] particleSystems = vehicle.GetComponentsInChildren<ParticleSystem>(true);
                 foreach (ParticleSystem particleSystem in particleSystems)
                 {
                     ParticleSystemRenderer renderer = particleSystem.GetComponent<ParticleSystemRenderer>();
                     if (renderer != null && renderer.material != null && (renderer.material.name == "Default-Particle (Instance)" || renderer.material.name == "Default-ParticleSystem (Instance)"))
                     {
                         ScienceBirdTweaks.Logger.LogDebug("Found cruiser target particle!");
+                        renderer.material = smokeParticleMat;
+                    }
+                }
+            }
+
+            JetpackItem[] jetpacks = UnityEngine.Resources.FindObjectsOfTypeAll<JetpackItem>();
+            foreach (JetpackItem jetpack in jetpacks)
+            {
+                ParticleSystem[] particleSystems = jetpack.GetComponentsInChildren<ParticleSystem>(true);
+                foreach (ParticleSystem particleSystem in particleSystems)
+                {
+                    ParticleSystemRenderer renderer = particleSystem.GetComponent<ParticleSystemRenderer>();
+                    if (renderer != null && renderer.material != null && (renderer.material.name == "Default-Particle (Instance)" || renderer.material.name == "Default-ParticleSystem (Instance)"))
+                    {
+                        ScienceBirdTweaks.Logger.LogDebug("Found jetpack target particle!");
                         renderer.material = smokeParticleMat;
                     }
                 }
