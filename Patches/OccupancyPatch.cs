@@ -83,6 +83,13 @@ namespace ScienceBirdTweaks.Patches
         {
             UpdatePoster(__instance);
         }
+
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.OnPlayerDC))]
+        [HarmonyPostfix]
+        static void OnDisconnection(StartOfRound __instance)
+        {
+            UpdatePoster(__instance);
+        }
     }
 }
 

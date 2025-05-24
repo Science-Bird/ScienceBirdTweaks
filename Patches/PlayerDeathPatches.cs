@@ -8,6 +8,7 @@ using ScienceBirdTweaks.Scripts;
 using Unity.Netcode;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Services.Authentication.Internal;
 
 namespace ScienceBirdTweaks.Patches
 {
@@ -21,6 +22,8 @@ namespace ScienceBirdTweaks.Patches
         public static AutoTeleportScript teleportScript;
         public static List<int> usedPlayerIDs = new List<int>();
         public static float startTime = 0f;
+        public static GameObject teleportScriptPrefab;
+
 
         [HarmonyPatch(typeof(GameNetworkManager), nameof(GameNetworkManager.Start))]
         [HarmonyPostfix]
@@ -30,10 +33,25 @@ namespace ScienceBirdTweaks.Patches
             {
                 globalDeathSFX = (AudioClip)ScienceBirdTweaks.TweaksAssets.LoadAsset("GlobalDeathSound");
             }
-            if (ScienceBirdTweaks.AutoTeleportBody.Value)
+            if (!ScienceBirdTweaks.ClientsideMode.Value && (ScienceBirdTweaks.UnrecoverableNotification.Value || ScienceBirdTweaks.AutoTeleportBody.Value))
             {
                 HUDWarning = (AudioClip)ScienceBirdTweaks.TweaksAssets.LoadAsset("HUDWarningSFX");
                 questionMark = (GameObject)ScienceBirdTweaks.TweaksAssets.LoadAsset("QuestionMarkObj");
+                teleportScriptPrefab = (GameObject)ScienceBirdTweaks.TweaksAssets.LoadAsset("AutoTeleportScript");
+                NetworkManager.Singleton.AddNetworkPrefab(teleportScriptPrefab);
+            }
+        }
+
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SceneManager_OnLoadComplete1))]
+        [HarmonyPostfix]
+        static void SpawnTeleportScript(StartOfRound __instance, string sceneName)
+        {
+            if (ScienceBirdTweaks.ClientsideMode.Value || (!ScienceBirdTweaks.AutoTeleportBody.Value && !ScienceBirdTweaks.UnrecoverableNotification.Value)) { return; }
+            if (teleportScript == null && __instance.IsServer)
+            {
+                GameObject teleportScriptObj = UnityEngine.Object.Instantiate(teleportScriptPrefab, Vector3.zero, Quaternion.identity);
+                teleportScriptObj.GetComponent<NetworkObject>().Spawn();
+                teleportScript = teleportScriptObj.GetComponent<AutoTeleportScript>();
             }
         }
 
@@ -41,25 +59,20 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void OnPlayerDeath(PlayerControllerB __instance, int playerId)
         {
-            if (usedPlayerIDs.Contains(playerId)) { return; }
+            if (ScienceBirdTweaks.ClientsideMode.Value || (!ScienceBirdTweaks.AutoTeleportBody.Value && !ScienceBirdTweaks.PlayGlobalDeathSFX.Value && !ScienceBirdTweaks.UnrecoverableNotification.Value) || usedPlayerIDs.Contains(playerId)) { return; }
 
             usedPlayerIDs.Add(playerId);
+            startTime = Time.realtimeSinceStartup;
 
             if (ScienceBirdTweaks.AutoTeleportBody.Value && teleportScript == null)
             {
                 teleportScript = GameObject.FindObjectOfType<AutoTeleportScript>();
-                if (teleportScript == null)
-                {
-                    GameObject teleportHandler = new GameObject("AutoTeleportScript");
-                    teleportScript = teleportHandler.AddComponent<AutoTeleportScript>();
-                }
             }
 
             if (ScienceBirdTweaks.PlayGlobalDeathSFX.Value && !GameNetworkManager.Instance.localPlayerController.isPlayerDead)
             {
                 //ScienceBirdTweaks.Logger.LogDebug("PLAYING GLOBAL DEATH SFX");
                 HUDManager.Instance.UIAudio.PlayOneShot(globalDeathSFX, 0.45f);
-                startTime = Time.realtimeSinceStartup;
                 if (ScienceBirdTweaks.FancyPanel.Value && ButtonPanelController.Instance != null)
                 {
                     ButtonPanelController.Instance.BlueLight2Set(true);
@@ -68,10 +81,17 @@ namespace ScienceBirdTweaks.Patches
             }
             if (ScienceBirdTweaks.AutoTeleportBody.Value && ShipTeleporter.hasBeenSpawnedThisSession)
             {
-                teleporter = Object.FindObjectsOfType<ShipTeleporter>().Where(x => !x.isInverseTeleporter).First();
+                if (teleporter == null)
+                {
+                    ShipTeleporter[] teleporters = Object.FindObjectsOfType<ShipTeleporter>().Where(x => !x.isInverseTeleporter).ToArray();
+                    if (teleporters.Length > 0)
+                    {
+                        teleporter = teleporters.First();
+                    }
+                }
                 if (teleporter != null)
                 {
-                    teleportScript.StartTeleportRoutine(teleporter, playerId);// teleporter stuff offloaded to a monobehaviour
+                    teleportScript.StartTeleportRoutine(teleporter, playerId);// teleporter stuff offloaded to a network behaviour
                 }
             }
         }
@@ -92,26 +112,36 @@ namespace ScienceBirdTweaks.Patches
         static void ClearListOnRevive(StartOfRound __instance)
         {
             usedPlayerIDs.Clear();
+            if (teleportScript != null)
+            {
+                teleportScript.playerQueue.Clear();
+            }
         }
 
         [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.TeleportPlayer))]
         [HarmonyPostfix]
         static void OnBeamUp(PlayerControllerB __instance)
         {
-            if (ScienceBirdTweaks.UnrecoverableNotification.Value && __instance.shipTeleporterId != -1 && __instance.isPlayerDead)
+            if (!ScienceBirdTweaks.ClientsideMode.Value && ScienceBirdTweaks.UnrecoverableNotification.Value && ShipTeleporter.hasBeenSpawnedThisSession && __instance.isPlayerDead && !StartOfRound.Instance.inShipPhase && __instance.shipTeleporterId != -1)
             {
-                if (teleportScript == null)
+                if (teleporter == null)
                 {
-                    teleportScript = GameObject.FindObjectOfType<AutoTeleportScript>();
-                    if (teleportScript == null)
+                    ShipTeleporter[] teleporters = Object.FindObjectsOfType<ShipTeleporter>().Where(x => !x.isInverseTeleporter).ToArray();
+                    if (teleporters.Length > 0)
                     {
-                        GameObject teleportHandler = new GameObject("AutoTeleportScript");
-                        teleportScript = teleportHandler.AddComponent<AutoTeleportScript>();
+                        teleporter = teleporters.First();
                     }
                 }
-                if (teleportScript != null)
+                if (teleporter != null && System.Array.Exists(teleporter.playersBeingTeleported, x => x == (int)__instance.playerClientId))
                 {
-                    teleportScript.DisplayCustomScrapBox();
+                    if (teleportScript == null)
+                    {
+                        teleportScript = GameObject.FindObjectOfType<AutoTeleportScript>();
+                    }
+                    if (teleportScript != null)
+                    {
+                        teleportScript.DisplayBoxAfterCheck((int)__instance.playerClientId);
+                    }
                 }
             }
         }

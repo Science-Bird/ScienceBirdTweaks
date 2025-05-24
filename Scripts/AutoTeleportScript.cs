@@ -5,35 +5,81 @@ using UnityEngine.EventSystems;
 using System.Collections;
 using Unity.Netcode;
 using ScienceBirdTweaks.Patches;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ScienceBirdTweaks.Scripts
 {
-    public class AutoTeleportScript : MonoBehaviour
+    public class AutoTeleportScript : NetworkBehaviour
     {
         private bool doingRoutine = false;
 
         public static ShipTeleporter teleporter;
 
+        public int currentPlayer = -1;
+
+        public List<int> playerQueue = new List<int>();
+
         public void StartTeleportRoutine(ShipTeleporter shipTeleporter, int player)
         {
             teleporter = shipTeleporter;
-            if (!doingRoutine && StartOfRound.Instance.allPlayerScripts[player].redirectToEnemy == null)
+            if (!base.IsServer) { return; }
+            if (!doingRoutine)
             {
-                //ScienceBirdTweaks.Logger.LogDebug($"no enemy: {StartOfRound.Instance.allPlayerScripts[player].redirectToEnemy}");
-                StartCoroutine(TeleportBodyToShip(player));
+                if (StartOfRound.Instance.allPlayerScripts[player].redirectToEnemy == null || !StartOfRound.Instance.allPlayerScripts[player].redirectToEnemy.isActiveAndEnabled)
+                {
+                    StartCoroutine(WaitBeforeTeleport(player));
+                }
+            }
+            else if (currentPlayer != -1 && player != currentPlayer && !playerQueue.Contains(player))
+            {
+                playerQueue.Add(player);
+            }
+        }
+
+        [ClientRpc]
+        public void DoTeleportRoutineClientRpc(int player)
+        {
+            if (teleporter == null)
+            {
+                ShipTeleporter[] teleporters = Object.FindObjectsOfType<ShipTeleporter>().Where(x => !x.isInverseTeleporter).ToArray();
+                if (teleporters.Length > 0)
+                {
+                    teleporter = teleporters.First();
+                }
+            }
+            StartCoroutine(TeleportBodyToShip(player));
+        }
+
+        private void AfterTeleport()
+        {
+            if (!base.IsServer) { return; }
+            if (playerQueue.Count > 0)
+            {
+                int nextPlayer = playerQueue.Last();
+                StartTeleportRoutine(teleporter, nextPlayer);
+                playerQueue.Remove(nextPlayer);
+            }
+        }
+
+        private IEnumerator WaitBeforeTeleport(int player)
+        {
+            yield return new WaitForSeconds(3f);
+            if (StartOfRound.Instance.allPlayerScripts[player].redirectToEnemy == null || !StartOfRound.Instance.allPlayerScripts[player].redirectToEnemy.isActiveAndEnabled)
+            {
+                DoTeleportRoutineClientRpc(player);
+            }
+            else
+            {
+                ScienceBirdTweaks.Logger.LogDebug("Found enemy!");
             }
         }
 
         private IEnumerator TeleportBodyToShip(int player)// recreation of vanilla teleport routine, but only containing what's needed for dead bodies
         {
             doingRoutine = true;
+            currentPlayer = player;
             PlayerControllerB playerToBeamUp = StartOfRound.Instance.allPlayerScripts[player];
-            yield return new WaitForSeconds(3f);
-            if (playerToBeamUp.redirectToEnemy != null)
-            {
-                ScienceBirdTweaks.Logger.LogDebug("Found enemy!");
-                yield break;
-            }
             teleporter.teleporterAnimator.SetTrigger("useTeleporter");
             teleporter.shipTeleporterAudio.PlayOneShot(teleporter.teleporterSpinSFX);
             if (playerToBeamUp == null)
@@ -94,6 +140,24 @@ namespace ScienceBirdTweaks.Scripts
             }
             //ScienceBirdTweaks.Logger.LogDebug("Teleport C");
             doingRoutine = false;
+            currentPlayer = -1;
+            AfterTeleport();
+        }
+
+
+        public void DisplayBoxAfterCheck(int player)
+        {
+            if (!base.IsServer) { return; }
+            if (StartOfRound.Instance.allPlayerScripts[player].redirectToEnemy == null || !StartOfRound.Instance.allPlayerScripts[player].redirectToEnemy.isActiveAndEnabled)
+            {
+                DisplayCustomScrapBoxClientRpc();
+            }
+        }
+
+        [ClientRpc]
+        public void DisplayCustomScrapBoxClientRpc()
+        {
+            DisplayCustomScrapBox();
         }
 
         public void DisplayCustomScrapBox()// recreation of scrap display method, using custom mesh and text

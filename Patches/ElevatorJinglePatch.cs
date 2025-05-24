@@ -1,6 +1,7 @@
 using System.Reflection;
 using System;
 using HarmonyLib;
+using System.Runtime.CompilerServices;
 
 namespace ScienceBirdTweaks.Patches
 {
@@ -29,12 +30,17 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         private static void SetJingleClip(MineshaftElevatorController __instance)
         {
-            if (butteryPresent || !ScienceBirdTweaks.OldHalloweenElevatorMusic.Value)
+            if (butteryPresent || !ScienceBirdTweaks.OldHalloweenElevatorMusic.Value || RoundManager.Instance.currentMineshaftElevator != __instance)
             {
                 return;
             }
+
             if (__instance.playMusic && !__instance.elevatorJingleMusic.isPlaying)// halloween clips still exist and are even loaded onto elevator object, they just normally aren't used
             {
+                if (clipRandom == null)
+                {
+                    clipRandom = new System.Random(StartOfRound.Instance.randomMapSeed);
+                }
                 int clipIndex = clipRandom.Next(0, __instance.elevatorHalloweenClips.Length);
                 if (__instance.elevatorMovingDown)
                 {
