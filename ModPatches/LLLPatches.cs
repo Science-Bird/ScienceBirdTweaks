@@ -45,7 +45,7 @@ namespace ScienceBirdTweaks.ModPatches
         {
             foreach (var extendedFlow in PatchedContent.ExtendedDungeonFlows)// dungeon dictionary exists to associate certain dungeons with their names and respective mods (which is used to write config entries)
             {
-                dungeonDict.TryAdd(extendedFlow, (extendedFlow.ModName, extendedFlow.DungeonName));
+                dungeonDict.TryAdd(extendedFlow, (extendedFlow.ModName, extendedFlow.DungeonName.Replace("\n","").Replace("\t","").Replace("\\","").Replace("\"","").Replace("'","").Replace("[","").Replace("]","")));
             }
             ConfigLoader();
         }
