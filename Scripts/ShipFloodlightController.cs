@@ -394,6 +394,7 @@ namespace ScienceBirdTweaks.Scripts
 
                     if (FloodlightData != null)
                     {
+                        //ScienceBirdTweaks.Logger.LogDebug($"Setting floodlight data! ({FloodlightData.intensity}, {light.intensity}) > {intensity} | ({light.spotAngle}, {FloodlightData.lightAngle}), {angle} | ({FloodlightData.range}, {light.range}) > {range}");
                         FloodlightData.SetIntensity(intensity);
                         FloodlightData.SetSpotAngle(angle, 78.3f); // 2nd value is % of inner angle
                         FloodlightData.SetRange(range);

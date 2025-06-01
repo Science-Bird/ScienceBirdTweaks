@@ -5,7 +5,7 @@
         <AssemblyName>ScienceBird.ScienceBirdTweaks</AssemblyName>
         <Product>ScienceBirdTweaks</Product>
         <!-- Change to whatever version you're currently on. -->
-        <Version>4.2.8</Version>
+        <Version>4.2.9</Version>
     </PropertyGroup>
 
     <!-- Project Properties -->
@@ -62,6 +62,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Reference Include="LethalNetworkAPI">
+        <HintPath>Dependencies\LethalNetworkAPI.dll</HintPath>
+      </Reference>
       <Reference Include="TestAccount666.GoodItemScan">
         <HintPath>Dependencies\GoodItemScan.dll</HintPath>
       </Reference>
@@ -91,6 +94,9 @@
       </Reference>
       <Reference Include="WesleyMoonScripts">
         <HintPath>WesleyMoonScripts.dll</HintPath>
+      </Reference>
+      <Reference Include="Yorimor.CustomStoryLogs">
+        <HintPath>Dependencies\Yorimor.CustomStoryLogs.dll</HintPath>
       </Reference>
     </ItemGroup>
 </Project>

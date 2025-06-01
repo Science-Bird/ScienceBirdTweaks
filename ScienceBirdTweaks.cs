@@ -24,6 +24,7 @@ namespace ScienceBirdTweaks
     [BepInDependency("imabatby.lethallevelloader", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("TestAccount666.ShipWindowsBeta", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("TestAccount666.GoodItemScan", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("Yorimor.CustomStoryLogs", BepInDependency.DependencyFlags.SoftDependency)]
 
     public class ScienceBirdTweaks : BaseUnityPlugin
     {
@@ -81,7 +82,7 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<int> BlackoutFloodLightIntensity, BlackoutFloodLightAngle, BlackoutFloodLightRange;
         public static ConfigEntry<string> TrueBlackoutNameBlacklist, TrueBlackoutHierarchyBlacklist;
 
-        public static ConfigEntry<bool> JLLNoisemakerFix, LLLUnlockSyncing, LLLShipLeverFix, VideoTapeInsertFix, VideoTapeSkip, ShipWindowsShutterFix, SSSTerminalStock, DiversityComputerBegone, MrovWeatherTweaksAnnouncement;
+        public static ConfigEntry<bool> JLLNoisemakerFix, LLLUnlockSyncing, LLLShipLeverFix, VideoTapeSkip, ShipWindowsShutterFix, SSSTerminalStock, DiversityComputerBegone, MrovWeatherTweaksAnnouncement;
         public static ConfigEntry<string> ShipWindowsShutterAudio;
         public static ConfigEntry<bool> ClientsideMode, DebugMode, ExtraLogs, DisableWarnings, InteriorLogging;
 
@@ -139,7 +140,7 @@ namespace ScienceBirdTweaks
 
             FloodlightRotation = base.Config.Bind("2. Ship Additions", "Rotating Floodlight", false, "The ship's top-mounted floodlight can rotate, toggled by a button near the start lever.");
             FloodLightRotationSpeed = base.Config.Bind("2. Ship Additions", "Ship Floodlight Rotation Speed", 45.0f, new ConfigDescription("Rotation speed of the ship's floodlights.", new AcceptableValueRange<float>(0.0f, 360.0f)));
-            FloodLightIntensity = base.Config.Bind("2. Ship Additions", "Ship Floodlight Intensity", 2275, new ConfigDescription("Lumen value of the ship's floodlights.", new AcceptableValueRange<int>(0, 60000)));
+            FloodLightIntensity = base.Config.Bind("2. Ship Additions", "Ship Floodlight Brightness", 760, new ConfigDescription("Intensity value in lux of the ship's floodlights.", new AcceptableValueRange<int>(0, 30000)));
             FloodLightAngle = base.Config.Bind("2. Ship Additions", "Ship Floodlight Angle", 115, new ConfigDescription("Light angle (degrees) of the ship's floodlights.", new AcceptableValueRange<int>(0, 180)));
             FloodLightRange = base.Config.Bind("2. Ship Additions", "Ship Floodlight Range", 45, new ConfigDescription("Light range (meters) of the ship's floodlights.", new AcceptableValueRange<int>(0, 2000)));
             FloodlightRotationOnLand = base.Config.Bind("2. Ship Additions", "Rotate Floodlight Upon Landing", false, "The ship's floodlight will automatically start rotating when the ship lands.");
@@ -252,7 +253,7 @@ namespace ScienceBirdTweaks
             JLLNoisemakerFix = base.Config.Bind("A. Mod Tweaks", "JLL Noisemaker Fix", true, "Fixes an inconsistent issue where JLL spawners wouldn't initialize items correctly, resulting in errors and the item not functioning correctly (for example: Wesley's Moons audio logs not playing when used).");
             LLLUnlockSyncing = base.Config.Bind("A. Mod Tweaks", "LLL Unlock Syncing", false, "Sends the host's unlocked moons to the clients after they load in, so any moons unlocked by the host will be unlocked by the client as well.");
             LLLShipLeverFix = base.Config.Bind("A. Mod Tweaks", "LLL Ship Lever Fix", true, "Fixes the ship lever remaining interactable while routing. NOTICE: This should be disabled when RandomMoonFX is installed.");
-            VideoTapeInsertFix = base.Config.Bind("A. Mod Tweaks", "Wesley Moons Tape Insert Fix", false, "EXPERIMENTAL - For Wesley's Moons: attempts to fix an issue where clients are unable to insert cassette tapes into the projector (might also fix issues with registering story log items).");
+            //VideoTapeInsertFix = base.Config.Bind("A. Mod Tweaks", "Wesley Moons Tape Insert Fix", false, "EXPERIMENTAL - For Wesley's Moons: attempts to fix an issue where clients are unable to insert cassette tapes into the projector (might also fix issues with registering story log items).");
             VideoTapeSkip = base.Config.Bind("A. Mod Tweaks", "Wesley Moons Video Tape Skip", false, "For Wesley's Moons: after inserting a casette tape on Galetry, you can interact with the cassette player again to skip the video and unlock the moon immediately.");
             ShipWindowsShutterFix = base.Config.Bind("A. Mod Tweaks", "ShipWindowsBeta Shutter Fix", true, "Closes the ship window shutters when taking off from a planet (requires you to have 'Hide Moon Transitions' enabled in ShipWindowsBeta config).");
             ShipWindowsShutterAudio = base.Config.Bind("A. Mod Tweaks", "ShipWindowsBeta Shutter Sound Effect", "Unchanged", new ConfigDescription("Allows you to change the sound effect of the shutter switch (unrelated to the voice lines) to either use only one of its two sound effects or make no noise at all.", new AcceptableValueList<string>(["Unchanged","Only Open", "Only Close", "Muted"])));
@@ -365,7 +366,7 @@ namespace ScienceBirdTweaks
             {
                 SSSPatches.DoPatching();
             }
-            if (wesleyPresent && (VideoTapeSkip.Value || VideoTapeInsertFix.Value))
+            if (wesleyPresent && VideoTapeSkip.Value)
             {
                 WesleyPatches.DoPatching();
             }

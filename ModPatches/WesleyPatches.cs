@@ -4,6 +4,9 @@ using WesleyMoonScripts.Components;
 using Unity.Netcode;
 using UnityEngine.Video;
 using GameNetcodeStuff;
+using System.Collections.Generic;
+using CustomStoryLogs;
+using LethalNetworkAPI;
 
 namespace ScienceBirdTweaks.ModPatches
 {
@@ -15,8 +18,24 @@ namespace ScienceBirdTweaks.ModPatches
             ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(LevelCassetteLoader), "TapeEnded"), postfix: new HarmonyMethod(typeof(TapeSkipPatches).GetMethod("OnTapeEnd")));
             ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(LevelCassetteLoader), "Update"), postfix: new HarmonyMethod(typeof(TapeSkipPatches).GetMethod("TapeUpdate")));
             ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(GameNetworkManager), "Start"), postfix: new HarmonyMethod(typeof(TapeSkipPatches).GetMethod("InitializeInteractPrefab")));
-            ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(LevelCassetteLoader), "StartLoadingCassette"), prefix: new HarmonyMethod(typeof(TapeSkipPatches).GetMethod("StartLoad")));
-            ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(LevelCassetteLoader), "LoadCassetteClientRpc"), prefix: new HarmonyMethod(typeof(TapeSkipPatches).GetMethod("LoadClient")), postfix: new HarmonyMethod(typeof(TapeSkipPatches).GetMethod("LoadClientAfter")));
+            ScienceBirdTweaks.Harmony?.Patch(typeof(CustomStoryLogs.CustomStoryLogs).GetMethod(nameof(CustomStoryLogs.CustomStoryLogs.GetUnlockedList)), prefix: new HarmonyMethod(typeof(StoryLogPatch).GetMethod("StoryLogsListFix")));
+            //ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(LevelCassetteLoader), "StartLoadingCassette"), prefix: new HarmonyMethod(typeof(TapeSkipPatches).GetMethod("StartLoad")));
+            //ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(LevelCassetteLoader), "LoadCassetteClientRpc"), prefix: new HarmonyMethod(typeof(TapeSkipPatches).GetMethod("LoadClient")), postfix: new HarmonyMethod(typeof(TapeSkipPatches).GetMethod("LoadClientAfter")));
+        }
+    }
+
+    public class StoryLogPatch
+    {
+        public static bool StoryLogsListFix()
+        {
+            if (CustomStoryLogs.CustomStoryLogs.UnlockedNetwork.Value == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
     }
 
@@ -106,67 +125,66 @@ namespace ScienceBirdTweaks.ModPatches
             }
         }
 
-        // lots of debug logs ahead since this is still experimental
-        public static void StartLoad(LevelCassetteLoader __instance, PlayerControllerB player)
-        {
-            if (!ScienceBirdTweaks.VideoTapeInsertFix.Value) { return; }
-            if (ScienceBirdTweaks.ExtraLogs.Value)
-            {
-                ScienceBirdTweaks.Logger.LogDebug($"Log cycle 1:");
+        //public static void StartLoad(LevelCassetteLoader __instance, PlayerControllerB player)
+        //{
+        //    if (!ScienceBirdTweaks.VideoTapeInsertFix.Value) { return; }
+        //    if (ScienceBirdTweaks.ExtraLogs.Value)
+        //    {
+        //        ScienceBirdTweaks.Logger.LogDebug($"Log cycle 1:");
 
-                foreach (PlayerControllerB playerScript in RoundManager.Instance.playersManager.allPlayerScripts)
-                {
-                    ScienceBirdTweaks.Logger.LogDebug($"playerId: {playerScript.playerClientId}, actualId: {playerScript.actualClientId}, heldObject: {playerScript.currentlyHeldObjectServer}");
-                }
-                ScienceBirdTweaks.Logger.LogDebug($"ME; playerId: {player.playerClientId}, actualId: {player.actualClientId}, heldObject: {player.currentlyHeldObjectServer}");
-            }
+        //        foreach (PlayerControllerB playerScript in RoundManager.Instance.playersManager.allPlayerScripts)
+        //        {
+        //            ScienceBirdTweaks.Logger.LogDebug($"playerId: {playerScript.playerClientId}, actualId: {playerScript.actualClientId}, heldObject: {playerScript.currentlyHeldObjectServer}");
+        //        }
+        //        ScienceBirdTweaks.Logger.LogDebug($"ME; playerId: {player.playerClientId}, actualId: {player.actualClientId}, heldObject: {player.currentlyHeldObjectServer}");
+        //    }
 
-            if (player.actualClientId != player.playerClientId)// if client ids disagree, store their old values and temporarily sync them
-            {
-                bufferID = player.actualClientId;
-                accessID = player.playerClientId;
-                player.actualClientId = player.playerClientId;
-                ScienceBirdTweaks.Logger.LogDebug($"ME UPDATED; playerId: {player.playerClientId}, actualId: {player.actualClientId}, heldObject: {player.currentlyHeldObjectServer}");
-            }
-        }
+        //    if (player.actualClientId != player.playerClientId)// if client ids disagree, store their old values and temporarily sync them
+        //    {
+        //        bufferID = player.actualClientId;
+        //        accessID = player.playerClientId;
+        //        player.actualClientId = player.playerClientId;
+        //        ScienceBirdTweaks.Logger.LogDebug($"ME UPDATED; playerId: {player.playerClientId}, actualId: {player.actualClientId}, heldObject: {player.currentlyHeldObjectServer}");
+        //    }
+        //}
 
         
-        public static void LoadClient(LevelCassetteLoader __instance, ref int playerWhoSent)
-        {
-            if (!ScienceBirdTweaks.VideoTapeInsertFix.Value) { return; }
-            if (ScienceBirdTweaks.ExtraLogs.Value)
-            {
-                ScienceBirdTweaks.Logger.LogDebug($"Log cycle 2:");
-                foreach (PlayerControllerB playerScript in RoundManager.Instance.playersManager.allPlayerScripts)
-                {
-                    ScienceBirdTweaks.Logger.LogDebug($"playerId: {playerScript.playerClientId}, actualId: {playerScript.actualClientId}, heldObject: {playerScript.currentlyHeldObjectServer}");
-                }
-                PlayerControllerB player = GameNetworkManager.Instance.localPlayerController;
-                ScienceBirdTweaks.Logger.LogDebug($"ME; playerId: {player.playerClientId}, actualId: {player.actualClientId}, heldObject: {player.currentlyHeldObjectServer}");
-            }
-        }
+        //public static void LoadClient(LevelCassetteLoader __instance, ref int playerWhoSent)
+        //{
+        //    if (!ScienceBirdTweaks.VideoTapeInsertFix.Value) { return; }
+        //    if (ScienceBirdTweaks.ExtraLogs.Value)
+        //    {
+        //        ScienceBirdTweaks.Logger.LogDebug($"Log cycle 2:");
+        //        foreach (PlayerControllerB playerScript in RoundManager.Instance.playersManager.allPlayerScripts)
+        //        {
+        //            ScienceBirdTweaks.Logger.LogDebug($"playerId: {playerScript.playerClientId}, actualId: {playerScript.actualClientId}, heldObject: {playerScript.currentlyHeldObjectServer}");
+        //        }
+        //        PlayerControllerB player = GameNetworkManager.Instance.localPlayerController;
+        //        ScienceBirdTweaks.Logger.LogDebug($"ME; playerId: {player.playerClientId}, actualId: {player.actualClientId}, heldObject: {player.currentlyHeldObjectServer}");
+        //    }
+        //}
         
 
-        public static void LoadClientAfter(LevelCassetteLoader __instance, ref int playerWhoSent)
-        {
-            if (!ScienceBirdTweaks.VideoTapeInsertFix.Value) { return; }
-            //ScienceBirdTweaks.Logger.LogDebug($"Log cycle 3:");
+        //public static void LoadClientAfter(LevelCassetteLoader __instance, ref int playerWhoSent)
+        //{
+        //    if (!ScienceBirdTweaks.VideoTapeInsertFix.Value) { return; }
+        //    //ScienceBirdTweaks.Logger.LogDebug($"Log cycle 3:");
 
-            if (bufferID != 115 && accessID != 115)// reset id to stored value. 115 is used as a generic implausibly high ID value to make it clear when the buffers are "empty"
-            {
-                RoundManager.Instance.playersManager.allPlayerScripts[accessID].actualClientId = bufferID;
-                bufferID = 115;
-                accessID = 115;
-            }
-            if (ScienceBirdTweaks.ExtraLogs.Value)
-            {
-                foreach (PlayerControllerB playerScript in RoundManager.Instance.playersManager.allPlayerScripts)
-                {
-                    ScienceBirdTweaks.Logger.LogDebug($"playerId: {playerScript.playerClientId}, actualId: {playerScript.actualClientId}, heldObject: {playerScript.currentlyHeldObjectServer}");
-                }
-                PlayerControllerB player = GameNetworkManager.Instance.localPlayerController;
-                ScienceBirdTweaks.Logger.LogDebug($"ME; playerId: {player.playerClientId}, actualId: {player.actualClientId}, heldObject: {player.currentlyHeldObjectServer}");
-            }
-        }
+        //    if (bufferID != 115 && accessID != 115)// reset id to stored value. 115 is used as a generic implausibly high ID value to make it clear when the buffers are "empty"
+        //    {
+        //        RoundManager.Instance.playersManager.allPlayerScripts[accessID].actualClientId = bufferID;
+        //        bufferID = 115;
+        //        accessID = 115;
+        //    }
+        //    if (ScienceBirdTweaks.ExtraLogs.Value)
+        //    {
+        //        foreach (PlayerControllerB playerScript in RoundManager.Instance.playersManager.allPlayerScripts)
+        //        {
+        //            ScienceBirdTweaks.Logger.LogDebug($"playerId: {playerScript.playerClientId}, actualId: {playerScript.actualClientId}, heldObject: {playerScript.currentlyHeldObjectServer}");
+        //        }
+        //        PlayerControllerB player = GameNetworkManager.Instance.localPlayerController;
+        //        ScienceBirdTweaks.Logger.LogDebug($"ME; playerId: {player.playerClientId}, actualId: {player.actualClientId}, heldObject: {player.currentlyHeldObjectServer}");
+        //    }
+        //}
     }
 }

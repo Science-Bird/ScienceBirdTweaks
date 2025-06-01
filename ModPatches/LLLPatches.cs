@@ -28,9 +28,13 @@ namespace ScienceBirdTweaks.ModPatches
 
             if (ScienceBirdTweaks.LLLShipLeverFix.Value)
             {
-                ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartOfRound), "ChangeLevelClientRpc"), postfix: new HarmonyMethod(typeof(LeverPatch).GetMethod("OnStartRoute"), after: ["imabatby.lethallevelloader"]));
                 ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartOfRound), "LateUpdate"), postfix: new HarmonyMethod(typeof(LeverPatch).GetMethod("OnUpdate"), after: ["imabatby.lethallevelloader"]));
-                ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartOfRound), "ArriveAtLevel"), postfix: new HarmonyMethod(typeof(LeverPatch).GetMethod("OnEndRoute"), after: ["imabatby.lethallevelloader"]));
+                ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartOfRound), "ChangeLevel"), postfix: new HarmonyMethod(typeof(LeverPatch).GetMethod("OnChangeLevel"), after: ["imabatby.lethallevelloader"]));
+                ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartOfRound), "ArriveAtLevel"), postfix: new HarmonyMethod(typeof(LeverPatch).GetMethod("OnArrive"), after: ["imabatby.lethallevelloader"]));
+                ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartOfRound), "ShipLeave"), postfix: new HarmonyMethod(typeof(LeverPatch).GetMethod("OnLeave"), after: ["imabatby.lethallevelloader"]));
+                ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartOfRound), "SetShipReadyToLand"), postfix: new HarmonyMethod(typeof(LeverPatch).GetMethod("ShipReady"), after: ["imabatby.lethallevelloader"]));
+                ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartMatchLever), "PullLeverAnim"), postfix: new HarmonyMethod(typeof(LeverPatch).GetMethod("OnAnim"), after: ["imabatby.lethallevelloader"]));
+                ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartOfRound), "SceneManager_OnLoadComplete1"), postfix: new HarmonyMethod(typeof(LeverPatch).GetMethod("OnLoad"), after: ["imabatby.lethallevelloader"]));
             }
         }
     }
@@ -241,18 +245,6 @@ namespace ScienceBirdTweaks.ModPatches
     {
         public static StartMatchLever storedLever;
         public static bool disabled = false;
-
-        public static void OnStartRoute()
-        {
-            StartMatchLever lever = Object.FindObjectOfType<StartMatchLever>();
-            if (lever != null)
-            {
-                lever.triggerScript.interactable = false;
-                storedLever = lever;
-                disabled = true;
-            }
-        }
-
         public static void OnUpdate()
         {
             if (disabled && storedLever != null)
@@ -261,16 +253,49 @@ namespace ScienceBirdTweaks.ModPatches
             }
         }
 
-        public static void OnEndRoute()
+        public static void SetLeverInteractable(bool enabled)
         {
-            StartMatchLever lever = Object.FindObjectOfType<StartMatchLever>();
-            if (lever != null)
+            if (storedLever == null)
             {
-                lever.triggerScript.interactable = true;
-                disabled = false;
+                storedLever = Object.FindObjectOfType<StartMatchLever>();
+            }
+            if (storedLever != null)
+            {
+                disabled = !enabled;
             }
         }
 
+        public static void OnChangeLevel(StartOfRound __instance)
+        {
+            if (__instance.travellingToNewLevel)
+            {
+                SetLeverInteractable(false);
+            }
+        }
 
+        public static void OnArrive()
+        {
+            SetLeverInteractable(true);
+        }
+
+        public static void OnLeave()
+        {
+            SetLeverInteractable(false);
+        }
+
+        public static void ShipReady()
+        {
+            SetLeverInteractable(true);
+        }
+
+        public static void OnAnim()
+        {
+            SetLeverInteractable(false);
+        }
+
+        public static void OnLoad()
+        {
+            SetLeverInteractable(true);
+        }
     }
 }

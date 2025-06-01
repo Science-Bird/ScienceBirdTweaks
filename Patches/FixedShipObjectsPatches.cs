@@ -3,6 +3,7 @@ using HarmonyLib;
 using System;
 using Unity.Netcode;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ScienceBirdTweaks.Patches
 {
@@ -12,8 +13,9 @@ namespace ScienceBirdTweaks.Patches
         static bool destroyCord = false;
         public static GameObject furniturePrefab;
         public static List<int> idBlacklist = new List<int>();
-        public static int[] vanillaIDs = [5, 6, 9, 10, 12, 13, 14, 17, 18, 19, 20, 21, 22, 23];// most vanilla furniture items
+        public static int[] vanillaIDs = [5, 6, 9, 10, 12, 13, 14, 17, 18, 19, 20, 21, 22, 23, 27, 28, 29, 30, 31, 32, 33];// vanilla furniture items
         public static List<int> moddedIDs;
+        public static List<int> failedIDs = new List<int>();
         public static string moddedListMode = "blacklist";
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.PositionSuitsOnRack))]
@@ -124,7 +126,7 @@ namespace ScienceBirdTweaks.Patches
                 {
                     return;
                 }
-                if (!ScienceBirdTweaks.OnlyFixDefault.Value && moddedIDs != null && moddedIDs.Count > 0)
+                if (!ScienceBirdTweaks.OnlyFixDefault.Value && !vanillaIDs.Contains(index) && moddedIDs != null && moddedIDs.Count > 0)
                 {
                     if (ScienceBirdTweaks.ModdedListMode.Value == "Whitelist" && !moddedIDs.Contains(index))
                     {
@@ -158,6 +160,7 @@ namespace ScienceBirdTweaks.Patches
                         if (!networkObj.IsSpawned)
                         {
                             ScienceBirdTweaks.Logger.LogError($"Network object not spawned yet, failing to parent! ({gameObj.name})");
+                            failedIDs.Add(index);
                             return;
                         }
                     }
@@ -196,7 +199,7 @@ namespace ScienceBirdTweaks.Patches
                 {
                     return;
                 }
-                if (!ScienceBirdTweaks.OnlyFixDefault.Value && moddedIDs != null && moddedIDs.Count > 0)
+                if (!ScienceBirdTweaks.OnlyFixDefault.Value && !vanillaIDs.Contains(index) && moddedIDs != null && moddedIDs.Count > 0)
                 {
                     if (ScienceBirdTweaks.ModdedListMode.Value == "Whitelist" && !moddedIDs.Contains(index))
                     {
@@ -252,6 +255,20 @@ namespace ScienceBirdTweaks.Patches
                     
                 }
                 
+            }
+        }
+
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SceneManager_OnLoadComplete1))]
+        [HarmonyPostfix]
+        static void OnLoad(StartOfRound __instance)
+        {
+            if (failedIDs.Count > 0)
+            {
+                foreach (int id in failedIDs)
+                {
+                    ParentFurniture(__instance, id);
+                }
+                failedIDs.Clear();
             }
         }
 
