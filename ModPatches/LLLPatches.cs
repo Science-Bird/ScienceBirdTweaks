@@ -58,7 +58,7 @@ namespace ScienceBirdTweaks.ModPatches
         {
             foreach (var dungeon in dungeonDict)// the dungeon dict is used to bind the config entries in the config dict (still binding config entries the same way as usual, just abstracted by dictionary)
             {
-                configDict.TryAdd(dungeon.Key, ScienceBirdTweaks.Instance.Config.Bind("B. Interior Scrap Bonus", $"{dungeon.Value.Item2}", 0, new ConfigDescription("This number of extra scrap items will be spawned whenever this interior generates.", new AcceptableValueRange<int>(0, 30))));
+                configDict.TryAdd(dungeon.Key, ScienceBirdTweaks.Instance.Config.Bind("Y. Interior Scrap Bonus", $"{dungeon.Value.Item2}", 0, new ConfigDescription("This number of extra scrap items will be spawned whenever this interior generates.", new AcceptableValueRange<int>(0, 30))));
             }
             if (configDict.Any(x => x.Value.Value != 0))// if any of the scrap counts are non-zero
             {

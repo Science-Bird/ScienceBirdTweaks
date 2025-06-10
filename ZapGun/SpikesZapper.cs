@@ -21,13 +21,20 @@ namespace ScienceBirdTweaks.ZapGun
         public bool tempStun = false;
         public Material originalMat;
         public bool startRoutine = false;
-        public bool masterZappable = true;
+        public bool masterZappable = false;
         public float multiplier = 0.25f;
 
         private void Start()
         {
             mainObj = transform.parent.parent.gameObject;
-            supportLights = mainObj.transform.Find("AnimContainer").Find("BaseSupport").gameObject;
+            if ((bool)mainObj.transform.Find("AnimContainer") && (bool)mainObj.transform.Find("AnimContainer").Find("BaseSupport"))
+            {
+                supportLights = mainObj.transform.Find("AnimContainer").Find("BaseSupport").gameObject;
+            }
+            else
+            {
+                return;
+            }
             mainObj.layer = 21;
 
             light = GetComponent<Light>();
@@ -41,7 +48,7 @@ namespace ScienceBirdTweaks.ZapGun
 
         bool IShockableWithGun.CanBeShocked()
         {
-            return spikes.trapActive && !terminalObj.inCooldown && masterZappable;
+            return masterZappable && spikes.trapActive && !terminalObj.inCooldown;
         }
 
         float IShockableWithGun.GetDifficultyMultiplier()

@@ -417,19 +417,12 @@ namespace ScienceBirdTweaks.Scripts
         {
             if (!StartOfRound.Instance.shipHasLanded)
             {
-                yield return new WaitForSeconds(7f);
+                yield return new WaitForSeconds(3f);
             }
             if (ScienceBirdTweaks.BlackoutSFX.Value && BlackoutTriggerPatches.powerDownClip != null)
             {
+                HUDManager.Instance.UIAudio.PlayOneShot(BlackoutTriggerPatches.powerDownClip);
                 ScienceBirdTweaks.Logger.LogDebug($"Playing blackout audio!");
-                Vector3 randomPositionInRadius = RoundManager.Instance.GetRandomPositionInRadius(GameNetworkManager.Instance.localPlayerController.transform.position, 6f, 9f);
-                SoundManager.Instance.ambienceAudio.transform.position = randomPositionInRadius;
-                SoundManager.Instance.ambienceAudio.volume = 1f;
-                SoundManager.Instance.ambienceAudio.clip = BlackoutTriggerPatches.powerDownClip;
-                if (!SoundManager.Instance.ambienceAudio.isPlaying)
-                {
-                    SoundManager.Instance.ambienceAudio.Play();
-                }
             }
         }
 
@@ -490,7 +483,8 @@ namespace ScienceBirdTweaks.Scripts
                                 isFloatSet = mat.GetFloat("_UseEmissiveIntensity") == 1f;
                             }
                             bool hasLightName = FastContains(mat.name, "Light") || FastContains(mat.name, "LED");
-                            bool isPureColour = mat.color.a == 1f && (mat.color.r == 1f || mat.color.g == 1f || mat.color.b == 1f);
+                            
+                            bool isPureColour = mat.HasColor("_Color") && mat.color.a == 1f && (mat.color.r == 1f || mat.color.g == 1f || mat.color.b == 1f);
 
                             //if (extraLogs)
                             //ScienceBirdTweaks.Logger.LogDebug($"Material {mat.name} of {renderer.gameObject.name} has emission: {hasEmission}");

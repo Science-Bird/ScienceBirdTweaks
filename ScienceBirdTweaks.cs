@@ -22,9 +22,10 @@ namespace ScienceBirdTweaks
     [BepInDependency("JacobG5.WesleyMoonScripts", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("JacobG5.JLLItemModule", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("imabatby.lethallevelloader", BepInDependency.DependencyFlags.SoftDependency)]
-    [BepInDependency("TestAccount666.ShipWindowsBeta", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("TestAccount666.ShipWindows", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("TestAccount666.GoodItemScan", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("Yorimor.CustomStoryLogs", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("mborsh.LiveReaction", BepInDependency.DependencyFlags.SoftDependency)]
 
     public class ScienceBirdTweaks : BaseUnityPlugin
     {
@@ -50,7 +51,7 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<bool> PlayGlobalDeathSFX, AutoTeleportBody, UnrecoverableNotification;
         public static ConfigEntry<string> Red1Tip, Red2Tip, Black1Tip, Black2Tip, Knob1Tip, Knob2Tip, Knob3Tip, SmallKnobTip, SmallRedTip, SmallGreenTip;
 
-        public static ConfigEntry<bool> BigScrew, MissingHoverTipFix, StretchedHoverIconFix, SmokeFix, BridgeItemsFix, CleanBeltBagUI, ClientShipItems, ReplaceNullItems, LandmineFix, CrouchDamageAnimation, PauseMenuFlickerFix, FallingRotationFix, OldHalloweenElevatorMusic;
+        public static ConfigEntry<bool> MissingHoverTipFix, StretchedHoverIconFix, SmokeFix, BridgeItemsFix, ClientShipItems, LandmineFix, ApplianceInteractionFixes, PauseMenuFlickerFix, FallingRotationFix, ReplaceNullItems, CrouchDamageAnimation, BigScrew, CleanBeltBagUI, OldHalloweenElevatorMusic;
         public static ConfigEntry<string> StartingMoon, MuteScrapList;
 
         public static ConfigEntry<bool> CoilheadElevatorFix;
@@ -82,9 +83,12 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<int> BlackoutFloodLightIntensity, BlackoutFloodLightAngle, BlackoutFloodLightRange;
         public static ConfigEntry<string> TrueBlackoutNameBlacklist, TrueBlackoutHierarchyBlacklist;
 
-        public static ConfigEntry<bool> JLLNoisemakerFix, LLLUnlockSyncing, LLLShipLeverFix, VideoTapeSkip, ShipWindowsShutterFix, SSSTerminalStock, DiversityComputerBegone, MrovWeatherTweaksAnnouncement;
+        public static ConfigEntry<bool> AlterPlayerCam, HideLocalCam, ImprovedTextBox;
+        public static ConfigEntry<float> PlayerCamAngleX, PlayerCamAngleY, PlayerCamPosVertical, PlayerCamPosHorizontal;
+
+        public static ConfigEntry<bool> JLLNoisemakerFix, LLLUnlockSyncing, LLLShipLeverFix, VideoTapeSkip, ShipWindowsShutterFix, SSSTerminalStock, MrovWeatherTweaksAnnouncement;
         public static ConfigEntry<string> ShipWindowsShutterAudio;
-        public static ConfigEntry<bool> ClientsideMode, DebugMode, ExtraLogs, DisableWarnings, InteriorLogging;
+        public static ConfigEntry<bool> ClientsideMode, DebugMode, ExtraLogs, DisableWarnings, InteriorLogging, ScanHighlights;
 
         public static bool doLobbyCompat = false;
         public static bool mrovPresent1 = false;
@@ -98,6 +102,7 @@ namespace ScienceBirdTweaks
         //public static bool xuPresent = false;
         public static bool test1Present = false;
         public static bool test2Present = false;
+        public static bool mborshPresent = false;
 
         public static Vector3 ConfigTeleporterSize;
 
@@ -164,22 +169,23 @@ namespace ScienceBirdTweaks
             SmallRedTip = base.Config.Bind("2. Ship Additions", "Fancy Panel Tooltips - Small Red", "", "If using fancy button panel, the tooltip for the small red button on the right.");
             SmallGreenTip = base.Config.Bind("2. Ship Additions", "Fancy Panel Tooltips - Small Green", "", "If using fancy button panel, the tooltip for the small green button on the right.");
 
-            BigScrew = base.Config.Bind("3. General Tweaks", "Big Screw", true, "'Big bolt' is accurately renamed to 'Big screw'.");
             MissingHoverTipFix = base.Config.Bind("3. General Tweaks", "Missing Hover Tip Fix", true, "When starting a hold interaction before actually hovering over the interaction trigger, the hover tip will still display.");
             StretchedHoverIconFix = base.Config.Bind("3. General Tweaks", "Stretched Hand Icon Fix", true, "Fixes hand icons on interact triggers being stretched or squished on modded moons.");
-            CleanBeltBagUI = base.Config.Bind("3. General Tweaks", "Clean Belt Bag UI", true, "Scan nodes currently on screen are cleared when opening the belt bag's inventory to reduce visual clutter.");
             SmokeFix = base.Config.Bind("3. General Tweaks", "Smoke Particle Fix", true, "The exhaust smoke from the cruiser and smoke trail from old birds now blend normally into fog so the particles don't stand out so much from far away.");
             BridgeItemsFix = base.Config.Bind("3. General Tweaks", "Bridge Items Fix", true, "When a (vanilla) bridge collapses, any items left on it will now fall as well, rather than floating.");
             ClientShipItems = base.Config.Bind("3. General Tweaks", "Joining Client Items Fix", true, "When clients join, items aren't normally registered as being inside the ship (meaning you'll see a 'collected' pop-up if you grab them). This fixes that.");
-            ReplaceNullItems = base.Config.Bind("3. General Tweaks", "Swap Null Items", true, "Attempts to swap out any grabbable objects which have null item properties with valid ones. This happens when a moon has items in it that are not registered properly and the those items are then taken to another moon (e.g. the shovel and boombox on Aquatis). Note that this is only a bandage fix and may not work consistently in all situations. This fix should only come into play as a last resort if a problem remains unfixed by the moon/interior.");
-            LandmineFix = base.Config.Bind("3. General Tweaks", "Fix Mine Explosion On Exit", true, "Fixes a vanilla issue where mines would explode after being stepped on while deactivated then going outside.");
-            CrouchDamageAnimation = base.Config.Bind("3. General Tweaks", "No Crouched Damage Animation", true, "Disables the player damaged animation if they are crouching, as this animation would cause players to stand up when damaged.");
-            StartingMoon = base.Config.Bind("3. General Tweaks", "Starting Moon", "Experimentation", "LLL REQUIRED - The default moon your ship will orbit when creating a new save or after being fired (only the moon name needs to be included, not the number). This can be either a vanilla or modded moon.");
-            MuteScrapList = base.Config.Bind("3. General Tweaks", "Muted Scrap List", "", "A comma separated list of items which will have their passive noise effects disabled (e.g. 'Comedy, Tragedy, Clock, Toy robot, Radioactive barrel', not case-sensitive). Eyeless dogs will also no longer hear these sounds.");
+            LandmineFix = base.Config.Bind("3. General Tweaks", "Mine Explosion On Exit Fix", true, "Fixes a vanilla issue where mines would explode after being stepped on while deactivated then going outside.");
+            ApplianceInteractionFixes = base.Config.Bind("3. General Tweaks", "Appliance Interaction Fixes", true, "Fixes some of the issues with placing and grabbing items from the fridge and microwave (mostly the fridge).");
             FallingRotationFix = base.Config.Bind("3. General Tweaks", "Falling Rotation Fix", false, "Normally, if you ever drop an object from really high up, its rotation takes so long to change that it's still rotating when it hits the ground. This tweak properly scales the rotation so objects land normally.");
             PauseMenuFlickerFix = base.Config.Bind("3. General Tweaks", "Pause Menu Flicker Fix", false, "'Fixes' the resume button flickering when pausing the game by making the currently selected option always highlighted (will look slightly strange).");
+            ReplaceNullItems = base.Config.Bind("3. General Tweaks", "Swap Null Items", true, "Attempts to swap out any grabbable objects which have null item properties with valid ones. This happens when a moon has items in it that are not registered properly and the those items are then taken to another moon (e.g. the shovel and boombox on Aquatis). Note that this is only a bandage fix and may not work consistently in all situations. This fix should only come into play as a last resort if a problem remains unfixed by the moon/interior.");
+            CrouchDamageAnimation = base.Config.Bind("3. General Tweaks", "No Crouched Damage Animation", true, "Disables the player damaged animation if they are crouching, as this animation would cause players to stand up when damaged.");
+            BigScrew = base.Config.Bind("3. General Tweaks", "Big Screw", true, "'Big bolt' is accurately renamed to 'Big screw'.");
+            CleanBeltBagUI = base.Config.Bind("3. General Tweaks", "Clean Belt Bag UI", true, "Scan nodes currently on screen are cleared when opening the belt bag's inventory to reduce visual clutter.");
+            StartingMoon = base.Config.Bind("3. General Tweaks", "Starting Moon", "Experimentation", "LLL REQUIRED - The default moon your ship will orbit when creating a new save or after being fired (only the moon name needs to be included, not the number). This can be either a vanilla or modded moon.");
+            MuteScrapList = base.Config.Bind("3. General Tweaks", "Muted Scrap List", "", "A comma separated list of items which will have their passive noise effects disabled (e.g. 'Comedy, Tragedy, Clock, Toy robot, Radioactive barrel', not case-sensitive). Eyeless dogs will also no longer hear these sounds.");  
             OldHalloweenElevatorMusic = base.Config.Bind("3. General Tweaks", "Old Halloween Elevator Music", false, "Restores mineshaft elevator to its old Halloween behaviour, playing a random selection of groovy tracks (disabled if ButteryStancakes' HalloweenElevator is installed).");
-
+            
             CoilheadElevatorFix = base.Config.Bind("4. Enemy Tweaks", "Coilhead Elevator Fix", true, "Fixes inconsistent sightlines when standing in an elevator, which could cause coilheads to kill players in the elevator while being looked at.");
             DropMasks = base.Config.Bind("4. Enemy Tweaks", "Gimme That Mask", false, "Allows you to grab the masks off of dead masked enemies and sell them (will not work if you have any mod which removes the masks from masked enemies)");
             MaskScrapValue = base.Config.Bind("4. Enemy Tweaks", "Dropped Mask Scrap Value", 25, new ConfigDescription("The average scrap value of masks recovered from masked enemies (will vary slightly below and above this).", new AcceptableValueRange<int>(0, 200)));
@@ -250,22 +256,29 @@ namespace ScienceBirdTweaks
             BlackoutFloodLightAngle = base.Config.Bind("9. Blackout", "Ship Floodlight Angle in degrees", 80, new ConfigDescription("Light angle (degrees) of the ship's floodlights during MrovWeathers' blackout, (vanilla is 115 degrees).", new AcceptableValueRange<int>(0, 180)));
             BlackoutFloodLightRange = base.Config.Bind("9. Blackout", "Ship Floodlight Range", 600, new ConfigDescription("Light range (meters) of the ship's floodlights during MrovWeathers' blackout, (vanilla is 44m)", new AcceptableValueRange<int>(0, 2000)));
 
-            JLLNoisemakerFix = base.Config.Bind("A. Mod Tweaks", "JLL Noisemaker Fix", true, "Fixes an inconsistent issue where JLL spawners wouldn't initialize items correctly, resulting in errors and the item not functioning correctly (for example: Wesley's Moons audio logs not playing when used).");
-            LLLUnlockSyncing = base.Config.Bind("A. Mod Tweaks", "LLL Unlock Syncing", false, "Sends the host's unlocked moons to the clients after they load in, so any moons unlocked by the host will be unlocked by the client as well.");
-            LLLShipLeverFix = base.Config.Bind("A. Mod Tweaks", "LLL Ship Lever Fix", true, "Fixes the ship lever remaining interactable while routing. NOTICE: This should be disabled when RandomMoonFX is installed.");
-            //VideoTapeInsertFix = base.Config.Bind("A. Mod Tweaks", "Wesley Moons Tape Insert Fix", false, "EXPERIMENTAL - For Wesley's Moons: attempts to fix an issue where clients are unable to insert cassette tapes into the projector (might also fix issues with registering story log items).");
-            VideoTapeSkip = base.Config.Bind("A. Mod Tweaks", "Wesley Moons Video Tape Skip", false, "For Wesley's Moons: after inserting a casette tape on Galetry, you can interact with the cassette player again to skip the video and unlock the moon immediately.");
-            ShipWindowsShutterFix = base.Config.Bind("A. Mod Tweaks", "ShipWindowsBeta Shutter Fix", true, "Closes the ship window shutters when taking off from a planet (requires you to have 'Hide Moon Transitions' enabled in ShipWindowsBeta config).");
-            ShipWindowsShutterAudio = base.Config.Bind("A. Mod Tweaks", "ShipWindowsBeta Shutter Sound Effect", "Unchanged", new ConfigDescription("Allows you to change the sound effect of the shutter switch (unrelated to the voice lines) to either use only one of its two sound effects or make no noise at all.", new AcceptableValueList<string>(["Unchanged","Only Open", "Only Close", "Muted"])));
-            MrovWeatherTweaksAnnouncement = base.Config.Bind("A. Mod Tweaks", "Weather Tweaks Announcement Change", true, "Makes the wording more clear when a weather change is announced, stating the current weather and the weather it's going to be transitioned into.");
-            SSSTerminalStock = base.Config.Bind("A. Mod Tweaks", "Smart Cupboard Mrov Terminal Stock", true, "If you are using both Self Sorting Storage (which adds the 'smart cupboard') and mrov's TerminalFormatter (which shows a count of items on the ship), items in the cupboard will be counted on the terminal display.");
-            DiversityComputerBegone = base.Config.Bind("A. Mod Tweaks", "Diversity Computer Begone", false, "Removes the floppy reader computer from Diversity and any floppy disks that spawn (does nothing if Diversity isn't installed).");
+            AlterPlayerCam = base.Config.Bind("A. Player Cam Tweaks", "Low Angle Player Cam", false, "By default, changes the angle and position of the player cam to look up at players from below their chin (which is slightly more realistic, lets you see more of their surroundings, and is funny). The angle and position are configurable below, so theoretically you can put it wherever you want.");
+            PlayerCamAngleX = base.Config.Bind("A. Player Cam Tweaks", "Player Cam Vertical Angle", -45f, new ConfigDescription("How much the camera should be angled up or down (negative values look up at the player from below their head).", new AcceptableValueRange<float>(-90f, 90f)));
+            PlayerCamAngleY = base.Config.Bind("A. Player Cam Tweaks", "Player Cam Orientation", 0f, new ConfigDescription("How much the camera should be rotated on its vertical axis (e.g. setting this to 180 degrees will rotate the camera to face away from the player).", new AcceptableValueRange<float>(0f, 360f)));
+            PlayerCamPosVertical = base.Config.Bind("A. Player Cam Tweaks", "Player Cam Vertical Offset", -0.2f, new ConfigDescription("How far up or down the camera should be moved (relative to the player's standing position). You might need to change this if you change the rotation.", new AcceptableValueRange<float>(-2f, 2f)));
+            PlayerCamPosHorizontal = base.Config.Bind("A. Player Cam Tweaks", "Player Cam Closeness", 0f, new ConfigDescription("How far away or towards the player the camera should be moved (positive values move the camera away).", new AcceptableValueRange<float>(-3f, 3f)));
+            HideLocalCam = base.Config.Bind("A. Player Cam Tweaks", "Hide Your Own Cam", false, "Instead of a static placeholder image, you will just see your name (position adjusted accordingly).");
+            ImprovedTextBox = base.Config.Bind("A. Player Cam Tweaks", "Improved Name Text Box", false, "EXPERIMENTAL - Allows player names to expand onto multiple lines, split themselves at better places, and generally display better. This should be compatible with the 'Live Reaction' mod.");
 
-            ClientsideMode = base.Config.Bind("C. Technical", "Client-side Mode", false, "EXPERIMENTAL - Enable this if you want to use the mod client-side (i.e. if other players don't have the mod).");
-            DebugMode = base.Config.Bind("C. Technical", "Dev Mode", false, "For testing certain interactions and resetting some variables. Do not enable unless you know what you're doing.");
-            ExtraLogs = base.Config.Bind("C. Technical", "Verbose Logs", false, "Extra logging for debugging specific functions.");
-            DisableWarnings = base.Config.Bind("C. Technical", "Disable Warning Popups", false, "Disables all red warning boxes and their sound effects, vanilla and modded (e.g. when attempting to land with 0 days left).");
-            InteriorLogging = base.Config.Bind("C. Technical", "Interior Analysis", false, "LLL REQUIRED - Logs the area and scrap density of the generated interior and its tiles.");
+            JLLNoisemakerFix = base.Config.Bind("X. Mod Tweaks", "JLL - Noisemaker Fix", true, "Fixes an inconsistent issue where JLL spawners wouldn't initialize items correctly, resulting in errors and the item not functioning correctly (for example: Wesley's Moons audio logs not playing when used).");
+            LLLUnlockSyncing = base.Config.Bind("X. Mod Tweaks", "LLL - Unlock Syncing", false, "Sends the host's unlocked moons to the clients after they load in, so any moons unlocked by the host will be unlocked by the client as well.");
+            LLLShipLeverFix = base.Config.Bind("X. Mod Tweaks", "LLL - Ship Lever Fix", true, "Fixes the ship lever remaining interactable while routing.");
+            VideoTapeSkip = base.Config.Bind("X. Mod Tweaks", "Wesleys Moons - Video Tape Skip", false, "For Wesley's Moons: after inserting a casette tape on Galetry, you can interact with the cassette player again to skip the video and unlock the moon immediately.");
+            ShipWindowsShutterFix = base.Config.Bind("X. Mod Tweaks", "ShipWindows - Shutter Fix", true, "Closes the ship window shutters when taking off from a planet (requires you to have 'Hide Moon Transitions' enabled in ShipWindowsBeta config).");
+            ShipWindowsShutterAudio = base.Config.Bind("X. Mod Tweaks", "ShipWindows - Shutter Sound Effect", "Unchanged", new ConfigDescription("Allows you to change the sound effect of the shutter switch (unrelated to the voice lines) to either use only one of its two sound effects or make no noise at all.", new AcceptableValueList<string>(["Unchanged","Only Open", "Only Close", "Muted"])));
+            MrovWeatherTweaksAnnouncement = base.Config.Bind("X. Mod Tweaks", "Weather Tweaks - Announcement Change", true, "Makes the wording more clear when a weather change is announced, stating the current weather and the weather it's going to be transitioned into.");
+            SSSTerminalStock = base.Config.Bind("X. Mod Tweaks", "SSS Smart Cupboard + Mrov Terminal Stock", true, "If you are using both Self Sorting Storage (which adds the 'smart cupboard') and mrov's TerminalFormatter (which shows a count of items on the ship), items in the cupboard will be counted on the terminal display.");
+
+            ClientsideMode = base.Config.Bind("Z. Technical", "Client-side Mode", false, "EXPERIMENTAL - Enable this if you want to use the mod client-side (i.e. if other players don't have the mod).");
+            DebugMode = base.Config.Bind("Z. Technical", "Dev Mode", false, "For testing certain interactions and resetting some variables. Do not enable unless you know what you're doing.");
+            ExtraLogs = base.Config.Bind("Z. Technical", "Verbose Logs", false, "Extra logging for debugging specific functions.");
+            DisableWarnings = base.Config.Bind("Z. Technical", "Disable Warning Popups", false, "Disables all red warning boxes and their sound effects, vanilla and modded (e.g. when attempting to land with 0 days left).");
+            InteriorLogging = base.Config.Bind("Z. Technical", "Interior Analysis", false, "LLL REQUIRED - Logs the area and scrap density of the generated interior and its tiles.");
+            ScanHighlights = base.Config.Bind("Z. Technical", "Scanned Item Highlights", false, "EXPERIMENTAL - Creates a holographic highlight on scanned objects. This is still very experimental and untested, so use at your own risk and let me know what needs to be fixed or improved.");
 
             ConfigTeleporterSize = new Vector3(TinyTeleporterSizeX.Value, TinyTeleporterSizeY.Value, TinyTeleporterSizeZ.Value);
             ConfigLeverSize = new Vector3(LargerLeverSizeX.Value, LargerLeverSizeY.Value, LargerLeverSizeZ.Value);
@@ -341,7 +354,7 @@ namespace ScienceBirdTweaks
                 //    Logger.LogDebug("Found xu!");
                 //    xuPresent = true;
                 //}
-                else if (assembly.GetName().Name == "TestAccount666.ShipWindowsBeta")
+                else if (assembly.GetName().Name == "TestAccount666.ShipWindows")
                 {
                     Logger.LogDebug("Found test1!");
                     test1Present = true;
@@ -350,6 +363,11 @@ namespace ScienceBirdTweaks
                 {
                     Logger.LogDebug("Found test2!");
                     test2Present = true;
+                }
+                else if (assembly.GetName().Name == "LiveReaction")
+                {
+                    Logger.LogDebug("Found mborsh!");
+                    mborshPresent = true;
                 }
             }
 

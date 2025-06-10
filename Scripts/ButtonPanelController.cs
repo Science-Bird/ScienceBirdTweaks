@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using BepInEx;
+using ScienceBirdTweaks.Patches;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Rendering.HighDefinition;
@@ -184,12 +185,18 @@ namespace ScienceBirdTweaks.Scripts
 
         public void PanelAnimation(int num, int player)
         {
-            if (floodlight && floodlightController == null)
+            if (floodlight && (num == 0 || (num == 1 && floodlightExtra) || (num == 3 && floodlightExtra && floodlightTarget) || (num == 4 && floodlightExtra)) && floodlightController == null)
             {
                 floodlightController = Object.FindObjectOfType<ShipFloodlightController>();
-                if (floodlightController == null) { return; }
+                if (floodlightController == null)
+                {
+                    ShipFloodlightsPatch.AddSpinnerComponentPatch(StartOfRound.Instance);
+                }
+                if (floodlightController == null)
+                {
+                    return;
+                }
             }
-
             switch (num)// for each interaction: if it has an assigned purpose, use that, otherwise fall back to generic function
             {
                 case 0:

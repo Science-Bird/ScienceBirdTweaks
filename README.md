@@ -27,11 +27,13 @@ Do you relate to being unable to press the teleport button while launching or la
 All this tweak does is ensure all ship furniture/unlockables will be parented to the main ship object, and thus all of their colliders will stay in sync with the ship.
 
 - **Only Fix Vanilla Objects**: This is a setting to avoid any unwanted errors with attempting (or failing) to fix modded furniture items.
+
 >*Default: ON*
 
 *(If you do want to fix modded items, a configurable blacklist or whitelist is provided to only include certain modded items or exclude certain modded items from this fix)*
 
 - **Alternate Fix Logic (EXPERIMENTAL)**: If you end up having any unexpected issues with furniture while using this tweak, you can try this. It's not super thoroughly tested, but it should simplify the code a bit to reduce possible points of failure or incompatibilities with other mods.
+
 >*Default: OFF*
 
 ![FixedShipObjects](https://imgur.com/zgVE4My.png)
@@ -229,17 +231,10 @@ Like the rotating floodlight, these may someday be re-imagined as full ship upgr
 
 ## GENERAL TWEAKS
 
-### Big Screw
-
 <details>
-<summary>Details</summary>
-<br />
+<summary><h2><i>FIXES</i></h2></summary>
 
->*Default: ON - Client-side*
-
-Changes the name of the "big bolt" to reflect what it actually is (a big screw).
-
-</details>
+---
 
 ### Missing Hover Tip Fix
 
@@ -279,18 +274,6 @@ The exhaust smoke from the company cruiser, smoke trail left by old birds, and s
 
 </details>
 
-### Clean Belt Bag UI
-
-<details>
-<summary>Details</summary>
-<br />
-
->*Default: ON - Client-side*
-
-Clears all the scan nodes on your screen when opening the belt bag's menu, to keep everything from looking cluttered (since scan nodes will appear over top of the belt bag interface).
-
-</details>
-
 ### Bridge Items Fix
 
 <details>
@@ -317,22 +300,6 @@ I believe this is also fixed by other mods, but it's included here for better co
 
 </details>
 
-### Replace Null Items
-
-<details>
-<summary>Details</summary>
-<br />
-
->*Default: ON - All clients*
-
-If a moon or interior hasn't registered its items properly, those items will enter a bugged state when leaving the moon or reloading a save. This mainly entails the item becoming invisible and can lead to errors when other mods try to interface with the item.
-
-This tweak will check for items with null properties on level transitions and attempt to find the intended item properties and swap the items out with new ones. This may not consistently solve the issue under all circumstances, but it's certainly better than nothing.
-
-If you are certain you will never encounter bugged items like this, you are free to disable this (it may have a slight performance impact on level transitions).
-
-</details>
-
 ### Mine Explosion On Exit Fix
 
 <details>
@@ -347,7 +314,7 @@ Fixes a vanilla issue where after stepping on a deactivated mine then leaving th
 
 </details>
 
-### Crouch Damage Fix
+### Appliance Interaction Fixes
 
 <details>
 <summary>Details</summary>
@@ -355,31 +322,7 @@ Fixes a vanilla issue where after stepping on a deactivated mine then leaving th
 
 >*Default: ON - Client-side (?)*
 
-Disables the damage animation when a player is crouched. This animation would cause the player to briefly stand up when taking damage, which can be quite awkward and deadly in some situations.
-
-</details>
-
-### Configurable Starting Moon
-
-<details>
-<summary>Details</summary>
-<br />
-
->*Default: Experimentation - All clients*
-
-At last, you can configure the starting moon (on new save or after being fired) to whatever you want! Just put in the name of the moon (no numbers needed), and whether it's paid, free, vanilla, or modded, that will be the new starting moon.
-
-</details>
-
-### Scrap Muting
-
-<details>
-<summary>Details</summary>
-<br />
-
->*Default: Nothing - All clients*
-
-Provided in the config is a list of items that will have their passive noise effects disabled. This covers a variety of different noisemaking items from the animating ones that make noise when picked up, to special items like the clock and laughing masks, and even includes some weird modded edge cases like Magic Wesley's radioactive barrels. Muting an item this way means dogs won't hear them either.
+Fixes some of the colliders on the fridge and microwave furniture items so you can't grab them through walls, and the shelves in the fridge shouldn't prevent you from placing items or offset them strangely.
 
 </details>
 
@@ -412,6 +355,86 @@ In any case, this tweak scales this rotation so it will finish while the object 
 I call this a "fix", but it's more like a janky work-around. If you've had an issue with the "Resume" button flickering when you open the pause menu, this will resolve that by making the currently selected option always highlighted. This does look a little strange in-game, but it's better than flickering at least.
 
 The flickering isn't a vanilla issue (at least to a meaningful extent), but I'm uncertain what mod(s) cause it or how widespread it is. Either way, this is a tweak that exists.
+
+</details>
+
+### Replace Null Items
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - All clients*
+
+If a moon or interior hasn't registered its items properly, those items will enter a bugged state when leaving the moon or reloading a save. This mainly entails the item becoming invisible and can lead to errors when other mods try to interface with the item.
+
+This tweak will check for items with null properties on level transitions and attempt to find the intended item properties and swap the items out with new ones. This may not consistently solve the issue under all circumstances, but it's certainly better than nothing.
+
+If you are certain you will never encounter bugged items like this, you are free to disable this (it may have a slight performance impact on level transitions).
+
+</details>
+
+### Disable Crouched Damage Animation
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - Client-side (?)*
+
+Disables the damage animation when a player is crouched. This animation would cause the player to briefly stand up when taking damage, which can be quite awkward and deadly in some situations.
+
+</details>
+
+</details>
+
+---
+
+### Big Screw
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - Client-side*
+
+Changes the name of the "big bolt" to reflect what it actually is (a big screw).
+
+</details>
+
+### Clean Belt Bag UI
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - Client-side*
+
+Clears all the scan nodes on your screen when opening the belt bag's menu, to keep everything from looking cluttered (since scan nodes will appear over top of the belt bag interface).
+
+</details>
+
+### Configurable Starting Moon
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: Experimentation - All clients*
+
+At last, you can configure the starting moon (on new save or after being fired) to whatever you want! Just put in the name of the moon (no numbers needed), and whether it's paid, free, vanilla, or modded, that will be the new starting moon.
+
+</details>
+
+### Scrap Muting
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: Nothing - All clients*
+
+Provided in the config is a list of items that will have their passive noise effects disabled. This covers a variety of different noisemaking items from the animating ones that make noise when picked up, to special items like the clock and laughing masks, and even includes some weird modded edge cases like Magic Wesley's radioactive barrels. Muting an item this way means dogs won't hear them either.
 
 </details>
 
@@ -705,6 +728,54 @@ Since dust clouds is an unused weather in vanilla, you'll only see this weather 
 
 </details>
 
+## SELECTIVE SCRAP KEEPING
+
+### Keep Worthless Scrap
+
+<details>
+<summary>Details</summary>
+<br />
+
+Are you a hoarder? Do you like keeping silly items in your ship even when their only worth is sentimental? Here's some special configurable behaviours relating to scrap items with zero value (e.g. if you gamble them via [LethalCasino](https://thunderstore.io/c/lethal-company/p/mrgrm7/LethalCasino/)):
+
+- **Keep Worthless Scrap**: Worthless scrap won't be removed from the ship along with the rest of the scrap when all players die.
+
+>*Default: ON - All clients*
+
+- **Worthless Scrap Scan Text**: When a piece of worthless scrap is taken into the ship, it will get some custom flavour text when scanned. By default, the value of the item will simply say "Priceless". Items can be blacklisted from this feature in config.
+
+>*Default: ON - Client-side (?)*
+
+*(Joining Clients Item Fix should be enabled for this to work properly upon loading a save)*
+
+![PricelessScanText](https://imgur.com/K1VjLS1.png)
+
+*You can find this plush and many others in my [dedicated scrap mod](https://thunderstore.io/c/lethal-company/p/ScienceBird/Polished_Plushies_and_Silly_Scrap/) :)*
+
+</details>
+
+### Keep Custom Scrap List
+
+<details>
+<summary>Details</summary>
+<br />
+
+Some additional configuration allowing you to customize how certain scrap is kept:
+
+- **List of Scrap to Keep**: A configurable list of specific items to keep when all players die and scrap is lost. By default, this list only includes the shotgun.
+
+>*Default: OFF - All clients*
+
+- **Zero Kept Scrap Value**: When an item from this list is kept, its scrap value will be set to zero.
+
+>*Default: ON - All clients*
+
+</details>
+
+These should be compatible with [Zigzag's SelfSortingStorage](https://thunderstore.io/c/lethal-company/p/Zigzag/SelfSortingStorage/) (likely not any other storage mods at the moment).
+
+*`Credit for these tweaks goes to xameryn`*
+
 ## SHOTGUN QUALITY OF LIFE
 
 ### Better Tooltips
@@ -840,53 +911,51 @@ Some optional adjustments to make vanilla power outages more thorough:
 
 *`Credit for these tweaks goes to xameryn`*
 
-## SELECTIVE SCRAP KEEPING
+## PLAYER CAM TWEAKS
 
-### Keep Worthless Scrap
-
-<details>
-<summary>Details</summary>
-<br />
-
-Are you a hoarder? Do you like keeping silly items in your ship even when their only worth is sentimental? Here's some special configurable behaviours relating to scrap items with zero value (e.g. if you gamble them via [LethalCasino](https://thunderstore.io/c/lethal-company/p/mrgrm7/LethalCasino/)):
-
-- **Keep Worthless Scrap**: Worthless scrap won't be removed from the ship along with the rest of the scrap when all players die.
-
->*Default: ON - All clients*
-
-- **Worthless Scrap Scan Text**: When a piece of worthless scrap is taken into the ship, it will get some custom flavour text when scanned. By default, the value of the item will simply say "Priceless". Items can be blacklisted from this feature in config.
-
->*Default: ON - Client-side (?)*
-
-*(Joining Clients Item Fix should be enabled for this to work properly upon loading a save)*
-
-![PricelessScanText](https://imgur.com/K1VjLS1.png)
-
-*You can find this plush and many others in my [dedicated scrap mod](https://thunderstore.io/c/lethal-company/p/ScienceBird/Polished_Plushies_and_Silly_Scrap/) :)*
-
-</details>
-
-### Keep Custom Scrap List
+### Adjustable Cam Direction and Position
 
 <details>
 <summary>Details</summary>
 <br />
 
-Some additional configuration allowing you to customize how certain scrap is kept:
+>*Default: OFF - Client-side (?)*
 
-- **List of Scrap to Keep**: A configurable list of specific items to keep when all players die and scrap is lost. By default, this list only includes the shotgun.
+By default, enabling this will have the player cam face upwards towards a player's head from under their chin. This makes the position of the camera slightly more plausible/realistic, shows a bit more of their surrounding environment, and still looks funny (as it should).
 
->*Default: OFF - All clients*
-
-- **Zero Kept Scrap Value**: When an item from this list is kept, its scrap value will be set to zero.
-
->*Default: ON - All clients*
+However, the orientation and position of the camera are configurable, so you can do a lot of other things with it, like turning it 180 degrees to make it a forward-facing camera (though that will look a bit strange since the player cam wasn't intended to render a full environment and other players). You may have to play around with the position offsets a bit to get it to look exactly right.
 
 </details>
 
-These should be compatible with [Zigzag's SelfSortingStorage](https://thunderstore.io/c/lethal-company/p/Zigzag/SelfSortingStorage/) (likely not any other storage mods at the moment).
+### Hide Your Own Cam
 
-*`Credit for these tweaks goes to xameryn`*
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: OFF - Client-side (?)*
+
+Rather than using a fixed image placeholder, your own cam won't display on the radar screen at all (you can only see other players' cam feeds). The name textbox will still appear and be moved down to compensate.
+
+It's advised to use this if you're adjusting the player cam at all, since the placeholder image will no longer fit in.
+
+</details>
+
+### Improved Name Text Box
+
+<details>
+<summary>Details</summary>
+<br />
+
+**WARNING: EXPERIMENTAL**
+
+>*Default: OFF - Client-side (?)*
+
+Allows player name displays on the radar screen to spread over multiple lines and shrink a bit more, so longer names can be displayed properly.
+
+This should be compatible with the "Live Reaction" mod, which also alters radar name displays.
+
+</details>
 
 ## BALANCING TOOLS
 
@@ -916,7 +985,7 @@ This is still an early prototype, so I'll see how useful this ends up being. In 
 
 *These tweaks **do not require the relevant mods** as dependencies, and if they are enabled without those mods, nothing will happen.*
 
-### Various Mod Patches - JLL/LLL/Wesley's Moons
+### Various Mod Patches - JLL/LLL
 
 <details>
 <summary>Details</summary>
@@ -932,9 +1001,6 @@ Some quick patches I put in for issues and inconveniences I've encountered:
 
 - **LLL Ship Lever Fix**: Fixes the ship lever being interactable while routing with LLL installed.
 >*Default: ON - Client-side (?)*
-
-- **Wesley's Moons Tape Insert Fix (EXPERIMENTAL)**: A quick patch which attempts to fix a problem where clients would be unable to interact with the casette tape loader or story log machine. I only did fairly light testing with 2 players, and this involves a lot of messing around with player IDs, so I can't be certain how this will operate in varied multiplayer circumstances. 
->*Default: OFF - All clients*
 
 </details>
 
@@ -986,31 +1052,19 @@ Try scrolling around or re-entering the store menu if you have any issues with t
 
 </details>
 
-### Ship Windows Shutter Fix - ShipWindowsBeta
+### Window Shutter Fix & Audio Adjustment - ShipWindows
 
 <details>
 <summary>Details</summary>
 <br />
+
+- **Shutter Closing Fix**: Adds a function to [ShipWindows](https://thunderstore.io/c/lethal-company/p/TestAccount666/ShipWindows/) where the shutters will now also close when taking off (if "Hide Moon Transitions" is enabled in ShipWindows config), in addition to closing when landing or routing.
 
 >*Default: ON - All clients*
 
-Adds a function to [ShipWindowsBeta](https://thunderstore.io/c/lethal-company/p/TestAccount666/ShipWindowsBeta/) where the shutters will now also close when taking off (if "Hide Moon Transitions" is enabled in ShipWindowsBeta config), in addition to closing when landing or routing. This may be absent in ShipWindowsBeta due to issues with shutter voice lines, but without voice lines it seems to work fine.
+- **Shutter Switch Sound Effect**: There are two shutter sounds, one for the shutters opening and another for the shutters closing. This allows you to use one of the two sound effects for both opening and closing, or disable the sound effects playing altogether. Note that this refers to the noises made by the shutters/shutter switch themselves, and not the voice lines which play (those are configurable in ShipWindows config).
 
-</details>
-
-### Diversity Computer Begone - Diversity
-
-<details>
-<summary>Details</summary>
-<br />
-
->*Default: OFF - Client-side*
-
-Removes the floppy reader computer and floppy disk spawns from [Diversity](https://thunderstore.io/c/lethal-company/p/IntegrityChaos/Diversity/) if you don't want those features of the mod (this shouldn't cause any compatibility issues even if you don't have Diversity installed).
-
-This is also compatible (though redundant) with [v0xx's more thorough patch DiversityNoFloppy](https://thunderstore.io/c/lethal-company/p/v0xx/DiversityNoFloppy/).
-
-A major update for Diversity fixing its outstanding issues and possibly adding configuration for the floppy disk aspect is in development, so this tweak may soon be removed!
+>*Default: Unchanged - Client-side (?)*
 
 </details>
 

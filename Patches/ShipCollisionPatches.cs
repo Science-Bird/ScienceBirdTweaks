@@ -113,7 +113,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void TeleporterBuildOnBuy(StartOfRound __instance, int unlockableID)
         {
-            if (ScienceBirdTweaks.TinyTeleporterCollision.Value)
+            if (ScienceBirdTweaks.TinyTeleporterCollision.Value && !__instance.IsServer)
             {
                 if (unlockableID == 5)
                 {
@@ -158,11 +158,18 @@ namespace ScienceBirdTweaks.Patches
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SpawnUnlockable))]
         [HarmonyPostfix]
-        static void TeleporterBuildOnSpawn(StartOfRound __instance)
+        static void TeleporterBuildOnSpawn(StartOfRound __instance, int unlockableIndex)
         {
             if (ScienceBirdTweaks.TinyTeleporterCollision.Value)
             {
-                TeleporterBuildCollision();
+                if (unlockableIndex == 5)
+                {
+                    doTeleporter = true;
+                }
+                else if (unlockableIndex == 19)
+                {
+                    doInverse = true;
+                }
             }
         }
     }

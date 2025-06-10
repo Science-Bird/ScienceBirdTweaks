@@ -16,9 +16,28 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
-        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SceneManager_OnLoadComplete1))]
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.LoadUnlockables))]
         [HarmonyPostfix]
-        static void ShipObjects(StartOfRound __instance)
+        static void OnInitialLoad(StartOfRound __instance)
+        {
+            TryRemovals();
+        }
+
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.OnClientConnect))]
+        [HarmonyPostfix]
+        static void OnConnectionServer(StartOfRound __instance)
+        {
+            TryRemovals();
+        }
+
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.OnPlayerConnectedClientRpc))]
+        [HarmonyPostfix]
+        static void OnConnectionClients(StartOfRound __instance)
+        {
+            TryRemovals();
+        }
+
+        static void TryRemovals()
         {
             if (ScienceBirdTweaks.RemoveClipboard.Value)
             {

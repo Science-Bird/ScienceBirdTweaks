@@ -28,9 +28,9 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
-        [HarmonyPatch("Start")]
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Start))]
         [HarmonyPostfix]
-        static void AddSpinnerComponentPatch(StartOfRound __instance)
+        public static void AddSpinnerComponentPatch(StartOfRound __instance)
         {
             if (!ScienceBirdTweaks.FloodlightRotation.Value && !ScienceBirdTweaks.TrueBlackout.Value) { return; }
 

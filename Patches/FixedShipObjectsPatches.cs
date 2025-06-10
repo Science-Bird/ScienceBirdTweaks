@@ -160,7 +160,10 @@ namespace ScienceBirdTweaks.Patches
                         if (!networkObj.IsSpawned)
                         {
                             ScienceBirdTweaks.Logger.LogError($"Network object not spawned yet, failing to parent! ({gameObj.name})");
-                            failedIDs.Add(index);
+                            if (!failedIDs.Contains(index))
+                            {
+                                failedIDs.Add(index);
+                            }
                             return;
                         }
                     }
@@ -233,6 +236,10 @@ namespace ScienceBirdTweaks.Patches
                         if (!networkObj.IsSpawned)
                         {
                             ScienceBirdTweaks.Logger.LogError($"Network object not spawned yet, failing to parent! ({gameObj.name})");
+                            if (!failedIDs.Contains(index))
+                            {
+                                failedIDs.Add(index);
+                            }
                             return;
                         }
                     }
