@@ -30,7 +30,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         private static void SetJingleClip(MineshaftElevatorController __instance)
         {
-            if (butteryPresent || !ScienceBirdTweaks.OldHalloweenElevatorMusic.Value || RoundManager.Instance.currentMineshaftElevator != __instance)
+            if (butteryPresent || !ScienceBirdTweaks.OldHalloweenElevatorMusic.Value || RoundManager.Instance.currentMineshaftElevator != __instance || __instance.elevatorHalloweenClips.Length != __instance.elevatorHalloweenClipsLoop.Length || __instance.elevatorHalloweenClips.Length == 0 || __instance.elevatorHalloweenClipsLoop.Length == 0)
             {
                 return;
             }

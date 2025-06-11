@@ -231,8 +231,10 @@ Like the rotating floodlight, these may someday be re-imagined as full ship upgr
 
 ## GENERAL TWEAKS
 
+### *FIXES*
+
 <details>
-<summary><h2><i>FIXES</i></h2></summary>
+<summary><b>Show</b></summary>
 
 ---
 
