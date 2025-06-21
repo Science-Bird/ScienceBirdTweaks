@@ -42,7 +42,7 @@ namespace ScienceBirdTweaks.Patches
                 __instance.headMountedCam.transform.Rotate(camRotX, camRotY, 0f, Space.Self);
                 __instance.headMountedCam.transform.position += __instance.headMountedCamTarget.up * camPosY + __instance.headMountedCamTarget.forward * camPosF;
             }
-            if (ScienceBirdTweaks.HideLocalCam.Value && !StartOfRound.Instance.inShipPhase && __instance.targetedPlayer == GameNetworkManager.Instance.localPlayerController && !GameNetworkManager.Instance.localPlayerController.isPlayerDead && !__instance.overrideRadarCameraOnAlways)
+            if ((ScienceBirdTweaks.HideLocalCam.Value || ScienceBirdTweaks.HideAllCams.Value) && !StartOfRound.Instance.inShipPhase && __instance.targetedPlayer == GameNetworkManager.Instance.localPlayerController && !GameNetworkManager.Instance.localPlayerController.isPlayerDead && !__instance.overrideRadarCameraOnAlways)
             {
                 if (__instance.localPlayerPlaceholder != null)
                 {
@@ -54,6 +54,12 @@ namespace ScienceBirdTweaks.Patches
                     StartOfRound.Instance.mapScreenPlayerName.rectTransform.localPosition = GetBoxPos(false, false);
                     StartOfRound.Instance.mapScreenPlayerNameBG.rectTransform.localPosition = GetBoxPos(false, true);
                 }
+            }
+            else if (ScienceBirdTweaks.HideAllCams.Value && __instance.headMountedCam.enabled)
+            {
+                __instance.headMountedCam.enabled = false;
+                StartOfRound.Instance.mapScreenPlayerName.rectTransform.localPosition = GetBoxPos(false, false);
+                StartOfRound.Instance.mapScreenPlayerNameBG.rectTransform.localPosition = GetBoxPos(false, true);
             }
         }
 

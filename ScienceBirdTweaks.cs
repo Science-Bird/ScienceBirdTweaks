@@ -83,7 +83,7 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<int> BlackoutFloodLightIntensity, BlackoutFloodLightAngle, BlackoutFloodLightRange;
         public static ConfigEntry<string> TrueBlackoutNameBlacklist, TrueBlackoutHierarchyBlacklist;
 
-        public static ConfigEntry<bool> AlterPlayerCam, HideLocalCam, ImprovedTextBox;
+        public static ConfigEntry<bool> AlterPlayerCam, HideLocalCam, HideAllCams, ImprovedTextBox;
         public static ConfigEntry<float> PlayerCamAngleX, PlayerCamAngleY, PlayerCamPosVertical, PlayerCamPosHorizontal;
 
         public static ConfigEntry<bool> JLLNoisemakerFix, LLLUnlockSyncing, LLLShipLeverFix, VideoTapeSkip, ShipWindowsShutterFix, SSSTerminalStock, MrovWeatherTweaksAnnouncement;
@@ -261,6 +261,7 @@ namespace ScienceBirdTweaks
             PlayerCamAngleY = base.Config.Bind("A. Player Cam Tweaks", "Player Cam Orientation", 0f, new ConfigDescription("How much the camera should be rotated on its vertical axis (e.g. setting this to 180 degrees will rotate the camera to face away from the player).", new AcceptableValueRange<float>(0f, 360f)));
             PlayerCamPosVertical = base.Config.Bind("A. Player Cam Tweaks", "Player Cam Vertical Offset", -0.2f, new ConfigDescription("How far up or down the camera should be moved (relative to the player's standing position). You might need to change this if you change the rotation.", new AcceptableValueRange<float>(-2f, 2f)));
             PlayerCamPosHorizontal = base.Config.Bind("A. Player Cam Tweaks", "Player Cam Closeness", 0f, new ConfigDescription("How far away or towards the player the camera should be moved (positive values move the camera away).", new AcceptableValueRange<float>(-3f, 3f)));
+            HideAllCams = base.Config.Bind("A. Player Cam Tweaks", "Hide All Cams", false, "Only names will display for each player instead of the body cam (position adjusted accordingly).");
             HideLocalCam = base.Config.Bind("A. Player Cam Tweaks", "Hide Your Own Cam", false, "Instead of a static placeholder image, you will just see your name (position adjusted accordingly).");
             ImprovedTextBox = base.Config.Bind("A. Player Cam Tweaks", "Improved Name Text Box", false, "EXPERIMENTAL - Allows player names to expand onto multiple lines, split themselves at better places, and generally display better. This should be compatible with the 'Live Reaction' mod.");
 
