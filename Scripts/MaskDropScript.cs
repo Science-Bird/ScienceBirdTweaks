@@ -20,6 +20,12 @@ namespace ScienceBirdTweaks.Scripts
         [ClientRpc]
         private void SyncMaskValuesClientRpc(int activeMaskIndex, int maskId, int value)// relevant values passed from server to clients
         {
+            if (activeMaskIndex >= activeMasks.Count)
+            {
+                ScienceBirdTweaks.Logger.LogWarning("Failed to find mask on this client! Expect a de-synced item and please report this issue.");
+                doneRPC = true;
+                return;
+            }
             ScienceBirdTweaks.Logger.LogDebug($"Registering mask in clientRPC: {activeMaskIndex}, {maskId}, {value}");
             MaskInstance activeMask = activeMasks[activeMaskIndex];
             activeMask.id = maskId;
@@ -45,6 +51,7 @@ namespace ScienceBirdTweaks.Scripts
                 GameObject obj = Object.Instantiate(prefab, activeMask.position, activeMask.rotation, RoundManager.Instance.spawnedScrapContainer);
                 obj.GetComponent<NetworkObject>().Spawn();
                 GrabbableObject grabbable = obj.GetComponent<GrabbableObject>();
+                doneRPC = false;
                 SyncMaskValuesClientRpc(activeMasks.IndexOf(activeMask), (int)grabbable.GetComponent<NetworkObject>().NetworkObjectId, Mathf.RoundToInt(Random.Range(0.85f,1.15f)*ScienceBirdTweaks.MaskScrapValue.Value));
                 while (!doneRPC)
                 {

@@ -19,7 +19,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void ReEnable(TimeOfDay __instance)
         {
-            if (!ScienceBirdTweaks.ThickDustClouds.Value && !ScienceBirdTweaks.DustCloudsNoise.Value)
+            if ((!ScienceBirdTweaks.ThickDustClouds.Value && !ScienceBirdTweaks.DustCloudsNoise.Value) || StartOfRound.Instance.currentLevel.PlanetName == "115 Wither")
             {
                 return;
             }
@@ -49,7 +49,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         static void CheckBefore(TimeOfDay __instance)
         {
-            if (!ScienceBirdTweaks.ThickDustClouds.Value && !ScienceBirdTweaks.DustCloudsNoise.Value)
+            if ((!ScienceBirdTweaks.ThickDustClouds.Value && !ScienceBirdTweaks.DustCloudsNoise.Value) || StartOfRound.Instance.currentLevel.PlanetName == "115 Wither")
             {
                 return;
             }
@@ -65,13 +65,29 @@ namespace ScienceBirdTweaks.Patches
 
         [HarmonyPatch(typeof(TimeOfDay), nameof(TimeOfDay.SetWeatherEffects))]
         [HarmonyPostfix]
+        [HarmonyBefore("ScienceBird.Wither")]
         static void ChangeEffectObject(TimeOfDay __instance)
         {
-            if (!ScienceBirdTweaks.ThickDustClouds.Value && !ScienceBirdTweaks.DustCloudsNoise.Value)
+            GameObject dustClouds = TimeOfDay.Instance.effects[0].effectObject;
+            if ((!ScienceBirdTweaks.ThickDustClouds.Value && !ScienceBirdTweaks.DustCloudsNoise.Value) || StartOfRound.Instance.currentLevel.PlanetName == "115 Wither")
             {
+                if (initialSet && dustClouds != null && dustClouds.activeInHierarchy)// undo dust clouds changes if there's an active dust clouds object
+                {
+                    AudioSource cloudsAudio = dustClouds.GetComponentInChildren<AudioSource>();
+                    if (cloudsAudio != null)
+                    {
+                        cloudsAudio.Stop();
+                    }
+                    LocalVolumetricFog clouds = dustClouds.GetComponent<LocalVolumetricFog>();
+                    if (clouds != null)
+                    {
+                        clouds.parameters.meanFreePath = 17f;
+                    }
+                    __instance.effects[0].lerpPosition = true;
+                    initialSet = false;
+                }
                 return;
             }
-            GameObject dustClouds = TimeOfDay.Instance.effects[0].effectObject;
             if (__instance.currentLevelWeather == LevelWeatherType.DustClouds && dustClouds != null)
             {
                 __instance.effects[0].effectEnabled = enableBuffer;

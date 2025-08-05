@@ -1,5 +1,5 @@
-﻿using System;
-using HarmonyLib;
+﻿using HarmonyLib;
+using ScienceBirdTweaks.ModPatches;
 using ScienceBirdTweaks.Scripts;
 using UnityEngine;
 
@@ -14,6 +14,7 @@ namespace ScienceBirdTweaks.Patches
         private static bool _inSwitchContext = false;
         private static float hazardWait = -1f;
         private static bool breakerDone = false;
+        private static int oldMinSpawns = -1;
 
         public static AudioClip powerDownClip;
 
@@ -25,12 +26,14 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
-            [HarmonyPatch(typeof(LungProp), nameof(LungProp.EquipItem))]
+        [HarmonyPatch(typeof(LungProp), nameof(LungProp.EquipItem))]
         [HarmonyPrefix]
         static void OnApparatusGrab(LungProp __instance)
         {
             if (!__instance.isLungDocked)
                 return;
+
+            oldMinSpawns = RoundManager.Instance.minEnemiesToSpawn;
 
             if (ScienceBirdTweaks.BlackoutOnApparatusRemoval.Value)
                 _doBlackout = true;
@@ -43,7 +46,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         static void LightsOnStart()
         {
-            ScienceBirdTweaks.Logger.LogDebug("Breaker start ON!");
+            //ScienceBirdTweaks.Logger.LogDebug("Breaker start ON!");
             if (ScienceBirdTweaks.DisableTrapsOnBreakerSwitch.Value)
             {
                 hazardWait = 0.49f;
@@ -56,7 +59,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         static void LightsOffStart()
         {
-            ScienceBirdTweaks.Logger.LogDebug("Breaker start! OFF");
+            //ScienceBirdTweaks.Logger.LogDebug("Breaker start! OFF");
             if (ScienceBirdTweaks.DisableTrapsOnBreakerSwitch.Value && !doingHazardShutdown)
             {
                 hazardWait = 0.49f;
@@ -98,18 +101,41 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
-        [HarmonyPatch(typeof(HUDManager), nameof(HUDManager.ReadDialogue))]
+        [HarmonyPatch(typeof(HUDManager), nameof(HUDManager.RadiationWarningHUD))]
         [HarmonyPrefix]
-        public static void DialoguePatch(HUDManager __instance, ref DialogueSegment[] dialogueArray)// apparatus has convenient long delay function that runs after (and cant be immediately reversed), so no goofy timer needed
+        public static void ApparatusNotifPatch(HUDManager __instance)
         {
-            ScienceBirdTweaks.Logger.LogDebug("Apparatus shutdown finished!");
+            ScienceBirdTweaks.Logger.LogDebug("Apparatus shutdown finished!");// apparatus has convenient long delay function that runs after (and cant be immediately reversed), so no goofy timer needed
             doingHazardShutdown = false;
+
+            if (__instance.IsServer && (ScienceBirdTweaks.ApparatusSpawnChance.Value != 70 || ScienceBirdTweaks.ApparatusSpawnMin.Value != 2))// runs a few seconds after vanilla rolls for minimum spawns
+            {
+                if (Random.Range(0,100) < ScienceBirdTweaks.ApparatusSpawnChance.Value && RoundManager.Instance.minEnemiesToSpawn < ScienceBirdTweaks.ApparatusSpawnMin.Value)// same check as vanilla but with config values
+                {
+                    ScienceBirdTweaks.Logger.LogDebug($"Increasing min spawns to {ScienceBirdTweaks.ApparatusSpawnMin.Value}");
+                    RoundManager.Instance.minEnemiesToSpawn = ScienceBirdTweaks.ApparatusSpawnMin.Value;
+                }
+                else if (oldMinSpawns >= 0)
+                {
+                    RoundManager.Instance.minEnemiesToSpawn = oldMinSpawns;
+                }
+            }
+            oldMinSpawns = -1;
         }
+
+        //[HarmonyPatch(typeof(HUDManager), nameof(HUDManager.ReadDialogue))]// I can't remember why I used ReadDialogue for this
+        //[HarmonyPrefix]
+        //public static void DialoguePatch(HUDManager __instance)
+        //{
+        //    ScienceBirdTweaks.Logger.LogDebug("Apparatus shutdown finished!");
+        //    doingHazardShutdown = false;
+        //}
 
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.DespawnPropsAtEndOfRound))]
         [HarmonyPostfix]
         static void ResetHazardFlag()// reset at end of round just in case
         {
+            oldMinSpawns = -1;
             doingHazardShutdown = false;
             doingHazardStartup = false;
         }
@@ -160,7 +186,6 @@ namespace ScienceBirdTweaks.Patches
                 powerSwitch.powerSwitchEvent = switchEvent;
             }
         }
-
 
         [HarmonyPatch(typeof(TerminalAccessibleObject), nameof(TerminalAccessibleObject.OnPowerSwitch))]
         [HarmonyPrefix]

@@ -96,6 +96,18 @@ namespace ScienceBirdTweaks.ZapGun
         [HarmonyPostfix]
         public static void SpikeCooldownPatch(SpikeRoofTrap __instance, bool enabled)
         {
+            if (ScienceBirdTweaks.SpikesCooldownMute.Value)
+            {
+                if (__instance.transform.parent != null && __instance.transform.parent.parent != null && __instance.transform.parent.parent.parent != null)
+                {
+                    Transform superCreak = __instance.transform.parent.parent.parent.Find("CreakingSFX");
+                    if (superCreak != null)
+                    {
+                        superCreak.gameObject.GetComponent<AudioSource>().mute = !enabled;
+                    }
+                }
+            }
+
             if (!ScienceBirdTweaks.SpikeTrapDisableAnimation.Value && !ScienceBirdTweaks.ZapGunRework.Value) { return; }
 
             GameObject animObj = __instance.gameObject.transform.parent.gameObject;

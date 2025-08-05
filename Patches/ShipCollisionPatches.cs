@@ -85,26 +85,19 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
-        static void TeleporterBuildCollision()
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.OnPlayerConnectedClientRpc))]
+        [HarmonyPostfix]
+        static void OnConnectionClients(StartOfRound __instance)
         {
-            GameObject teleportObj = GameObject.Find("Teleporter(Clone)/AnimContainer/PlacementCollider");
-            GameObject inverseTeleportObj = GameObject.Find("InverseTeleporter(Clone)/AnimContainer/PlacementCollider");
-            if (teleportObj != null)
+            if (ScienceBirdTweaks.TinyTeleporterCollision.Value)
             {
-                ScienceBirdTweaks.Logger.LogDebug("Fixing teleporter build collision...");
-                BoxCollider teleporterPlace = teleportObj.GetComponent<BoxCollider>();
-                if (teleporterPlace != null)
+                if (GameObject.Find("Teleporter(Clone)/AnimContainer/PlacementCollider"))
                 {
-                    teleporterPlace.size = ScienceBirdTweaks.ConfigTeleporterSize;
+                    doTeleporter = true;
                 }
-            }
-            if (inverseTeleportObj != null)
-            {
-                ScienceBirdTweaks.Logger.LogDebug("Fixing inverse teleporter build collision...");
-                BoxCollider teleporterPlace = inverseTeleportObj.GetComponent<BoxCollider>();
-                if (teleporterPlace != null)
+                if (GameObject.Find("InverseTeleporter(Clone)/AnimContainer/PlacementCollider"))
                 {
-                    teleporterPlace.size = ScienceBirdTweaks.ConfigTeleporterSize;
+                    doInverse = true;
                 }
             }
         }
@@ -126,18 +119,18 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
-        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SceneManager_OnLoadComplete1))]
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Update))]
         [HarmonyPostfix]
-        static void TeleporterBuildOnLoad(StartOfRound __instance)
+        static void OnUpdate(StartOfRound __instance)
         {
             if (ScienceBirdTweaks.TinyTeleporterCollision.Value)
             {
-                if (doTeleporter && GameObject.Find("Teleporter(Clone)/AnimContainer/PlacementCollider"))
+                if (doTeleporter)
                 {
                     TeleporterBuildCollision();
                     doTeleporter = false;
                 }
-                if (doInverse && GameObject.Find("InverseTeleporter(Clone)/AnimContainer/PlacementCollider"))
+                else if (doInverse)
                 {
                     TeleporterBuildCollision();
                     doInverse = false;
@@ -145,14 +138,27 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
-        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Update))]
-        [HarmonyPostfix]
-        static void OnUpdate(StartOfRound __instance)
+        static void TeleporterBuildCollision()
         {
-            if (doTeleporter)
+            GameObject teleportObj = GameObject.Find("Teleporter(Clone)/AnimContainer/PlacementCollider");
+            GameObject inverseTeleportObj = GameObject.Find("InverseTeleporter(Clone)/AnimContainer/PlacementCollider");
+            if (teleportObj != null)
             {
-                TeleporterBuildCollision();
-                doTeleporter = false;
+                ScienceBirdTweaks.Logger.LogDebug("Fixing teleporter build collision...");
+                BoxCollider teleporterPlace = teleportObj.GetComponent<BoxCollider>();
+                if (teleporterPlace != null)
+                {
+                    teleporterPlace.size = ScienceBirdTweaks.ConfigTeleporterSize;
+                }
+            }
+            if (inverseTeleportObj != null)
+            {
+                ScienceBirdTweaks.Logger.LogDebug("Fixing inverse teleporter build collision...");
+                BoxCollider teleporterPlace = inverseTeleportObj.GetComponent<BoxCollider>();
+                if (teleporterPlace != null)
+                {
+                    teleporterPlace.size = ScienceBirdTweaks.ConfigTeleporterSize;
+                }
             }
         }
 

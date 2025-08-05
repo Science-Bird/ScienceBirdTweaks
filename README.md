@@ -130,6 +130,7 @@ Under "Ship Tweaks Removals" in config, you will find a list of items you can re
 - Oxygen tanks (leaning against the wall)
 - Boots (by the suit rack)
 - Air filter (in the corner by the monitors)
+- Monitor wires (in the corner behind the monitors)
 - Batteries (on the counter by the monitors)
 
 Although not *on* the ship exactly, it's similar enough to be grouped here:
@@ -247,6 +248,18 @@ Like the rotating floodlight, these may someday be re-imagined as full ship upgr
 >*Default: ON - Client-side*
 
 Have you ever noticed that if you start holding down interact before you actually get to the trigger, the interact icon and text won't appear like they would if you started the interact after hovering over the trigger? Maybe I'm just crazy for this one, but either way here's a tweak.
+
+</details>
+
+### Hands Full Hover Tip Fix
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - Client-side*
+
+Isn't it strange how it says "[Hands full]" on interactions that you can still perform while holding a two-handed item? It seems like that should only appear when you aren't able to do something with your hands full. Well, wonder no longer. This might be more of a UI oversight than a "fix", but hopefully you appreciate it nonetheless.
 
 </details>
 
@@ -388,19 +401,7 @@ Disables the damage animation when a player is crouched. This animation would ca
 
 </details>
 
-</details>
-
 ---
-
-### Big Screw
-
-<details>
-<summary>Details</summary>
-<br />
-
->*Default: ON - Client-side*
-
-Changes the name of the "big bolt" to reflect what it actually is (a big screw).
 
 </details>
 
@@ -415,6 +416,83 @@ Changes the name of the "big bolt" to reflect what it actually is (a big screw).
 Clears all the scan nodes on your screen when opening the belt bag's menu, to keep everything from looking cluttered (since scan nodes will appear over top of the belt bag interface).
 
 </details>
+
+### Big Screw
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - Client-side*
+
+Changes the name of the "big bolt" to reflect what it actually is (a big screw).
+
+</details>
+
+### Sapsucker Eggs Scream At Maneaters
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - Client-side*
+
+I'll level with you on this one: this does not address anything that will come up in normal gameplay. However, it is fairly entertaining to watch the sapsucker eggs scream moments before meeting their demise at the hands of a baby maneater if you somehow end up in a situation where a maneater eats a sapsucker egg.
+
+</details>
+
+### Mute Spike Trap Audio When Disabled
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: OFF - Client-side*
+
+Disables the little warning screech sound effect when you're standing under a spike trap if that spike trap is disabled/on cooldown.
+
+</details>
+
+### Place Furniture While Afraid
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: OFF - Client-side*
+
+If you've found yourself brought to the brink of madness by unfathomable creatures and would only find comfort in organizing your ship's decor, rejoice! With this enabled, you will be able to move around furniture even when afflicted by the fear/insanity effect.
+
+</details>
+
+### Fade Out Sun Texture After Sunset
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: OFF - Client-side*
+
+I'm still working out the kinks on this one, but the idea is: this will gradually darken the sun before hiding it completely as the sun sets, which is useful if you're on a moon with terrain that doesn't hide the sun texture very well at sunset.
+
+</details>
+
+### Old Halloween Elevator Music
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: OFF - Client-side*
+
+Reverts the behaviour of the mineshaft elevator to its behaviour from the 2024 Halloween patch (v65 to v68), playing a random clip of groovy music by [ZedFox](https://zedfox.carrd.co/). The track is synced, so players using the same mod will hear the same elevator music track.
+
+![ElevatorMusicLogo](https://imgur.com/8iIZjuE.png)
+
+ButteryStancakes has a more [extensively customizable version of this feature](https://thunderstore.io/c/lethal-company/p/ButteryStancakes/HalloweenElevator/), and if that mod is detected this tweak automatically disables to let it take priority.
+
+</details>
+
 
 ### Configurable Starting Moon
 
@@ -436,23 +514,19 @@ At last, you can configure the starting moon (on new save or after being fired) 
 
 >*Default: Nothing - All clients*
 
-Provided in the config is a list of items that will have their passive noise effects disabled. This covers a variety of different noisemaking items from the animating ones that make noise when picked up, to special items like the clock and laughing masks, and even includes some weird modded edge cases like Magic Wesley's radioactive barrels. Muting an item this way means dogs won't hear them either.
+Provided in the config is a list of scrap items that will have their passive noise effects disabled. This covers a variety of different noisemaking items from the animating ones that make noise when picked up, to special items like the clock and laughing masks, and even includes some weird modded edge cases like Magic Wesley's radioactive barrels. Muting an item this way means dogs won't hear them either.
 
 </details>
 
-### Old Halloween Elevator Music
+### Single Item Day Blacklist
 
 <details>
 <summary>Details</summary>
 <br />
 
->*Default: OFF - Client-side*
+>*Default: Nothing - All clients*
 
-Reverts the behaviour of the mineshaft elevator to its behaviour from the 2024 Halloween patch (v65 to v68), playing a random clip of groovy music by [ZedFox](https://zedfox.carrd.co/). The track is synced, so players using the same mod will hear the same elevator music track.
-
-![ElevatorMusicLogo](https://imgur.com/8iIZjuE.png)
-
-ButteryStancakes has a more [extensively customizable version of this feature](https://thunderstore.io/c/lethal-company/p/ButteryStancakes/HalloweenElevator/), and if that mod is detected this tweak automatically disables to let it take priority.
+A list of scrap items in config which won't be used for a "single item day" where only one type of scrap spawns. Note that rare scraps and two-handed scrap are already blacklisted in vanilla.
 
 </details>
 
@@ -870,6 +944,7 @@ This is a total rewrite of the blackout weather from [MrovWeathers](https://thun
 - Light switches on maps like Rend, Adamance, and Artifice will have no effect
 - Configurable blacklists of what kinds of lights/parent objects should be excluded from the blackout routine.
 - Configurable ship floodlight properties during a blackout (brightness, angle, etc.).
+- Configurable behaviour of the sun (either excluding it from blackout or making it the only thing affected by blackout)
 - Highly optimized performance (especially compared to the previous experimental version of this tweak) which batches the lights to shut off in cycles rather than all at once.
 - Fun new (configurable) sound effect!
 
@@ -891,27 +966,45 @@ The same logic is used in the Apparatus True Blackout tweak in the following sec
 <summary>Details</summary>
 <br />
 
-Some optional adjustments to make vanilla power outages more thorough:
+Options which apply outside of using MrovWeathers:
 
 - **Apparatus True Blackout**: When removing the apparatus, lights both inside and out will be shut off, along with any emissive textures (using the same logic as the above Mrov Weathers True Blackout tweak). This of course does not include the sun.
 
 >*Default: OFF - All clients*
 
-- **Apparatus Hazard Blackout**: Along with doors being opened, traps like turrets, mines, and spike traps will also be shut down with the power outage.
-
->*Default: OFF - All clients*
-
-- **Breaker Hazard Blackout**: Same as above, but when the breaker is switched off (everything reactivates when the breaker is turned back on).
-
->*Default: OFF - All clients*
-
-- **Blackout Sound Effect**: Plays a "powering down" sound effect upon a blackout occuring (includes both Mrov Weathers' blackout and the above Apparatus True Blackout).
+- **Blackout Sound Effect**: Plays a "powering down" sound effect upon a blackout occurring (Mrov Weathers' blackout or Apparatus True Blackout).
 
 >*Default: ON - Client-side*
 
 </details>
 
-*`Credit for these tweaks goes to xameryn`*
+### Other Related Options
+
+<details>
+<summary>Details</summary>
+<br />
+
+Some options related to power outages and the apparatus that aren't directly linked to the True Blackout mechanics.
+
+- **Apparatus Hazard Shutdown**: Along with doors being opened, traps like turrets, mines, and spike traps will also be shut down with the power outage.
+
+>*Default: OFF - All clients*
+
+- **Breaker Hazard Shutdown**: Same as above, but when the breaker is switched off (everything reactivates when the breaker is turned back on).
+
+>*Default: OFF - All clients*
+
+- **Apparatus Increased Enemy Spawn Chance**: When the apparatus is pulled, there is a 70% chance for the spawn rate per hour to be increased. This chance can now be adusted using this config option.
+
+>*Default: 70% - All clients*
+
+- **Apparatus Minimum Enemy Spawns**: The new minimum enemy spawns per hour to set (if it's bigger than current minimum) when the spawn chance above succeeds.
+
+>*Default: 2 - All clients*
+
+</details>
+
+*`Credit for most of these tweaks goes to xameryn`*
 
 ## PLAYER CAM TWEAKS
 
@@ -925,21 +1018,37 @@ Some optional adjustments to make vanilla power outages more thorough:
 
 By default, enabling this will have the player cam face upwards towards a player's head from under their chin. This makes the position of the camera slightly more plausible/realistic, shows a bit more of their surrounding environment, and still looks funny (as it should).
 
-However, the orientation and position of the camera are configurable, so you can do a lot of other things with it, like turning it 180 degrees to make it a forward-facing camera (though that will look a bit strange since the player cam wasn't intended to render a full environment and other players). You may have to play around with the position offsets a bit to get it to look exactly right.
+However, the orientation and position of the camera are configurable, so you can do a lot of other things with it, like turning it 180 degrees to make it a forward-facing camera (though that will look a bit strange since the player cam wasn't intended to render a full environment and other players, try using the **Adjustable Cam Clipping** option below). You may have to play around with the position offsets a bit to get it to look exactly right.
 
 </details>
 
-### Hide Your Own Cam
+### Adjustable Cam Clipping/Render Distance
 
 <details>
 <summary>Details</summary>
 <br />
 
->*Default: OFF - Client-side (?)*
+>*Default: 0 - Client-side (?)*
 
-Rather than using a fixed image placeholder, your own cam won't display on the radar screen at all (you can only see other players' cam feeds). The name textbox will still appear and be moved down to compensate.
+This can be used to increase how far out the player cam renders (by default it's quite a small range). This might be useful if you use the above configuration to make the camera face forward, since normally that won't render very much.
 
-It's advised to use this if you're adjusting the player cam at all, since the placeholder image will no longer fit in.
+</details>
+
+### Hide Cams
+
+<details>
+<summary>Details</summary>
+<br />
+
+Some options for hiding player cams:
+
+- **Hide Your Own Cam**: Instead of using a placeholder graphic, your own player cam won't be displayed for you at all (name textbox adjusted accordingly).
+
+>*Default: OFF - All clients*
+
+- **Hide All Cams**: All player cams will not be shown at all (name textbox adjusted accordingly).
+
+>*Default: OFF - All clients*
 
 </details>
 
@@ -987,16 +1096,13 @@ This is still an early prototype, so I'll see how useful this ends up being. In 
 
 *These tweaks **do not require the relevant mods** as dependencies, and if they are enabled without those mods, nothing will happen.*
 
-### Various Mod Patches - JLL/LLL
+### LLL Patches
 
 <details>
 <summary>Details</summary>
 <br />
 
-Some quick patches I put in for issues and inconveniences I've encountered:
-
-- **JLL Noisemaker Fix**: Fixes occasional noisemaking item malfunctions (e.g. Wesley audio logs not playing) by initializing the RNG functions of JLL objects when a moon loads to avoid an occasional bug with null RNG functions.
->*Default: ON - Client-side*
+Some quick patches I put in for [Lethal Level Loader](https://thunderstore.io/c/lethal-company/p/IAmBatby/LethalLevelLoader/):
 
 - **LLL Unlock Syncing**: Manually applies the host's unlocked moons to all clients, so any moons the host has, the clients will have too (addressing an issue where unlocks in Wesley's Moons could become desynced). **This should be disabled when RandomMoonFX is installed**.
 >*Default: OFF - All clients*

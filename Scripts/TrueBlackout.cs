@@ -5,11 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using UnityEngine;
-using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
-using ScienceBirdTweaks.Scripts;
-using System.IO;
-using static UnityEngine.ParticleSystem.PlaybackState;
 using ScienceBirdTweaks.Patches;
 
 namespace ScienceBirdTweaks.Scripts
@@ -141,8 +137,8 @@ namespace ScienceBirdTweaks.Scripts
                 trueBlackoutInstance = blackoutHandler.AddComponent<TrueBlackout>();
             }
 
-
-            if (disableSun == true)
+            
+            if (disableSun == true && ScienceBirdTweaks.BlackoutSun.Value != "Blackout Only Lights")
             {
                 try
                 {
@@ -179,7 +175,7 @@ namespace ScienceBirdTweaks.Scripts
                     ScienceBirdTweaks.Logger.LogWarning($"Error while trying to modify floodlights: {arg}");
                 }
 
-                if (ScienceBirdTweaks.BlackoutOnlySun.Value)
+                if (ScienceBirdTweaks.BlackoutSun.Value == "Blackout Only Sun")
                 {
                     return;
                 }

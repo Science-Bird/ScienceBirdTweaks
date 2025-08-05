@@ -1,6 +1,5 @@
 using UnityEngine;
 using HarmonyLib;
-using System.Linq;
 using System.Collections.Generic;
 
 namespace ScienceBirdTweaks.Patches
@@ -35,6 +34,8 @@ namespace ScienceBirdTweaks.Patches
 
             playerCount = round.connectedPlayersAmount + 1;
             GameObject occupancyPoster = GameObject.Find("HangarShip/Plane.001");
+            if (occupancyPoster == null) { return; }
+
             Material[] mats = occupancyPoster.GetComponent<MeshRenderer>().materials;
             if (ScienceBirdTweaks.OccupancyFixedValue.Value != "None")// fixed value override
             {

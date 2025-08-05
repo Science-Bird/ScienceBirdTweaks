@@ -1,4 +1,5 @@
 using System.Linq;
+using Dissonance;
 using GameNetcodeStuff;
 using HarmonyLib;
 using UnityEngine;
@@ -71,6 +72,45 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
+        [HarmonyPatch(typeof(ShipBuildModeManager), nameof(ShipBuildModeManager.PlayerMeetsConditionsToBuild))]
+        [HarmonyPostfix]
+        static void BuildCheckPatch(ShipBuildModeManager __instance, ref bool __result)
+        {
+            if (ScienceBirdTweaks.FearfulBuilding.Value && __result == false)
+            {
+                // vanilla checks but without fear level check
+                if (__instance.InBuildMode && (__instance.placingObject == null || __instance.placingObject.inUse || StartOfRound.Instance.unlockablesList.unlockables[__instance.placingObject.unlockableID].inStorage))
+                {
+                    return;
+                }
+                if (GameNetworkManager.Instance.localPlayerController.isTypingChat)
+                {
+                    return;
+                }
+                if (__instance.player.isPlayerDead || __instance.player.inSpecialInteractAnimation || __instance.player.activatingItem)
+                {
+                    return;
+                }
+                if (__instance.player.disablingJetpackControls || __instance.player.jetpackControls)
+                {
+                    return;
+                }
+                if (!__instance.player.isInHangarShipRoom)
+                {
+                    return;
+                }
+                if (StartOfRound.Instance.shipAnimator.GetCurrentAnimatorStateInfo(0).tagHash != Animator.StringToHash("ShipIdle"))
+                {
+                    return;
+                }
+                if (!StartOfRound.Instance.inShipPhase && !StartOfRound.Instance.shipHasLanded)
+                {
+                    return;
+                }
+                __result = true;
+            }
+        }
+
         [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.Update))]
         [HarmonyPostfix]
         static void PauseUpdate(QuickMenuManager __instance)
@@ -96,7 +136,7 @@ namespace ScienceBirdTweaks.Patches
             {
                 if (ScienceBirdTweaks.test2Present)
                 {
-                    ModPatches.GoodItemScanPatch.GoodItemScanClearNodes();
+                    ModPatches.GoodItemScanPatches.GoodItemScanClearNodes();
                 }
                 else
                 {
@@ -118,13 +158,40 @@ namespace ScienceBirdTweaks.Patches
                     player.cursorIcon.enabled = true;
                     player.cursorIcon.sprite = player.hoveringOverTrigger.hoverIcon;
                     player.cursorTip.text = player.hoveringOverTrigger.hoverTip;
-                    if (player.twoHanded)// then check if any special hold tips need to be applied
+                    if (player.twoHanded && (!player.hoveringOverTrigger.twoHandedItemAllowed || !ScienceBirdTweaks.HandsFullFix.Value))// then check if any special hold tips need to be applied
                     {
                         player.cursorTip.text = "[Hands full]";
                     }
                     else if (!string.IsNullOrEmpty(player.hoveringOverTrigger.holdTip))
                     {
                         player.cursorTip.text = player.hoveringOverTrigger.holdTip;
+                    }
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.SetHoverTipAndCurrentInteractTrigger))]
+        [HarmonyPostfix]
+        static void OnHoverTipUpdate(PlayerControllerB __instance)
+        {
+            if (ScienceBirdTweaks.HandsFullFix.Value && __instance.hoveringOverTrigger != null)
+            {
+                if (__instance.hoveringOverTrigger.twoHandedItemAllowed && __instance.cursorTip.text == "[Hands full]")
+                {
+                    if (__instance.hoveringOverTrigger.holdInteraction && HUDManager.Instance.holdFillAmount > 0f)// if in hold interaction, set tip to hold tip if it exists otherwise use hover tip
+                    {
+                        if (!string.IsNullOrEmpty(__instance.hoveringOverTrigger.holdTip))
+                        {
+                            __instance.cursorTip.text = __instance.hoveringOverTrigger.holdTip.Replace("[LMB]", "[E]");
+                        }
+                        else
+                        {
+                            __instance.cursorTip.text = __instance.hoveringOverTrigger.hoverTip.Replace("[LMB]", "[E]");
+                        }
+                    }
+                    else
+                    {
+                        __instance.cursorTip.text = __instance.hoveringOverTrigger.hoverTip.Replace("[LMB]", "[E]");
                     }
                 }
             }

@@ -21,10 +21,7 @@ namespace ScienceBirdTweaks.Patches
             }
             try
             {
-                if (__instance.itemProperties.name == "WitheredRobotToy" || __instance.itemProperties.name == "WitheredPhone" || __instance.itemProperties.name == "WitheredDentures" || !ScienceBirdTweaks.FallingRotationFix.Value)
-                {// Wither has its own rotation fix for these items
-                    return;
-                }
+                if (!ScienceBirdTweaks.FallingRotationFix.Value) { return; }
                 if (__instance.startFallingPosition.y - __instance.targetFloorPosition.y > 5f)// this is when fall calculations start being different, for "long falls"
                 {
                     float curveVal = Mathf.Clamp(StartOfRound.Instance.objectFallToGroundCurveNoBounce.Evaluate(__instance.fallTime), 0f, 1f);// this is the curve normally used for position, now adapted for rotation

@@ -4,14 +4,15 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.Rendering;
+using ScienceBirdTweaks.ModPatches;
 
 namespace ScienceBirdTweaks.Patches
 {
     [HarmonyPatch]
     public class ScanHighlightPatches
     {
-        public static List<GrabbableObject> scannedObjects = new List<GrabbableObject>();
-        public static Dictionary<GrabbableObject, GameObject> highlightDict = new Dictionary<GrabbableObject, GameObject>();
+        public static List<GrabbableObject> scanned = new List<GrabbableObject>();
+        public static Dictionary<GrabbableObject, GameObject> highlights = new Dictionary<GrabbableObject, GameObject>();
         public static Material greenHologramMat;
         public static Material blueHologramMat;
         private static readonly HashSet<System.Type> keepTypes = new HashSet<System.Type> { typeof(Transform), typeof(MeshFilter), typeof(MeshRenderer)};
@@ -20,25 +21,75 @@ namespace ScienceBirdTweaks.Patches
         private static readonly Vector3 scaleFactorDown = new Vector3(0.960784f, 0.960784f, 0.960784f);
 
         [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.GrabItem))]
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         static void OnGrabItem(GrabbableObject __instance)
-        {
-            if (ScienceBirdTweaks.ScanHighlights.Value && highlightDict.TryGetValue(__instance, out GameObject value))
-            {
-                Object.Destroy(value);
-                highlightDict.Remove(__instance);
-            }
-        }
-
-        public static void MaterialSetup(HUDManager HUD, int index)
         {
             if (!ScienceBirdTweaks.ScanHighlights.Value) { return; }
 
+            if (!ScienceBirdTweaks.test2Present && highlights.TryGetValue(__instance, out GameObject value1))
+            {
+                Object.Destroy(value1);
+                scanned.Remove(__instance);
+                highlights.Remove(__instance);
+            }
+            else if (ScienceBirdTweaks.test2Present && GoodItemScanPatches.highlights.TryGetValue(__instance, out GameObject value2))
+            {
+                Object.Destroy(value2);
+                GoodItemScanPatches.scanned.Remove(__instance);
+                GoodItemScanPatches.highlights.Remove(__instance);
+            }
+        }
+
+        [HarmonyPatch(typeof(BeltBagItem), nameof(BeltBagItem.PutObjectInBagLocalClient))]
+        [HarmonyPrefix]
+        static void PutItemInBeltBag(BeltBagItem __instance, GrabbableObject gObject)
+        {
+            if (!ScienceBirdTweaks.ScanHighlights.Value || gObject == null) { return; }
+
+            if (!ScienceBirdTweaks.test2Present && highlights.TryGetValue(gObject, out GameObject value1))
+            {
+                Object.Destroy(value1);
+                scanned.Remove(gObject);
+                highlights.Remove(gObject);
+            }
+            else if (ScienceBirdTweaks.test2Present && GoodItemScanPatches.highlights.TryGetValue(gObject, out GameObject value2))
+            {
+                Object.Destroy(value2);
+                GoodItemScanPatches.scanned.Remove(gObject);
+                GoodItemScanPatches.highlights.Remove(gObject);
+            }
+        }
+
+        [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.Start))]
+        [HarmonyPostfix]
+        [HarmonyAfter("ClaySurgeonMod")]
+        static void MaterialSetupOnStart(QuickMenuManager __instance)
+        {
+            if (!ScienceBirdTweaks.ScanHighlights.Value) { return; }
+            HDRenderPipelineAsset assetHDRP = QualitySettings.renderPipeline as HDRenderPipelineAsset;
+            if (assetHDRP != null)
+            {
+                RenderPipelineSettings settings = assetHDRP.currentPlatformRenderPipelineSettings;
+                settings.supportMotionVectors = false;// messes with the shader if enabled by ClaySurgeonOverhaul
+                assetHDRP.currentPlatformRenderPipelineSettings = settings;
+            }
+            if (HUDManager.Instance != null)
+            {
+                MaterialSetup(HUDManager.Instance.hologramMaterial, 0);
+                MaterialSetup(HUDManager.Instance.hologramMaterial, 1);
+            }
+        }
+
+        public static void MaterialSetup(Material holoMat, int index)
+        {
             switch (index)
             {
-                case 0:
+                // bunch of shader bullshit to make the hologram shader used for "scrap collected" models look decent when used for highlight models
+                // I should probably make my own custom shader instead but this works for now
+
+                case 0:// green (scrap)
                     Texture2D hologramTex = (Texture2D)ScienceBirdTweaks.TweaksAssets.LoadAsset("HologramTex");
-                    greenHologramMat = new Material(HUD.hologramMaterial);
+                    greenHologramMat = new Material(holoMat);
                     greenHologramMat.SetVector("_MainColor", new Vector4(3f, 30f, 3f, 0f));
                     greenHologramMat.SetVector("_FresnelColor", new Vector4(0.1f, 0.1f, 0.1f, 0.1f));
                     LocalKeyword disableSSR = new LocalKeyword(greenHologramMat.shader, "_DISABLE_SSR_TRANSPARENT");
@@ -49,9 +100,9 @@ namespace ScienceBirdTweaks.Patches
                     greenHologramMat.SetFloat("_ScrollSpeed", 0.04f);
                     greenHologramMat.SetTexture("_HologramScanlines", hologramTex);
                     break;
-                case 1:
+                case 1:// blue (equipment)
                     Texture2D hologramTexBlue = (Texture2D)ScienceBirdTweaks.TweaksAssets.LoadAsset("HologramTexBlue");
-                    blueHologramMat = new Material(HUD.hologramMaterial);
+                    blueHologramMat = new Material(holoMat);
                     blueHologramMat.SetVector("_MainColor", new Vector4(3f, 3f, 30f, 0f));
                     blueHologramMat.SetVector("_FresnelColor", new Vector4(0.1f, 0.1f, 0.1f, 0.1f));
                     LocalKeyword disableSSRBlue = new LocalKeyword(blueHologramMat.shader, "_DISABLE_SSR_TRANSPARENT");
@@ -65,54 +116,75 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
+
         [HarmonyPatch(typeof(HUDManager), nameof(HUDManager.UpdateScanNodes))]
         [HarmonyPostfix]
         static void OnScanUpdate(HUDManager __instance)
         {
-            if (!ScienceBirdTweaks.ScanHighlights.Value) { return; }
+            if (!ScienceBirdTweaks.ScanHighlights.Value || ScienceBirdTweaks.test2Present) { return; }
 
             if (greenHologramMat == null)
             {
-                MaterialSetup(__instance, 0);
+                MaterialSetup(__instance.hologramMaterial, 0);
             }
             if (blueHologramMat == null)
             {
-                MaterialSetup(__instance, 1);
+                MaterialSetup(__instance.hologramMaterial, 1);
             }
 
+            List<GrabbableObject> newScannedObjects = ComputeNewScannedObjects(highlights, scanned, __instance.scanNodes.Values.ToList());
+            scanned = new List<GrabbableObject>(newScannedObjects);// new scanned objects becomes the regular scanned list and then the cycle repeats next scan
+        }
+
+        // general method used by both vanilla scan routine and GoodItemScan routine
+        public static List<GrabbableObject> ComputeNewScannedObjects(Dictionary<GrabbableObject, GameObject> highlightDict, List<GrabbableObject> scannedObjects, List<ScanNodeProperties> scanNodeList)
+        {
+            //ScienceBirdTweaks.Logger.LogDebug($"Starting scan of {scanNodeList.Count} objects");
             List<GrabbableObject> newScannedObjects = new List<GrabbableObject>();
-            for (int i = 0; i < __instance.scanElements.Length; i++)
+            foreach (ScanNodeProperties scanProps in scanNodeList)
             {
-                if (__instance.scanNodes.Count > 0 && __instance.scanNodes.TryGetValue(__instance.scanElements[i], out var value) && value != null)
+                if (scanProps == null) { continue; }
+                GameObject targetObj = scanProps.gameObject;
+                GrabbableObject grabbable = targetObj.GetComponentInParent<GrabbableObject>();
+                while (grabbable == null)// find grabbable object through scan node parents
                 {
-                    GrabbableObject grabbable = value.GetComponentInParent<GrabbableObject>();
-                    if (grabbable != null)
+                    if (targetObj.transform.parent != null)
                     {
-                        if ((bool)grabbable.GetComponentInChildren<SkinnedMeshRenderer>())
-                        {
-                            continue;
-                        }
-                        if (!scannedObjects.Contains(grabbable))
-                        {
-                            //ScienceBirdTweaks.Logger.LogDebug($"New scanned object! {grabbable.name}");
-                            bool blue = false;
-                            if (grabbable.itemProperties != null && !grabbable.itemProperties.isScrap && grabbable.itemProperties.itemId != 14 && grabbable.itemProperties.itemId != 16)
-                            {
-                                blue = true;
-                            }
-                            GameObject meshHighlight = DuplicateRenderersWithMaterial(grabbable.gameObject, blue);
-                            highlightDict.Add(grabbable, meshHighlight);
-                        }
-                        newScannedObjects.Add(grabbable);
+                        targetObj = targetObj.transform.parent.gameObject;
                     }
+                    else
+                    {
+                        break;
+                    }
+                    grabbable = targetObj.GetComponentInParent<GrabbableObject>();
+                }
+                if (grabbable != null)
+                {
+                    if ((bool)grabbable.GetComponentInChildren<SkinnedMeshRenderer>())// skinned mesh renderers are fucked
+                    {
+                        continue;
+                    }
+                    if (!scannedObjects.Contains(grabbable))// if an object doesnt already have a highlight model, add one
+                    {
+                        //ScienceBirdTweaks.Logger.LogDebug($"New scanned object! {grabbable.name}");
+                        bool blue = false;
+                        if (grabbable.itemProperties != null && !grabbable.itemProperties.isScrap && grabbable.itemProperties.itemId != 14 && grabbable.itemProperties.itemId != 16)// keys and radar boosters have green scan nodes so they're excluded from the blue equipment thingy
+                        {
+                            blue = true;
+                        }
+                        GameObject meshHighlight = ScanHighlightPatches.DuplicateRenderersWithMaterial(grabbable.gameObject, blue);
+                        highlightDict.Add(grabbable, meshHighlight);
+                    }
+                    newScannedObjects.Add(grabbable);
                 }
             }
-            List<GrabbableObject> remainingObjects = scannedObjects.Except(newScannedObjects).ToList();
+            List<GrabbableObject> remainingObjects = scannedObjects.Except(newScannedObjects).ToList();// all objects which are missing compared to last scan
             if (remainingObjects.Count > 0)
             {
                 //ScienceBirdTweaks.Logger.LogDebug($"Objects to remove: {remainingObjects.Count}");
                 for (int i = 0; i < remainingObjects.Count; i++)
                 {
+                    //ScienceBirdTweaks.Logger.LogDebug($"Removing: {remainingObjects[i].name}");
                     if (highlightDict.TryGetValue(remainingObjects[i], out GameObject value))
                     {
                         Object.Destroy(value);
@@ -120,8 +192,7 @@ namespace ScienceBirdTweaks.Patches
                     }
                 }
             }
-            scannedObjects = new List<GrabbableObject>(newScannedObjects);
-            newScannedObjects.Clear();
+            return newScannedObjects;
         }
 
         public static GameObject DuplicateRenderersWithMaterial(GameObject sourceObject, bool blue)
@@ -130,7 +201,7 @@ namespace ScienceBirdTweaks.Patches
             duplicate.name = sourceObject.name + "_ScanMesh";
 
             Component[] allComponents = duplicate.GetComponentsInChildren<Component>(true);
-            foreach (Component component in allComponents)
+            foreach (Component component in allComponents)// clean most of the non-rendering components
             {
                 if (component != null && !keepTypes.Contains(component.GetType()))
                 {

@@ -71,6 +71,10 @@ namespace ScienceBirdTweaks.Patches
             {
                 DestroyObject("ShipModels2b/AirFilterThing");
             }
+            if (ScienceBirdTweaks.RemoveMonitorWires.Value)
+            {
+                DestroyObject("WallCords");
+            }
             if (ScienceBirdTweaks.RemoveBatteries.Value)
             {
                 DestroyObject("SmallDetails/BatteryPack");

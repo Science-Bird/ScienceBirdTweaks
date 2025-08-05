@@ -42,6 +42,10 @@ namespace ScienceBirdTweaks.Patches
                 __instance.headMountedCam.transform.Rotate(camRotX, camRotY, 0f, Space.Self);
                 __instance.headMountedCam.transform.position += __instance.headMountedCamTarget.up * camPosY + __instance.headMountedCamTarget.forward * camPosF;
             }
+            if (ScienceBirdTweaks.PlayerCamClipping.Value > 0f && __instance.headMountedCam.farClipPlane != 11f + ScienceBirdTweaks.PlayerCamClipping.Value)
+            {
+                __instance.headMountedCam.farClipPlane = 11f + ScienceBirdTweaks.PlayerCamClipping.Value;
+            }
             if ((ScienceBirdTweaks.HideLocalCam.Value || ScienceBirdTweaks.HideAllCams.Value) && !StartOfRound.Instance.inShipPhase && __instance.targetedPlayer == GameNetworkManager.Instance.localPlayerController && !GameNetworkManager.Instance.localPlayerController.isPlayerDead && !__instance.overrideRadarCameraOnAlways)
             {
                 if (__instance.localPlayerPlaceholder != null)
@@ -100,7 +104,6 @@ namespace ScienceBirdTweaks.Patches
                 }
                 else
                 {
-                    ScienceBirdTweaks.Logger.LogWarning($"Failed to retrieve active player on radar!");
                     return;
                 }
                 string newName = nameText;

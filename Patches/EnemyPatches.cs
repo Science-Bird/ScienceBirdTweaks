@@ -1,7 +1,6 @@
 using System.Linq;
 using GameNetcodeStuff;
 using HarmonyLib;
-using Steamworks.ServerList;
 using UnityEngine;
 
 namespace ScienceBirdTweaks.Patches
@@ -285,6 +284,60 @@ namespace ScienceBirdTweaks.Patches
                         __instance.openDoorSpeedMultiplier = 3f;
                         break;
                 }
+            }
+        }
+
+        [HarmonyPatch(typeof(CaveDwellerAI), nameof(CaveDwellerAI.DoBabyAIInterval))]
+        [HarmonyPrefix]
+        static void BabyAIPrefix(CaveDwellerAI __instance, out GrabbableObject __state)
+        {
+            __state = null;
+            if (ScienceBirdTweaks.KiwiManeaterScream.Value && __instance.observingScrap != null)
+            {
+                __state = __instance.observingScrap;
+            }
+        }
+
+        [HarmonyPatch(typeof(CaveDwellerAI), nameof(CaveDwellerAI.DoBabyAIInterval))]
+        [HarmonyPostfix]
+        static void BabyAIPostfix(CaveDwellerAI __instance, GrabbableObject __state)
+        {
+            if (ScienceBirdTweaks.KiwiManeaterScream.Value)
+            {
+                if (__instance.observingScrap != null && __instance.eatingScrap && __instance.observingScrap is KiwiBabyItem kiwiEgg && kiwiEgg.currentAnimation != 5)
+                {
+                    kiwiEgg.currentAnimation = 5;
+                    if (!kiwiEgg.eggAudio.isPlaying || kiwiEgg.eggAudio.clip != kiwiEgg.screamAudio)
+                    {
+                        kiwiEgg.eggAudio.clip = kiwiEgg.screamAudio;
+                        kiwiEgg.eggAudio.Play();
+                    }
+                    kiwiEgg.babyAnimator.SetInteger("babyAnimation", 5);
+                }
+                if (__instance.observingScrap != __state && __state != null && __state is KiwiBabyItem pastKiwiEgg)
+                {
+                    ResetKiwi(pastKiwiEgg);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(CaveDwellerAI), nameof(CaveDwellerAI.StopObserving))]
+        [HarmonyPrefix]
+        static void StopObservingCheck(CaveDwellerAI __instance)
+        {
+            if (ScienceBirdTweaks.KiwiManeaterScream.Value && __instance.observingScrap != null && __instance.observingScrap is KiwiBabyItem kiwiEgg)
+            {
+                ResetKiwi(kiwiEgg);
+            }
+        }
+
+        static void ResetKiwi(KiwiBabyItem kiwi)
+        {
+            if (kiwi.currentAnimation == 5)
+            {
+                kiwi.currentAnimation = 4;
+                kiwi.eggAudio.Stop();
+                kiwi.babyAnimator.SetInteger("babyAnimation", 4);
             }
         }
     }
