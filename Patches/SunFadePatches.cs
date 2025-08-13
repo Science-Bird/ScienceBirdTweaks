@@ -76,7 +76,7 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
-        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ShipLeave))]
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.ReviveDeadPlayers))]
         [HarmonyPostfix]
         static void ResetValues()
         {

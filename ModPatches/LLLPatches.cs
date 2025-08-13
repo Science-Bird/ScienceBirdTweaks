@@ -104,7 +104,7 @@ namespace ScienceBirdTweaks.ModPatches
 
         public static void OnGeneration(DungeonGenerator __instance)
         {
-            if (!InteriorConfigPatch.enabled) { return; }
+            if (!InteriorConfigPatch.enabled || StartOfRound.Instance.currentLevel.PlanetName == "754 Conflux") { return; }
 
             if (InteriorConfigPatch.configDict.TryGetValue(DungeonManager.CurrentExtendedDungeonFlow, out var value))
             {
@@ -121,6 +121,7 @@ namespace ScienceBirdTweaks.ModPatches
 
         public static void BeforeScrapSpawn(RoundManager __instance)
         {
+            if (StartOfRound.Instance.currentLevel.PlanetName == "754 Conflux") { return; }
             inScrapSpawnContext = true;
             if (ScienceBirdTweaks.InteriorLogging.Value)
             {
@@ -130,6 +131,7 @@ namespace ScienceBirdTweaks.ModPatches
 
         public static void NavBoxPatch(RoundManager __instance, Vector3 pos, float radius)
         {
+            if (StartOfRound.Instance.currentLevel.PlanetName == "754 Conflux") { return; }
             if (inScrapSpawnContext && ScienceBirdTweaks.InteriorLogging.Value)// the function patched here is what distributes scrap spawns in an area around some point. the position passed to it is the position of the spawner doing the spawns
             {
                 spawnPositions.Add(pos);// we save the position of the spawner so we can use it to find the spawner after
@@ -138,6 +140,7 @@ namespace ScienceBirdTweaks.ModPatches
 
         public static void AfterScrapSpawn(RoundManager __instance)
         {
+            if (StartOfRound.Instance.currentLevel.PlanetName == "754 Conflux") { return; }
             inScrapSpawnContext = false;
             if (InteriorConfigPatch.enabled)
             {

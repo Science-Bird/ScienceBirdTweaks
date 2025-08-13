@@ -222,6 +222,7 @@ namespace ScienceBirdTweaks.Patches
                     spikes.ToggleSpikesEnabled(false);
                 }
                 terminalObj.inCooldown = true;
+                terminalObj.StopAllCoroutines();
             }
             else if (switchedOn && ScienceBirdTweaks.DisableTrapsOnBreakerSwitch.Value && doingHazardStartup && !terminalObj.isBigDoor && terminalObj.inCooldown)
             {
