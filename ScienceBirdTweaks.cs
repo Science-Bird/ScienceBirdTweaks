@@ -27,6 +27,7 @@ namespace ScienceBirdTweaks
     [BepInDependency("Yorimor.CustomStoryLogs", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("mborsh.LiveReaction", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("umno.QualityCompany", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("Zaggy1024.TwoRadarMaps", BepInDependency.DependencyFlags.SoftDependency)]
 
     public class ScienceBirdTweaks : BaseUnityPlugin
     {
@@ -105,6 +106,7 @@ namespace ScienceBirdTweaks
         public static bool test2Present = false;
         public static bool mborshPresent = false;
         public static bool qcfPresent = false;
+        public static bool zaggyPresent = false;
 
         public static Vector3 ConfigTeleporterSize;
 
@@ -268,9 +270,9 @@ namespace ScienceBirdTweaks
             ApparatusSpawnMin = base.Config.Bind("9. Blackout", "Apparatus Minimum Enemy Spawns", 2, "The minimum number of enemy spawns each hour after removing the apparatus if the above chance is hit (vanilla is 2). This is a separate feature from the 'blackout' options at the top.");
 
             AlterPlayerCam = base.Config.Bind("A. Player Cam Tweaks", "Low Angle Player Cam", false, "By default, changes the angle and position of the player cam to look up at players from below their chin (which is slightly more realistic, lets you see more of their surroundings, and is funny). The angle and position are configurable below, so theoretically you can put it wherever you want.");
-            PlayerCamAngleX = base.Config.Bind("A. Player Cam Tweaks", "Player Cam Vertical Angle", -45f, new ConfigDescription("How much the camera should be angled up or down (negative values look up at the player from below their head).", new AcceptableValueRange<float>(-90f, 90f)));
+            PlayerCamAngleX = base.Config.Bind("A. Player Cam Tweaks", "Player Cam Vertical Angle", -60f, new ConfigDescription("How much the camera should be angled up or down (negative values look up at the player from below their head).", new AcceptableValueRange<float>(-90f, 90f)));
             PlayerCamAngleY = base.Config.Bind("A. Player Cam Tweaks", "Player Cam Orientation", 0f, new ConfigDescription("How much the camera should be rotated on its vertical axis (e.g. setting this to 180 degrees will rotate the camera to face away from the player).", new AcceptableValueRange<float>(0f, 360f)));
-            PlayerCamPosVertical = base.Config.Bind("A. Player Cam Tweaks", "Player Cam Vertical Offset", -0.2f, new ConfigDescription("How far up or down the camera should be moved (relative to the player's standing position). You might need to change this if you change the rotation.", new AcceptableValueRange<float>(-2f, 2f)));
+            PlayerCamPosVertical = base.Config.Bind("A. Player Cam Tweaks", "Player Cam Vertical Offset", -0.3f, new ConfigDescription("How far up or down the camera should be moved (relative to the player's standing position). You might need to change this if you change the rotation.", new AcceptableValueRange<float>(-2f, 2f)));
             PlayerCamPosHorizontal = base.Config.Bind("A. Player Cam Tweaks", "Player Cam Closeness", 0f, new ConfigDescription("How far away or towards the player the camera should be moved (positive values move the camera away).", new AcceptableValueRange<float>(-3f, 3f)));
             PlayerCamClipping = base.Config.Bind("A. Player Cam Tweaks", "Player Cam Extra Render Distance", 0f, new ConfigDescription("How much extra distance the camera should render (increase this to see more of the area surrounding the player). The vanilla base is 11, so if you set this to 11 as well you'll get double the render distance at 22.", new AcceptableValueRange<float>(0f, 60f)));
             HideAllCams = base.Config.Bind("A. Player Cam Tweaks", "Hide All Cams", false, "Only names will display for each player instead of the body cam (position adjusted accordingly).");
@@ -389,6 +391,11 @@ namespace ScienceBirdTweaks
                 {
                     Logger.LogDebug("Found qcf!");
                     qcfPresent = true;
+                }
+                else if (assembly.GetName().Name == "TwoRadarMaps")
+                {
+                    Logger.LogDebug("Found zaggy!");
+                    zaggyPresent = true;
                 }
             }
 

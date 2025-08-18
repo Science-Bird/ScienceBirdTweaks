@@ -177,7 +177,7 @@ namespace ScienceBirdTweaks.ModPatches
         {
             if (node.displayText.Contains("[buyableItemsList]") && UnityEngine.Object.FindObjectOfType<SmartCupboard>())
             {
-                ScienceBirdTweaks.Logger.LogDebug("Player entering terminal store");
+                //ScienceBirdTweaks.Logger.LogDebug("Player entering terminal store");
                 storeFlag = true;
                 UpdateDictionary(__instance);
             }
@@ -277,7 +277,7 @@ namespace ScienceBirdTweaks.ModPatches
 
         public static void OnExitTerminal(Terminal __instance)
         {
-            ScienceBirdTweaks.Logger.LogDebug("Player exiting terminal store");
+            //ScienceBirdTweaks.Logger.LogDebug("Player exiting terminal store");
             storeFlag = false;
         }
     }

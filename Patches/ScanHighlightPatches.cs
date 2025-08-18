@@ -160,7 +160,7 @@ namespace ScienceBirdTweaks.Patches
                 }
                 if (grabbable != null)
                 {
-                    if ((bool)grabbable.GetComponentInChildren<SkinnedMeshRenderer>())// skinned mesh renderers are fucked
+                    if ((bool)grabbable.GetComponentInChildren<SkinnedMeshRenderer>() || (grabbable.itemProperties != null && grabbable.itemProperties.itemId == 16))// skinned mesh renderers and radar boosters are fucked
                     {
                         continue;
                     }
@@ -168,7 +168,7 @@ namespace ScienceBirdTweaks.Patches
                     {
                         //ScienceBirdTweaks.Logger.LogDebug($"New scanned object! {grabbable.name}");
                         bool blue = false;
-                        if (grabbable.itemProperties != null && !grabbable.itemProperties.isScrap && grabbable.itemProperties.itemId != 14 && grabbable.itemProperties.itemId != 16)// keys and radar boosters have green scan nodes so they're excluded from the blue equipment thingy
+                        if (grabbable.itemProperties != null && !grabbable.itemProperties.isScrap && grabbable.itemProperties.itemId != 14)// keys and radar boosters have green scan nodes so they're excluded from the blue equipment thingy
                         {
                             blue = true;
                         }

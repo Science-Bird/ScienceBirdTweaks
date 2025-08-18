@@ -25,8 +25,12 @@ namespace ScienceBirdTweaks.Patches
             {
                 if (__instance.carryWeight != 1f)
                 {
-                    ScienceBirdTweaks.Logger.LogDebug($"{__instance.carryWeight == 1f}. No items in inventory! Resetting weight.");
+                    ScienceBirdTweaks.Logger.LogDebug($"Weight detected with no items in inventory! Resetting weight.");
                     __instance.carryWeight = 1f;
+                    if (__instance.enemiesOnPerson > 0)
+                    {
+                        __instance.carryWeight += 0.03f * __instance.enemiesOnPerson;
+                    }
                 }
             }
         }
