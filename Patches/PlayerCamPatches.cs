@@ -80,7 +80,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void CamUpdate(ManualCameraRenderer __instance)
         {
-            if (GameNetworkManager.Instance.localPlayerController == null || !(__instance.headMountedCam != null) || __instance.cam != __instance.mapCamera)
+            if (GameNetworkManager.Instance.localPlayerController == null || !(__instance.headMountedCam != null) || __instance.cam != __instance.mapCamera || nameText == null || nameText[0] == null)
             {
                 return;
             }
@@ -88,7 +88,7 @@ namespace ScienceBirdTweaks.Patches
             if (ScienceBirdTweaks.zaggyPresent && __instance == twoRadarCam)
             {
                 index = 1;
-                if (nameText.Length <= 1) { return; }
+                if (nameText.Length <= 1 || nameText[1] == null) { return; }
             }
             if (ScienceBirdTweaks.AlterPlayerCam.Value && __instance.enableHeadMountedCam && !__instance.playerIsInCaves)
             {
@@ -141,13 +141,12 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
-
         [HarmonyPatch(typeof(ManualCameraRenderer), nameof(ManualCameraRenderer.updateMapTarget), MethodType.Enumerator)]
         [HarmonyPostfix]
         [HarmonyAfter("mborsh.LiveReaction")]
         public static void UpdateMapTargetPatch(ManualCameraRenderer __instance, bool __result, string __state)
         {
-            if (ScienceBirdTweaks.ImprovedTextBox.Value && !__result)// credit to mborsh for this unique kind of patch
+            if (ScienceBirdTweaks.ImprovedTextBox.Value && !__result && !StartOfRound.Instance.inShipPhase && nameText != null)// credit to mborsh for this unique kind of patch
             {// what camera is this even patching? because it's not any of the ones that actually display the radar map. no idea what mborsh was cooking but it works I guess
                 ManualCameraRenderer[] radarMaps = [StartOfRound.Instance.mapScreen];
                 if (twoRadarCam != null)
@@ -156,6 +155,8 @@ namespace ScienceBirdTweaks.Patches
                 }
                 for (int i = 0; i < nameText.Length; i++)
                 {
+                    if (nameText[i] == null) { continue; }
+
                     if (i == 1 && grabbedIndices[1] != radarMaps[1].targetTransformIndex)
                     {
                         grabbedIndices[1] = radarMaps[1].targetTransformIndex;
@@ -201,6 +202,7 @@ namespace ScienceBirdTweaks.Patches
                     nameText[i].fontSizeMin = 15f;
                     nameText[i].lineSpacing = -9.6f;
                     nameText[i].text = nameString;
+                    if (nameText[i].rectTransform == null || nameBG[i].rectTransform == null) { return; }
                     nameText[i].rectTransform.sizeDelta = textBoxSizes[sizeIndex];
                     nameBG[i].rectTransform.sizeDelta = textBoxSizes[sizeIndex];
                     yOffsets[i] = (textBoxSizes[sizeIndex].y - 26f) / 2;
