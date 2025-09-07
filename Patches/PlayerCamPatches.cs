@@ -23,6 +23,15 @@ namespace ScienceBirdTweaks.Patches
         private static float camPosY = ScienceBirdTweaks.PlayerCamPosVertical.Value;
         public static ManualCameraRenderer twoRadarCam;
 
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Start))]
+        [HarmonyPrefix]
+        static void StartReset(StartOfRound __instance)
+        {
+            nameText = null;
+            nameBG = null;
+            twoRadarCam = null;
+        }
+
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SwitchMapMonitorPurpose))]
         [HarmonyPostfix]
         static void OnRadarEnable(StartOfRound __instance, bool displayInfo)
