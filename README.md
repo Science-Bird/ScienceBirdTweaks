@@ -1184,7 +1184,9 @@ Try scrolling around or re-entering the store menu if you have any issues with t
 
 Thank you to all the wonderful mod creators mentioned throughout that have inspired me to learn how their mods work so I could add things myself!
 
-I'd like to especially thank [Axd1x8a / Aъ / FeeeeK](https://github.com/feeeek/) who allowed me to port their mod [LCAmmoCheck](https://thunderstore.io/c/lethal-company/p/axd1x8a/LCAmmoCheck/) into this one.
+Thank you to Hamunii for [their fix](https://thunderstore.io/c/lethal-company/p/Hamunii/TypeLoadExceptionFixer/) which helped me avoid rewriting everything for the new Unity version!
+
+I'd also like to especially thank [Axd1x8a / Aъ / FeeeeK](https://github.com/feeeek/), who allowed me to port their mod [LCAmmoCheck](https://thunderstore.io/c/lethal-company/p/axd1x8a/LCAmmoCheck/) into this one.
 
 Many of these tweaks were originally suggested or improved by various users in my Discord thread, thank you for your contributions as well.
 
