@@ -16,7 +16,7 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
-        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.LoadUnlockables))]
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Start))]
         [HarmonyPostfix]
         static void OnInitialLoad(StartOfRound __instance)
         {

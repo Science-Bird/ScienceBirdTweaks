@@ -1107,9 +1107,6 @@ Some quick patches I put in for [Lethal Level Loader](https://thunderstore.io/c/
 - **LLL Unlock Syncing**: Manually applies the host's unlocked moons to all clients, so any moons the host has, the clients will have too (addressing an issue where unlocks in Wesley's Moons could become desynced). **This should be disabled when RandomMoonFX is installed**.
 >*Default: OFF - All clients*
 
-- **LLL Ship Lever Fix**: Fixes the ship lever being interactable while routing with LLL installed.
->*Default: ON - Client-side (?)*
-
 </details>
 
 ### Video Tape Skip - Wesley's Moons

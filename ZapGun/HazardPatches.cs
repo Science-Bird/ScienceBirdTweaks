@@ -1,11 +1,6 @@
 using GameNetcodeStuff;
 using HarmonyLib;
 using UnityEngine;
-using System.Linq;
-using System.Collections;
-using DigitalRuby.ThunderAndLightning;
-using Unity.Netcode;
-using static UnityEngine.ParticleSystem.PlaybackState;
 using ScienceBirdTweaks.Patches;
 
 namespace ScienceBirdTweaks.ZapGun

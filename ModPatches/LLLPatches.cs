@@ -25,17 +25,6 @@ namespace ScienceBirdTweaks.ModPatches
             ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(RoundManager), "GetRandomNavMeshPositionInBoxPredictable"), postfix: new HarmonyMethod(typeof(InteriorPatches).GetMethod("NavBoxPatch")));
 
             ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartOfRound), "Start"), prefix: new HarmonyMethod(typeof(InteriorConfigPatch).GetMethod("OnStart"), after: ["imabatby.lethallevelloader"]));
-
-            if (ScienceBirdTweaks.LLLShipLeverFix.Value)
-            {
-                ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartOfRound), "LateUpdate"), postfix: new HarmonyMethod(typeof(LeverPatch).GetMethod("OnUpdate"), after: ["imabatby.lethallevelloader"]));
-                ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartOfRound), "ChangeLevel"), postfix: new HarmonyMethod(typeof(LeverPatch).GetMethod("OnChangeLevel"), after: ["imabatby.lethallevelloader"]));
-                ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartOfRound), "ArriveAtLevel"), postfix: new HarmonyMethod(typeof(LeverPatch).GetMethod("OnArrive"), after: ["imabatby.lethallevelloader"]));
-                ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartOfRound), "ShipLeave"), postfix: new HarmonyMethod(typeof(LeverPatch).GetMethod("OnLeave"), after: ["imabatby.lethallevelloader"]));
-                ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartOfRound), "SetShipReadyToLand"), postfix: new HarmonyMethod(typeof(LeverPatch).GetMethod("ShipReady"), after: ["imabatby.lethallevelloader"]));
-                ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartMatchLever), "PullLeverAnim"), postfix: new HarmonyMethod(typeof(LeverPatch).GetMethod("OnAnim"), after: ["imabatby.lethallevelloader"]));
-                ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartOfRound), "SceneManager_OnLoadComplete1"), postfix: new HarmonyMethod(typeof(LeverPatch).GetMethod("OnLoad"), after: ["imabatby.lethallevelloader"]));
-            }
         }
     }
 
@@ -241,64 +230,6 @@ namespace ScienceBirdTweaks.ModPatches
                 }
             }
             return combinedBounds.size.x * combinedBounds.size.z;
-        }
-    }
-
-    public class LeverPatch
-    {
-        public static StartMatchLever storedLever;
-        public static bool disabled = false;
-        public static void OnUpdate()
-        {
-            if (disabled && storedLever != null)
-            {
-                storedLever.triggerScript.interactable = false;
-            }
-        }
-
-        public static void SetLeverInteractable(bool enabled)
-        {
-            if (storedLever == null)
-            {
-                storedLever = Object.FindObjectOfType<StartMatchLever>();
-            }
-            if (storedLever != null)
-            {
-                disabled = !enabled;
-            }
-        }
-
-        public static void OnChangeLevel(StartOfRound __instance)
-        {
-            if (__instance.travellingToNewLevel)
-            {
-                SetLeverInteractable(false);
-            }
-        }
-
-        public static void OnArrive()
-        {
-            SetLeverInteractable(true);
-        }
-
-        public static void OnLeave()
-        {
-            SetLeverInteractable(false);
-        }
-
-        public static void ShipReady()
-        {
-            SetLeverInteractable(true);
-        }
-
-        public static void OnAnim()
-        {
-            SetLeverInteractable(false);
-        }
-
-        public static void OnLoad()
-        {
-            SetLeverInteractable(true);
         }
     }
 }

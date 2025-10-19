@@ -87,9 +87,9 @@ namespace ScienceBirdTweaks.Patches
 
         [HarmonyPatch(typeof(MaskedPlayerEnemy), nameof(MaskedPlayerEnemy.KillEnemy))]
         [HarmonyPostfix]
-        static void OnMaskDeath(MaskedPlayerEnemy __instance)
+        static void OnMaskDeath(MaskedPlayerEnemy __instance, bool destroy)
         {
-            if (!ScienceBirdTweaks.DropMasks.Value || !__instance.gameObject.GetComponentInChildren<RandomPeriodicAudioPlayer>() || ScienceBirdTweaks.ClientsideMode.Value)
+            if (!ScienceBirdTweaks.DropMasks.Value || !__instance.gameObject.GetComponentInChildren<RandomPeriodicAudioPlayer>() || ScienceBirdTweaks.ClientsideMode.Value || destroy)
                 return;
 
             GameObject mask = __instance.gameObject.GetComponentsInChildren<RandomPeriodicAudioPlayer>().Where(x => x.gameObject.activeInHierarchy).First().gameObject;// this is the mask worn on the mask enemy

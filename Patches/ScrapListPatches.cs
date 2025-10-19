@@ -36,6 +36,11 @@ namespace ScienceBirdTweaks.Patches
                     itemsToMute.Remove("clock");
                     MuteClock();
                 }
+                if (itemsToMute.Contains("heart"))
+                {
+                    itemsToMute.Remove("heart");
+                    MuteHeart();
+                }
                 foreach (string name in itemsToMute)// each prior function removes items from the list, so this is to catch all other items (just makes sure it doesn't have any looping audio, e.g. radioactive barrels)
                 {
                     Item[] items = UnityEngine.Resources.FindObjectsOfTypeAll<Item>();
@@ -80,13 +85,25 @@ namespace ScienceBirdTweaks.Patches
                 itemsToMute.Remove(player.gameObject.GetComponent<GrabbableObject>().itemProperties.itemName.ToLower());
             }
         }
-
         public static void MuteClock()
         {
             ClockProp[] clocks = UnityEngine.Resources.FindObjectsOfTypeAll<ClockProp>();
             foreach (ClockProp clock in clocks)
             {
                 clock.tickAudio.volume = 0f;
+            }
+        }
+
+        public static void MuteHeart()
+        {
+            LoopShapeKey[] hearts = UnityEngine.Resources.FindObjectsOfTypeAll<LoopShapeKey>();
+            foreach (LoopShapeKey heart in hearts)
+            {
+                AudioSource heartAudio = heart.repeatingAudioSource;
+                if (heartAudio != null)
+                {
+                    heartAudio.mute = true;
+                }
             }
         }
 

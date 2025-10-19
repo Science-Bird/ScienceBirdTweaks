@@ -71,12 +71,16 @@ namespace ScienceBirdTweaks.Patches
 
             if (ScienceBirdTweaks.PlayGlobalDeathSFX.Value && !GameNetworkManager.Instance.localPlayerController.isPlayerDead)
             {
-                //ScienceBirdTweaks.Logger.LogDebug("PLAYING GLOBAL DEATH SFX");
-                HUDManager.Instance.UIAudio.PlayOneShot(globalDeathSFX, 0.45f);
-                if (ScienceBirdTweaks.FancyPanel.Value && ButtonPanelController.Instance != null)
+                PlayerControllerB dyingPlayer = StartOfRound.Instance.allPlayerObjects[playerId].GetComponent<PlayerControllerB>();
+                if (dyingPlayer.redirectToEnemy == null || !dyingPlayer.redirectToEnemy.isActiveAndEnabled)
                 {
-                    ButtonPanelController.Instance.BlueLight2Set(true);
-                    ButtonPanelController.Instance.SetLightAfterDelay(1, 1f, false);
+                    //ScienceBirdTweaks.Logger.LogDebug("PLAYING GLOBAL DEATH SFX");
+                    HUDManager.Instance.UIAudio.PlayOneShot(globalDeathSFX, 0.45f);
+                    if (ScienceBirdTweaks.FancyPanel.Value && ButtonPanelController.Instance != null)
+                    {
+                        ButtonPanelController.Instance.BlueLight2Set(true);
+                        ButtonPanelController.Instance.SetLightAfterDelay(1, 1f, false);
+                    }
                 }
             }
             if (ScienceBirdTweaks.AutoTeleportBody.Value && ShipTeleporter.hasBeenSpawnedThisSession)

@@ -5,7 +5,6 @@ using Unity.Netcode;
 using UnityEngine.Video;
 using GameNetcodeStuff;
 using System.Collections.Generic;
-using CustomStoryLogs;
 using LethalNetworkAPI;
 
 namespace ScienceBirdTweaks.ModPatches
@@ -18,24 +17,8 @@ namespace ScienceBirdTweaks.ModPatches
             ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(LevelCassetteLoader), "TapeEnded"), postfix: new HarmonyMethod(typeof(TapeSkipPatches).GetMethod("OnTapeEnd")));
             ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(LevelCassetteLoader), "Update"), postfix: new HarmonyMethod(typeof(TapeSkipPatches).GetMethod("TapeUpdate")));
             ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(GameNetworkManager), "Start"), postfix: new HarmonyMethod(typeof(TapeSkipPatches).GetMethod("InitializeInteractPrefab")));
-            ScienceBirdTweaks.Harmony?.Patch(typeof(CustomStoryLogs.CustomStoryLogs).GetMethod(nameof(CustomStoryLogs.CustomStoryLogs.GetUnlockedList)), prefix: new HarmonyMethod(typeof(StoryLogPatch).GetMethod("StoryLogsListFix")));
             //ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(LevelCassetteLoader), "StartLoadingCassette"), prefix: new HarmonyMethod(typeof(TapeSkipPatches).GetMethod("StartLoad")));
             //ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(LevelCassetteLoader), "LoadCassetteClientRpc"), prefix: new HarmonyMethod(typeof(TapeSkipPatches).GetMethod("LoadClient")), postfix: new HarmonyMethod(typeof(TapeSkipPatches).GetMethod("LoadClientAfter")));
-        }
-    }
-
-    public class StoryLogPatch
-    {
-        public static bool StoryLogsListFix()
-        {
-            if (CustomStoryLogs.CustomStoryLogs.UnlockedNetwork.Value == null)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
         }
     }
 

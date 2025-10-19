@@ -7,11 +7,8 @@ using System.Reflection;
 using BepInEx;
 using ScienceBirdTweaks.Scripts;
 using ScienceBirdTweaks.Patches;
-using static SelfSortingStorage.Cupboard.SmartMemory;
-using System.Drawing;
 using UnityEngine;
 using System.Linq;
-using Steamworks.Ugc;
 
 
 namespace ScienceBirdTweaks.ModPatches
@@ -175,7 +172,7 @@ namespace ScienceBirdTweaks.ModPatches
 
         public static void TerminalStoreCheck(Terminal __instance, TerminalNode node)
         {
-            if (node.displayText.Contains("[buyableItemsList]") && UnityEngine.Object.FindObjectOfType<SmartCupboard>())
+            if (node != null && node.displayText != null && node.displayText.Contains("[buyableItemsList]") && UnityEngine.Object.FindObjectOfType<SmartCupboard>())
             {
                 //ScienceBirdTweaks.Logger.LogDebug("Player entering terminal store");
                 storeFlag = true;

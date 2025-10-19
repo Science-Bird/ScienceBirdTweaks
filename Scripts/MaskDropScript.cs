@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using ScienceBirdTweaks.Patches;
 using Unity.Netcode;
 using UnityEngine;
@@ -13,8 +14,11 @@ namespace ScienceBirdTweaks.Scripts
 
         public void PrepareMaskDropCoroutine(GameObject? prefab, GameObject mask)// prefab passed into coroutine is what mask should be spawned (server only), mask is the object currently worn by enemy
         {
-            activeMasks.Add(new MaskInstance(mask, mask.transform.position, mask.transform.rotation));// to handle multiple mask spawns at once, they're pushed into a list
-            StartCoroutine(SpawnMaskAfterAnim(prefab, mask));
+            if (!activeMasks.Any(x => x.position == mask.transform.position))// don't spawn a mask again in the exact same place
+            {
+                activeMasks.Add(new MaskInstance(mask, mask.transform.position, mask.transform.rotation));// to handle multiple mask spawns at once, they're pushed into a list
+                StartCoroutine(SpawnMaskAfterAnim(prefab, mask));
+            }
         }
 
         [ClientRpc]

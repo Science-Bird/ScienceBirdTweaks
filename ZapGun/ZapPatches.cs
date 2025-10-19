@@ -330,9 +330,9 @@ namespace ScienceBirdTweaks.ZapGun
             __instance.effectAnimator.SetTrigger("Scan");
             __instance.gunAudio.PlayOneShot(__instance.scanAnomaly);
             __instance.lightningScript = __instance.lightningObject.GetComponent<LightningSplineScript>();
-            __instance.lightningDest.SetParent(null);
-            __instance.lightningBend1.SetParent(null);
-            __instance.lightningBend2.SetParent(null);
+            __instance.lightningDest?.SetParent(null);
+            __instance.lightningBend1?.SetParent(null);
+            __instance.lightningBend2?.SetParent(null);
             for (int i = 0; i < 12; i++)
             {
                 if (__instance.IsOwner)
