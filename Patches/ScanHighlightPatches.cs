@@ -63,6 +63,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.Start))]
         [HarmonyPostfix]
         [HarmonyAfter("ClaySurgeonMod")]
+        [HarmonyPriority(-10000)]
         static void MaterialSetupOnStart(QuickMenuManager __instance)
         {
             if (!ScienceBirdTweaks.ScanHighlights.Value) { return; }
