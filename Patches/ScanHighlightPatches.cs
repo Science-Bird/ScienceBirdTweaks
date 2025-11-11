@@ -161,7 +161,7 @@ namespace ScienceBirdTweaks.Patches
                 }
                 if (grabbable != null)
                 {
-                    if ((bool)grabbable.GetComponentInChildren<SkinnedMeshRenderer>() || (grabbable.itemProperties != null && grabbable.itemProperties.itemId == 16))// skinned mesh renderers and radar boosters are fucked
+                    if ((bool)grabbable.GetComponentInChildren<SkinnedMeshRenderer>() || (grabbable.itemProperties != null && (grabbable.itemProperties.itemId == 16 || grabbable.itemProperties.itemId == 5 || grabbable.itemProperties.itemId == 4)))// skinned mesh renderers and radar boosters are fucked
                     {
                         continue;
                     }

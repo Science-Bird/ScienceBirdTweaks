@@ -7,12 +7,19 @@ namespace ScienceBirdTweaks.Patches
     public class RemoveShipObjectsPatches
     {
 
-        static void DestroyObject(string objectString)// general removal function
+        static void DestroyObject(string objectString, bool soft = false)// general removal function
         {
             GameObject shipObject = GameObject.Find("/Environment/HangarShip/" + objectString);
             if (shipObject != null)
             {
-                Object.Destroy(shipObject);
+                if (soft)
+                {
+                    shipObject.SetActive(false);
+                }
+                else
+                {
+                    Object.Destroy(shipObject);
+                }
             }
         }
 
@@ -81,6 +88,19 @@ namespace ScienceBirdTweaks.Patches
                 DestroyObject("SmallDetails/BatterySingle");
                 DestroyObject("SmallDetails/BatterySingle (1)");
                 DestroyObject("SmallDetails/BatterySingle (2)");
+            }
+            if (ScienceBirdTweaks.RemoveExteriorCam.Value)
+            {
+                DestroyObject("Cameras/FrontDoorSecurityCam", true);
+            }
+            if (ScienceBirdTweaks.RemoveInteriorCam.Value)
+            {
+                DestroyObject("Cameras/ShipCamera", true);
+                DestroyObject("SmallDetails/Cameras/TinyCamera");
+            }
+            if (ScienceBirdTweaks.RemoveDoorMonitor.Value)
+            {
+                DestroyObject("ShipModels2b/MonitorWall/SingleScreen", true);
             }
         }
     }

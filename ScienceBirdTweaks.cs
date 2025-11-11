@@ -40,7 +40,7 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<bool> FixedShipObjects, OnlyFixDefault, AlternateFixLogic, FixedSuitRack, ConsistentCatwalkCollision, TinyTeleporterCollision, BegoneBottomCollision, LargerLeverCollision;
         public static ConfigEntry<string> ModdedListMode, ModdedUnlockableList;
 
-        public static ConfigEntry<bool> RemoveClipboard, RemoveStickyNote, RemoveTeleporterCord, RemoveLongTube, RemoveGenerator, RemoveHelmet, RemoveOxygenTanks, RemoveBoots, RemoveAirFilter, RemoveMonitorWires, RemoveBatteries, RemoveCruiserClipboard;
+        public static ConfigEntry<bool> RemoveClipboard, RemoveStickyNote, RemoveTeleporterCord, RemoveLongTube, RemoveGenerator, RemoveHelmet, RemoveOxygenTanks, RemoveBoots, RemoveAirFilter, RemoveMonitorWires, RemoveBatteries, RemoveExteriorCam, RemoveInteriorCam, RemoveDoorMonitor, RemoveCruiserClipboard;
 
         public static ConfigEntry<float> TinyTeleporterSizeX, TinyTeleporterSizeY, TinyTeleporterSizeZ, LargerLeverSizeX, LargerLeverSizeY, LargerLeverSizeZ;
 
@@ -146,6 +146,9 @@ namespace ScienceBirdTweaks
             RemoveAirFilter = base.Config.Bind("1 iii. Ship Tweaks Removals", "Air Filter", false, "Removes the air filter in the corner by the monitors.");
             RemoveMonitorWires = base.Config.Bind("1 iii. Ship Tweaks Removals", "Monitor Wires", false, "Removes the wires in the corner behind the ship monitors.");
             RemoveBatteries = base.Config.Bind("1 iii. Ship Tweaks Removals", "Batteries", false, "Removes the batteries strewn across the desk by the monitors.");
+            RemoveInteriorCam = base.Config.Bind("1 iii. Ship Tweaks Removals", "Interior Camera", false, "Removes the internal spherical camera placed above the main ship panel and monitors (feed will no longer show up on monitors).");
+            RemoveExteriorCam = base.Config.Bind("1 iii. Ship Tweaks Removals", "Exterior Camera", false, "Removes the exterior panning camera (feed will no longer show up on monitors).");
+            RemoveDoorMonitor = base.Config.Bind("1 iii. Ship Tweaks Removals", "Exterior Camera Monitor", false, "Removes the monitor above the buttons for the ship door.");
             RemoveCruiserClipboard = base.Config.Bind("1 iii. Ship Tweaks Removals", "Cruiser Clipboard", false, "Removes the clipboard manual which comes with the Company Cruiser.");
 
             FloodlightRotation = base.Config.Bind("2. Ship Additions", "Rotating Floodlight", false, "The ship's top-mounted floodlight can rotate, toggled by a button near the start lever.");
