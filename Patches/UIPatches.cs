@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading;
 using Dissonance;
 using GameNetcodeStuff;
 using HarmonyLib;
@@ -12,6 +13,7 @@ namespace ScienceBirdTweaks.Patches
     {
         public static Sprite handSprite;
         public static Sprite pointSprite;
+        private static bool done = false;
         private static readonly string[] vanillaMoons = ["20 Adamance", "68 Artifice", "220 Assurance", "71 Gordion", "7 Dine", "5 Embrion", "41 Experimentation", "44 Liquidation", "61 March", "21 Offense", "85 Rend", "8 Titan", "56 Vow"];
 
         [HarmonyPatch(typeof(GameNetworkManager), nameof(GameNetworkManager.Start))]
@@ -38,33 +40,34 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
-        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.FinishGeneratingLevel))]
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SyncScrapValuesClientRpc))]
         [HarmonyPostfix]
-        static void FixOnGenerate()
+        static void FixAfterGenerate()
         {
-            if (vanillaMoons.Contains(StartOfRound.Instance.currentLevel.PlanetName)) { return; }
-            FixHandIcons();
+            if (!done)
+            {
+                done = true;
+                FixHandIcons();
+            }
         }
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SceneManager_OnLoadComplete1))]
         [HarmonyPostfix]
-        static void FixOnLoad(StartOfRound __instance, string sceneName)
+        static void OnLoad(StartOfRound __instance, string sceneName)
         {
-            if (sceneName == "SampleSceneRelay" || (sceneName == __instance.currentLevel.sceneName && vanillaMoons.Contains(__instance.currentLevel.PlanetName))) { return; }
-            FixHandIcons();
+            done = false;
         }
 
         static void FixHandIcons()
         {
             if (!ScienceBirdTweaks.StretchedHoverIconFix.Value) { return; }
-            ScienceBirdTweaks.Logger.LogDebug("Doing hand icon fix!");
 
             InteractTrigger[] handInteracts = Object.FindObjectsOfType<InteractTrigger>(true).Where(x => x.hoverIcon != null && x.hoverIcon.name == "HandIcon").ToArray();
             InteractTrigger[] pointInteracts = Object.FindObjectsOfType<InteractTrigger>(true).Where(x => x.hoverIcon != null && x.hoverIcon.name == "HandIconPoint").ToArray();
 
             for (int i = 0; i < handInteracts.Length; i++)
             {
-                handInteracts[i].hoverIcon = handSprite;
+                    handInteracts[i].hoverIcon = handSprite;
             }
             for (int i = 0; i < pointInteracts.Length; i++)
             {

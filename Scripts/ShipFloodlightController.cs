@@ -379,7 +379,7 @@ namespace ScienceBirdTweaks.Scripts
 
         public void SetFloodlightData(float intensity, float angle, float range)
         {
-            float dimmingFactor = intensity / 2275.72f;
+            float dimmingFactor = 1.7f * intensity / 2275.72f;
             float materialIntensity = dimmingFactor * 12.05f;
 
             if (_shipFloodlightLights.Count > 0)

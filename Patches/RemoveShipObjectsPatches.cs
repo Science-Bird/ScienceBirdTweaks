@@ -96,7 +96,6 @@ namespace ScienceBirdTweaks.Patches
             if (ScienceBirdTweaks.RemoveInteriorCam.Value)
             {
                 DestroyObject("Cameras/ShipCamera", true);
-                DestroyObject("SmallDetails/Cameras/TinyCamera");
             }
             if (ScienceBirdTweaks.RemoveDoorMonitor.Value)
             {

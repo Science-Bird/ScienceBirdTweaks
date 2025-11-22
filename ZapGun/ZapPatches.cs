@@ -55,13 +55,18 @@ namespace ScienceBirdTweaks.ZapGun
         {
             if (ScienceBirdTweaks.ZapGunRework.Value || ScienceBirdTweaks.SpikeTrapDisableAnimation.Value)// spike trap prefab structure is goofy, so extra navigation needed
             {
+                GameObject containerObj = __instance.gameObject.transform.parent.parent.gameObject;
+                if (containerObj == null || containerObj.name != "Container") { return; }
                 GameObject animatorObj = __instance.gameObject.transform.parent.gameObject;
                 animatorObj.layer = 21;
-                Light light = animatorObj.GetComponentInChildren<Light>();
-                light.gameObject.layer = 21;
-                light.gameObject.AddComponent<SpikesZapper>();
-                BoxCollider collider = light.gameObject.AddComponent<BoxCollider>();
-                collider.isTrigger = true;
+                Transform eye = containerObj.transform.Find("LaserEye");
+                if (eye != null)
+                {
+                    eye.gameObject.layer = 21;
+                    eye.gameObject.AddComponent<SpikesZapper>();
+                    BoxCollider collider = eye.gameObject.AddComponent<BoxCollider>();
+                    collider.isTrigger = true;
+                }
             }
         }
 

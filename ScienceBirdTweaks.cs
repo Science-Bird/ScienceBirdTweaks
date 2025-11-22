@@ -53,10 +53,10 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<bool> PlayGlobalDeathSFX, AutoTeleportBody, UnrecoverableNotification;
         public static ConfigEntry<string> Red1Tip, Red2Tip, Black1Tip, Black2Tip, Knob1Tip, Knob2Tip, Knob3Tip, SmallKnobTip, SmallRedTip, SmallGreenTip;
 
-        public static ConfigEntry<bool> MissingHoverTipFix, HandsFullFix, StretchedHoverIconFix, SmokeFix, BridgeItemsFix, ClientShipItems, LandmineFix, ApplianceInteractionFixes, PauseMenuFlickerFix, FallingRotationFix, ReplaceNullItems, CrouchDamageAnimation, CleanBeltBagUI, SpikesCooldownMute, FearfulBuilding, BigScrew, KiwiManeaterScream, SunFade, OldHalloweenElevatorMusic;
+        public static ConfigEntry<bool> MissingHoverTipFix, HandsFullFix, StretchedHoverIconFix, SmokeFix, BridgeItemsFix, ClientShipItems, LandmineFix, ApplianceInteractionFixes, MonitorTransitionFix,  PauseMenuFlickerFix, FallingRotationFix, ReplaceNullItems, CrouchDamageAnimation, CleanBeltBagUI, SpikesCooldownMute, FearfulBuilding, BigScrew, KiwiManeaterScream, ForceSunShadows, SunFade, OldHalloweenElevatorMusic;
         public static ConfigEntry<string> StartingMoon, MuteScrapList, SingleItemBlacklist;
 
-        public static ConfigEntry<bool> CoilheadElevatorFix;
+        public static ConfigEntry<bool> CoilheadElevatorFix, ManeaterAttackFix;
         public static ConfigEntry<bool> DropMasks;
         public static ConfigEntry<int> MaskScrapValue;
         public static ConfigEntry<string> CentipedeMode;
@@ -185,6 +185,7 @@ namespace ScienceBirdTweaks
             ClientShipItems = base.Config.Bind("3. General Tweaks", "Joining Client Items Fix", true, "When clients join, items aren't normally registered as being inside the ship (meaning you'll see a 'collected' pop-up if you grab them). This fixes that.");
             LandmineFix = base.Config.Bind("3. General Tweaks", "Mine Explosion On Exit Fix", true, "Fixes a vanilla issue where mines would explode after being stepped on while deactivated then going outside.");
             ApplianceInteractionFixes = base.Config.Bind("3. General Tweaks", "Appliance Interaction Fixes", true, "Fixes some of the issues with placing and grabbing items from the fridge and microwave (mostly the fridge).");
+            MonitorTransitionFix = base.Config.Bind("3. General Tweaks", "Monitor Transition Fix", true, "Fixes some elements briefly appearing/lingering on the main ship monitor after taking off and going into orbit (mainly the ship and player icons and the video feed).");
             FallingRotationFix = base.Config.Bind("3. General Tweaks", "Falling Rotation Fix", false, "Normally, if you ever drop an object from really high up, its rotation takes so long to change that it's still rotating when it hits the ground. This tweak properly scales the rotation so objects land normally.");
             PauseMenuFlickerFix = base.Config.Bind("3. General Tweaks", "Pause Menu Flicker Fix", false, "'Fixes' the resume button flickering when pausing the game by making the currently selected option always highlighted (will look slightly strange).");
             ReplaceNullItems = base.Config.Bind("3. General Tweaks", "Swap Null Items", true, "Attempts to swap out any grabbable objects which have null item properties with valid ones. This happens when a moon has items in it that are not registered properly and the those items are then taken to another moon (e.g. the shovel and boombox on Aquatis). Note that this is only a bandage fix and may not work consistently in all situations. This fix should only come into play as a last resort if a problem remains unfixed by the moon/interior.");
@@ -192,6 +193,7 @@ namespace ScienceBirdTweaks
             CleanBeltBagUI = base.Config.Bind("3. General Tweaks", "Clean Belt Bag UI", true, "Scan nodes currently on screen are cleared when opening the belt bag's inventory to reduce visual clutter.");
             BigScrew = base.Config.Bind("3. General Tweaks", "Big Screw", true, "'Big bolt' is accurately renamed to 'Big screw'.");
             KiwiManeaterScream = base.Config.Bind("3. General Tweaks", "Sapsucker Eggs Scream At Maneaters", true, "Giant sapsucker eggs will scream like they do on the company desk when a maneater baby is about to eat them.");
+            ForceSunShadows = base.Config.Bind("3. General Tweaks", "Sun Always Casts Shadows", false, "Certain custom moons have a sun which does not cast shadows, leading to an overly bright ship interior. With this enabled, the sun will always cast shadows (beware any performance costs).");
             SpikesCooldownMute = base.Config.Bind("3. General Tweaks", "Mute Spike Trap Audio When Disabled", false, "Mutes the screeching sound which alerts players they're standing under a spike trap if that spike trap is disabled (e.g. on cooldown).");
             FearfulBuilding = base.Config.Bind("3. General Tweaks", "Place Furniture While Afraid", false, "Removes the inability to build above a certain fear level.");
             SunFade = base.Config.Bind("3. General Tweaks", "Fade Out Sun Texture After Sunset", false, "Fades the sun texture to black slowly starting at sunset (no effect on lighting), so on moons where the low horizon is visible, you won't see the sun in a dark sky.");
@@ -201,6 +203,7 @@ namespace ScienceBirdTweaks
             SingleItemBlacklist = base.Config.Bind("3. General Tweaks", "Single Item Day Blacklist", "", "A comma separated list of items which will be excluded from a 'single item day' where only one type of scrap will spawn (note that all two-handed items and very rare items are already blacklisted in vanilla).");
             
             CoilheadElevatorFix = base.Config.Bind("4. Enemy Tweaks", "Coilhead Elevator Fix", true, "Fixes inconsistent sightlines when standing in an elevator, which could cause coilheads to kill players in the elevator while being looked at.");
+            ManeaterAttackFix = base.Config.Bind("4. Enemy Tweaks", "Maneater Attack Networking Fix", true, "Fixes an issue where the maneater attack would sometimes skip it's wind-up when switching between multiple targets.");
             DropMasks = base.Config.Bind("4. Enemy Tweaks", "Gimme That Mask", false, "Allows you to grab the masks off of dead masked enemies and sell them (will not work if you have any mod which removes the masks from masked enemies)");
             MaskScrapValue = base.Config.Bind("4. Enemy Tweaks", "Dropped Mask Scrap Value", 25, new ConfigDescription("The average scrap value of masks recovered from masked enemies (will vary slightly below and above this).", new AcceptableValueRange<int>(0, 200)));
             CentipedeMode = base.Config.Bind("4. Enemy Tweaks", "Snare Flea Mode", "Vanilla", new ConfigDescription("'Vanilla': Unchanged. - 'Second Chance': Implements the singleplayer 'second chance' mechanic in multiplayer, giving each player a chance to escape once it damages them to low HP. - 'Fixed Damage': Will damage a player for an exact proportion of their maximum health (at the same speed as vanilla).", new AcceptableValueList<string>(["Vanilla", "Second Chance", "Fixed Damage"])));

@@ -27,14 +27,12 @@ namespace ScienceBirdTweaks.Patches
         {
             if (!ScienceBirdTweaks.LeviathanQuicksand.Value) { return; }
 
-            if (pos == __instance.transform.position)
+            Vector3 targetPos = __instance.hitGroundParticle.transform.position;
+            if (pos == __instance.transform.position)// emerging
             {
-                GameObject.Instantiate(RoundManager.Instance.quicksandPrefab, __instance.emergeFromGroundParticle2.transform.position, Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform);
+                targetPos = __instance.emergeFromGroundParticle2.transform.position;
             }
-            else
-            {
-                GameObject.Instantiate(RoundManager.Instance.quicksandPrefab, __instance.hitGroundParticle.transform.position, Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform);
-            }
+            GameObject.Instantiate(RoundManager.Instance.quicksandPrefab, targetPos, Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform);
         }
     }
 
@@ -221,6 +219,7 @@ namespace ScienceBirdTweaks.Patches
         private static Vector3 startPos;
         private static Vector3 storedPos;
         private static bool donePositionFix = true;
+        private static bool owner = false;
 
         [HarmonyPatch(typeof(CaveDwellerAI), nameof(CaveDwellerAI.HitEnemy))]
         [HarmonyPrefix]
@@ -265,6 +264,18 @@ namespace ScienceBirdTweaks.Patches
                 __instance.transform.position = storedPos;
                 donePositionFix = true;
             }
+        }
+
+        [HarmonyPatch(typeof(CaveDwellerAI), nameof(CaveDwellerAI.DoNonBabyUpdateLogic))]
+        [HarmonyPrefix]
+        static void OwnershipCheck(CaveDwellerAI __instance)
+        {
+            if (!ScienceBirdTweaks.ManeaterAttackFix.Value) { return; }
+            if (__instance.IsOwner && !owner)
+            {
+                __instance.screamTimer = __instance.screamTime;
+            }
+            owner = __instance.IsOwner;
         }
 
         [HarmonyPatch(typeof(CaveDwellerAI), nameof(CaveDwellerAI.DoNonBabyUpdateLogic))]

@@ -341,6 +341,18 @@ Fixes some of the colliders on the fridge and microwave furniture items so you c
 
 </details>
 
+### Monitor Transition Fix
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - Client-side*
+
+Fixes the monitor showing random elements (like ship icon and video feed) on the screen during the transition after taking off and in the results screen.
+
+</details>
+
 ### Falling Rotation Fix
 
 <details>
@@ -435,9 +447,21 @@ Changes the name of the "big bolt" to reflect what it actually is (a big screw).
 <summary>Details</summary>
 <br />
 
->*Default: ON - Client-side*
+>*Default: ON - Client-side (?)*
 
 I'll level with you on this one: this does not address anything that will come up in normal gameplay. However, it is fairly entertaining to watch the sapsucker eggs scream moments before meeting their demise at the hands of a baby maneater if you somehow end up in a situation where a maneater eats a sapsucker egg.
+
+</details>
+
+### Sun Always Casts Shadows
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: OFF - Client-side (?)*
+
+Have you noticed the ship being way too bright inside when you land on certain modded moons? This is often because the sun isn't casting any shadows! There will be some performance hits, but this will enable sun shadows on every moon.
 
 </details>
 
@@ -541,6 +565,18 @@ A list of scrap items in config which won't be used for a "single item day" wher
 >*Default: ON - All clients*
 
 Fixes an issue with elevators that would cause player sightlines to not be properly communicated to other clients, meaning coilheads could sometimes move when a player in an elevator was looking at them. This took a lot of trial and error to figure out, so please enjoy this fix.
+
+</details>
+
+### Maneater Attack Networking Fix
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - All clients*
+
+Fixes an issue with how the maneater handles multiple targets that would cause it to attack without winding up after switching targets (specifically due to one of its timers being stored locally on each client and not synced properly).
 
 </details>
 

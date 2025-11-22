@@ -105,8 +105,8 @@ namespace ScienceBirdTweaks.ZapGun
 
             if (!ScienceBirdTweaks.SpikeTrapDisableAnimation.Value && !ScienceBirdTweaks.ZapGunRework.Value) { return; }
 
-            GameObject animObj = __instance.gameObject.transform.parent.gameObject;
-            SpikesZapper zapper = animObj.GetComponentInChildren<SpikesZapper>();
+            GameObject mainObj = __instance.gameObject.transform.parent.parent.gameObject;
+            SpikesZapper zapper = mainObj.GetComponentInChildren<SpikesZapper>();
             if (zapper != null && !zapper.tempStun)
             {
                 if (!enabled)

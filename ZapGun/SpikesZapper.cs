@@ -26,18 +26,18 @@ namespace ScienceBirdTweaks.ZapGun
 
         private void Start()
         {
-            mainObj = transform.parent.parent.gameObject;
-            if ((bool)mainObj.transform.Find("AnimContainer") && (bool)mainObj.transform.Find("AnimContainer").Find("BaseSupport"))
+            mainObj = transform.parent.gameObject;
+            GameObject animObj = mainObj.transform.Find("AnimContainer").gameObject;
+            if ((bool)animObj.transform.Find("BaseSupport"))
             {
-                supportLights = mainObj.transform.Find("AnimContainer").Find("BaseSupport").gameObject;
+                supportLights = animObj.transform.Find("BaseSupport").gameObject;
             }
             else
             {
                 return;
             }
             mainObj.layer = 21;
-
-            light = GetComponent<Light>();
+            light = animObj.GetComponentInChildren<Light>();
             spikes = mainObj.GetComponentInChildren<SpikeRoofTrap>();
             terminalObj = mainObj.GetComponentInChildren<TerminalAccessibleObject>();
             originalMat = supportLights.GetComponent<MeshRenderer>().materials[0];
@@ -106,6 +106,7 @@ namespace ScienceBirdTweaks.ZapGun
             {
                 yield return null;
             }
+            ScienceBirdTweaks.Logger.LogDebug("STARTING ROUTINE");
             startRoutine = false;
             if (!terminalObj.initializedValues)
             {
@@ -123,12 +124,14 @@ namespace ScienceBirdTweaks.ZapGun
             cooldownBar.enabled = true;
             terminalObj.mapRadarText.color = Color.red;
             terminalObj.mapRadarBox.color = Color.red;
+            ScienceBirdTweaks.Logger.LogDebug("BEFORE COOLDOWN1");
             while (cooldownTimer > 0f)
             {
                 yield return null;
                 cooldownTimer -= Time.deltaTime;
                 cooldownBar.fillAmount = cooldownTimer / effectiveCooldown;
             }
+            ScienceBirdTweaks.Logger.LogDebug("COOLDOWN1 REACHED");
             terminalObj.TerminalCodeCooldownReached();
 
             terminalObj.mapRadarText.color = Color.green;
@@ -146,6 +149,7 @@ namespace ScienceBirdTweaks.ZapGun
                     terminalObj.mapRadarText.enabled = !terminalObj.mapRadarText.enabled;
                 }
             }
+            ScienceBirdTweaks.Logger.LogDebug("COOLDOWN2 REACHED");
             terminalObj.mapRadarText.enabled = true;
             cooldownBar.enabled = false;
             terminalObj.inCooldown = false;

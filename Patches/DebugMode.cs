@@ -1,13 +1,14 @@
-using HarmonyLib;
-using GameNetcodeStuff;
+using System.Reflection;
 using Dissonance.Config;
+using GameNetcodeStuff;
+using HarmonyLib;
+using System;
 
 namespace ScienceBirdTweaks.Patches
 {
     [HarmonyPatch]
     public class DebugMode
     {
-
         [HarmonyPatch(typeof(Terminal), nameof(Terminal.LoadNewNodeIfAffordable))]
         [HarmonyPostfix]
         static void OnTerminalBuy(Terminal __instance, TerminalNode node)
@@ -82,8 +83,34 @@ namespace ScienceBirdTweaks.Patches
         //[HarmonyPostfix]
         //static void GrabDebug(PlayerControllerB __instance)
         //{
+        //    if (__instance.isCrouching)
+        //    {
 
+        //    }
         //}
+
+        public static void ObjectDebugger(object obj, string tag)
+        {
+            if (obj != null)
+            {
+                Type type = obj.GetType();
+
+                PropertyInfo[] properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+                foreach (PropertyInfo property in properties)
+                {
+                    object value = property.GetValue(obj, null);
+                    ScienceBirdTweaks.Logger.LogDebug($"({tag}) PROPERTY: {property.Name} - {value}");
+                }
+
+                foreach (FieldInfo field in fields)
+                {
+                    object value = field.GetValue(obj);
+                    ScienceBirdTweaks.Logger.LogDebug($"({tag}) FIELD: {field.Name} - {value}");
+                }
+            }
+        }
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SceneManager_OnLoadComplete1))]
         [HarmonyPostfix]

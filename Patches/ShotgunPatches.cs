@@ -215,6 +215,7 @@ namespace ScienceBirdTweaks.Patches
                 GrabbableObject[] shells = Resources.FindObjectsOfTypeAll<GrabbableObject>().Where(x => x is GunAmmo).ToArray();
                 foreach (GrabbableObject shell in shells)
                 {
+                    if (shell.itemProperties == null || shell.itemProperties.itemName != "Ammo" || shell.itemProperties.itemId != 17) { continue; }// only vanilla ammo
                     if (ScienceBirdTweaks.PickUpShellsOrbit.Value)
                     {
                         shell.itemProperties.canBeGrabbedBeforeGameStart = true;

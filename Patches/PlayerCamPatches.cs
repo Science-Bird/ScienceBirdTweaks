@@ -34,6 +34,25 @@ namespace ScienceBirdTweaks.Patches
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SwitchMapMonitorPurpose))]
         [HarmonyPostfix]
+        static void DisplayInfoFix(StartOfRound __instance, bool displayInfo)
+        {
+            if (ScienceBirdTweaks.MonitorTransitionFix.Value && displayInfo)
+            {
+                if (__instance.currentLevel.videoReel == null)
+                {
+                    __instance.screenLevelVideoReel.enabled = false;
+                    __instance.screenLevelVideoReel.gameObject.SetActive(false);
+                    __instance.screenLevelVideoReel.clip = __instance.currentLevel.videoReel;
+                }
+                __instance.mapScreen.cam.transform.position = new Vector3(0f, 100f, 0f);
+                __instance.mapScreen.mapCamera.nearClipPlane = -0.96f;
+                __instance.mapScreen.mapCamera.farClipPlane = 7.52f;
+                __instance.radarCanvas.planeDistance = -0.93f;
+            }
+        }
+
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SwitchMapMonitorPurpose))]
+        [HarmonyPostfix]
         static void OnRadarEnable(StartOfRound __instance, bool displayInfo)
         {
             if (ScienceBirdTweaks.zaggyPresent && twoRadarCam == null)
