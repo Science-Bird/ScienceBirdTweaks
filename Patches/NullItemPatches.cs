@@ -1,15 +1,12 @@
-using System.Linq;
-using HarmonyLib;
-using System.Text.RegularExpressions;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using GameNetcodeStuff;
-using WesleyMoonScripts.Components;
+using HarmonyLib;
+using ScienceBirdTweaks.Scripts;
 using Unity.Netcode;
-using Steamworks.ServerList;
-using static UnityEngine.Rendering.DebugUI;
-using System.ComponentModel;
-using static SelfSortingStorage.Cupboard.SmartMemory;
+using UnityEngine;
 
 namespace ScienceBirdTweaks.Patches
 {
@@ -18,6 +15,8 @@ namespace ScienceBirdTweaks.Patches
     {
         public static GameObject itemReplacementPrefab;
         public static float startTime = 0f;
+        private static bool spawned = false;
+        public static bool triggered = false;
 
         [HarmonyPatch(typeof(GameNetworkManager), nameof(GameNetworkManager.Start))]
         [HarmonyPostfix]
@@ -107,7 +106,7 @@ namespace ScienceBirdTweaks.Patches
                             component.transform.position += Vector3.up * 0.5f;
                             BridgePatches.SetGrabbableFall(component);
 
-                            Scripts.NullItemScript.Instance.SpawnReplacementObjectClientRpc(component.gameObject.GetComponent<NetworkObject>(), value, component.transform.position, component.startFallingPosition, component.targetFloorPosition, component.itemUsedUp, component.transform.rotation);
+                            NullItemScript.Instance.SpawnReplacementObjectClientRpc(component.gameObject.GetComponent<NetworkObject>(), value, component.transform.position, component.startFallingPosition, component.targetFloorPosition, component.itemUsedUp, component.transform.rotation, true, true, false);
                         }
                         int slot = -1;
                         if ((grabbable.isHeld || grabbable.isPocketed) && grabbable.playerHeldBy != null)
@@ -127,6 +126,70 @@ namespace ScienceBirdTweaks.Patches
                 }
             }
 
+        }
+
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Start))]
+        [HarmonyPostfix]
+        static void StartTriggerReset(StartOfRound __instance)
+        {
+            triggered = false;
+        }
+
+        [HarmonyPatch(typeof(GrabbableObject), nameof(GrabbableObject.Update))]
+        [HarmonyPrefix]
+        static void ItemErrorDebug(GrabbableObject __instance)
+        {
+            if (!ScienceBirdTweaks.FixNaNColliders.Value || triggered || ScienceBirdTweaks.ClientsideMode.Value)
+            {
+                return;
+            }
+            if (IsInvalidTransform(__instance.transform))
+            {
+                triggered = true;
+                ScienceBirdTweaks.Logger.LogError($"-----------------------------------------------------------------");
+                ScienceBirdTweaks.Logger.LogError($"COLLIDER ERRORS DETECTED ON: {__instance.gameObject.name} (path: {GetObjectPath(__instance.gameObject)})");
+                ScienceBirdTweaks.Logger.LogError($"-----------------------------------------------------------------");
+                //ScienceBirdTweaks.Logger.LogError($"ID: {__instance.NetworkObjectId}");
+                Collider[] allColliders = __instance.gameObject.GetComponentsInChildren<Collider>();
+                foreach (Collider collider in allColliders)
+                {
+                    ScienceBirdTweaks.Logger.LogWarning($"Check for {GetObjectPath(collider.gameObject)} - Transform corrupt: {IsInvalidTransform(collider.gameObject.transform)}; Collider corrupt: {IsInvalidCollider(collider)}");
+                    //ScienceBirdTweaks.Logger.LogWarning($"POS: {collider.gameObject.transform.position.x}, {collider.gameObject.transform.position.y}, {collider.gameObject.transform.position.z}");
+                }
+                ScienceBirdTweaks.Logger.LogInfo($"Attempting fix...");
+
+                if (NullItemScript.Instance != null)
+                {
+                    NullItemScript.Instance.RequestReplacementObjectServerRpc(__instance.NetworkObject);
+                    
+                }
+            }
+        }
+
+        private static bool IsInvalidTransform(Transform itemTransform)
+        {
+            return float.IsNaN(itemTransform.position.x) || float.IsInfinity(itemTransform.position.x) || float.IsNaN(itemTransform.position.y) || float.IsInfinity(itemTransform.position.y) || float.IsNaN(itemTransform.position.z) || float.IsInfinity(itemTransform.position.z)
+                || float.IsNaN(itemTransform.localScale.x) || float.IsInfinity(itemTransform.localScale.x) || float.IsNaN(itemTransform.localScale.y) || float.IsInfinity(itemTransform.localScale.y) || float.IsNaN(itemTransform.localScale.z) || float.IsInfinity(itemTransform.localScale.z);
+        }
+
+        private static bool IsInvalidCollider(Collider itemCollider)
+        {
+            return float.IsNaN(itemCollider.bounds.max.x) || float.IsInfinity(itemCollider.bounds.max.x) || float.IsNaN(itemCollider.bounds.max.y) || float.IsInfinity(itemCollider.bounds.max.y) || float.IsNaN(itemCollider.bounds.max.z) || float.IsInfinity(itemCollider.bounds.max.z)
+                || float.IsNaN(itemCollider.bounds.min.x) || float.IsInfinity(itemCollider.bounds.min.x) || float.IsNaN(itemCollider.bounds.min.y) || float.IsInfinity(itemCollider.bounds.min.y) || float.IsNaN(itemCollider.bounds.min.z) || float.IsInfinity(itemCollider.bounds.min.z);
+        }
+
+        private static string GetObjectPath(GameObject obj)
+        {
+            StringBuilder path = new StringBuilder(obj.name);
+            Transform current = obj.transform.parent;
+
+            while (current != null)
+            {
+                path.Insert(0, current.name + "/");
+                current = current.parent;
+            }
+
+            return path.ToString();
         }
     }
 }

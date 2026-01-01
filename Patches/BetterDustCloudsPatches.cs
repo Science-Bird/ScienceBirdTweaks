@@ -1,6 +1,7 @@
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.Rendering.HighDefinition;
+using GameNetcodeStuff;
 
 namespace ScienceBirdTweaks.Patches
 {
@@ -8,11 +9,8 @@ namespace ScienceBirdTweaks.Patches
     public class BetterDustClouds
     {
         private static bool initialSet = true;
-
         private static bool enableBuffer = true;
-
         private static bool transitionBuffer = false;
-
         private static bool transitionOverride = true;
 
         [HarmonyPatch(typeof(TimeOfDay), nameof(TimeOfDay.Update))]
@@ -26,11 +24,29 @@ namespace ScienceBirdTweaks.Patches
             if (__instance.currentLevelWeather == LevelWeatherType.DustClouds)// I noticed dust clouds could get permanently disabled by some audio reverb triggers, this exists as a failsafe to catch that
             {
                 GameObject dustClouds = __instance.effects[0].effectObject;
-                if (dustClouds != null && (!dustClouds.activeInHierarchy || !__instance.effects[0].effectEnabled) && GameNetworkManager.Instance.localPlayerController != null && !GameNetworkManager.Instance.localPlayerController.isInsideFactory)
+                PlayerControllerB localPlayer = GameNetworkManager.Instance.localPlayerController;
+                if (dustClouds != null && (!dustClouds.activeInHierarchy || !__instance.effects[0].effectEnabled) && localPlayer != null && ((!localPlayer.isInsideFactory && !localPlayer.isPlayerDead) || (localPlayer.isPlayerDead && localPlayer.spectatedPlayerScript != null && !localPlayer.spectatedPlayerScript.isInsideFactory)))
                 {
                     dustClouds.SetActive(true);
                     __instance.effects[0].effectEnabled = true;
                 }
+            }
+        }
+
+        [HarmonyPatch(typeof(AudioReverbTrigger), nameof(AudioReverbTrigger.ChangeAudioReverbForPlayer))]
+        [HarmonyPrefix]
+        static void TriggerPrefix(AudioReverbTrigger __instance, out bool __state)
+        {
+            __state = TimeOfDay.Instance.effects[0].effectEnabled;
+        }
+
+        [HarmonyPatch(typeof(AudioReverbTrigger), nameof(AudioReverbTrigger.ChangeAudioReverbForPlayer))]
+        [HarmonyPostfix]
+        static void TriggerPostfix(AudioReverbTrigger __instance, bool __state)
+        {
+            if (__instance.weatherEffect == 0)
+            {
+                TimeOfDay.Instance.effects[0].effectEnabled = __state;
             }
         }
 

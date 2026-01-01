@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using HarmonyLib;
+using ScienceBirdTweaks.Patches;
 
 namespace ScienceBirdTweaks.ModPatches
 {
@@ -7,6 +8,22 @@ namespace ScienceBirdTweaks.ModPatches
     public class MrovWeatherTweaksAnnouncementPatch
     {
         public static string[] progressingWeathers;
+
+        [HarmonyPatch(typeof(ManualCameraRenderer), nameof(ManualCameraRenderer.LateUpdate))]
+        [HarmonyPostfix]
+        static void TwoRadarMapsWeatherPatch(ManualCameraRenderer __instance)
+        {
+            if (ScienceBirdTweaks.SolarFlareTwoRadar.Value && ScienceBirdTweaks.zaggyPresent && ScienceBirdTweaks.mrovPresent2 && __instance == PlayerCamPatches.twoRadarCam && __instance.LostSignalUI != null && TimeOfDay.Instance.currentLevelWeather.ToString() == "Solar Flare")
+            {
+                __instance.LostSignalUI.SetActive(true);
+                if (__instance.headMountedCamUI != null)
+                {
+                    __instance.headMountedCamUI.enabled = false;
+                }
+                __instance.headMountedCam.enabled = false;
+
+            }
+        }
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SetMapScreenInfoToCurrentLevel))]
         [HarmonyPostfix]

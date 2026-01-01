@@ -13,7 +13,10 @@ namespace ScienceBirdTweaks.Patches
     {
         public static Sprite handSprite;
         public static Sprite pointSprite;
+        public static bool doShutterFix = false;
+        public static bool fixedShutter = false;
         private static bool done = false;
+        private static float checkTime = 0f;
         private static readonly string[] vanillaMoons = ["20 Adamance", "68 Artifice", "220 Assurance", "71 Gordion", "7 Dine", "5 Embrion", "41 Experimentation", "44 Liquidation", "61 March", "21 Offense", "85 Rend", "8 Titan", "56 Vow"];
 
         [HarmonyPatch(typeof(GameNetworkManager), nameof(GameNetworkManager.Start))]
@@ -27,6 +30,13 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Start))]
+        [HarmonyPostfix]
+        static void OnStartReset(StartOfRound __instance)
+        {
+            fixedShutter = false;
+        }
+
         [HarmonyPatch(typeof(PlayerControllerB), nameof(PlayerControllerB.Update))]
         [HarmonyPrefix]
         static void FixOnSpawn(PlayerControllerB __instance)
@@ -36,6 +46,7 @@ namespace ScienceBirdTweaks.Patches
                 if (__instance.isCameraDisabled)
                 {
                     FixHandIcons();
+                    FixShutterIcon();
                 }
             }
         }
@@ -51,11 +62,60 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.BuyShipUnlockableClientRpc))]
+        [HarmonyPostfix]
+        static void OnBuy(StartOfRound __instance)
+        {
+            if (ScienceBirdTweaks.test1Present && !__instance.IsServer)// clients detect purchase
+            {
+                doShutterFix = true;
+                checkTime = Time.realtimeSinceStartup;
+            }
+        }
+
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Update))]
+        [HarmonyPostfix]
+        static void OnUpdate(StartOfRound __instance)
+        {
+            if (doShutterFix)
+            {
+                if (Time.realtimeSinceStartup - checkTime > 0.5)
+                {
+                    doShutterFix = false;
+                    FixShutterIcon();
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SpawnUnlockable))]
+        [HarmonyPostfix]
+        static void OnSpawn(StartOfRound __instance)// only runs on server/host
+        {
+            FixShutterIcon();
+        }
+
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.SceneManager_OnLoadComplete1))]
         [HarmonyPostfix]
         static void OnLoad(StartOfRound __instance, string sceneName)
         {
             done = false;
+        }
+
+        static void FixShutterIcon()
+        {
+            if (!fixedShutter && ScienceBirdTweaks.test1Present)
+            {
+                GameObject shutterSwitch = GameObject.Find("PrefabShutterSwitch(Clone)/LeverContainer");
+                if (shutterSwitch != null)
+                {
+                    InteractTrigger shutterInteract = shutterSwitch.GetComponent<InteractTrigger>();
+                    if (shutterInteract != null)
+                    {
+                        shutterInteract.hoverIcon = handSprite;
+                        fixedShutter = true;
+                    }
+                }
+            }
         }
 
         static void FixHandIcons()

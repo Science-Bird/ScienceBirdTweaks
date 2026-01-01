@@ -32,7 +32,10 @@ namespace ScienceBirdTweaks.Patches
             {
                 targetPos = __instance.emergeFromGroundParticle2.transform.position;
             }
-            GameObject.Instantiate(RoundManager.Instance.quicksandPrefab, targetPos, Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform);
+            if (targetPos.y > -80f)// not inside dungeon
+            {
+                GameObject.Instantiate(RoundManager.Instance.quicksandPrefab, targetPos, Quaternion.identity, RoundManager.Instance.mapPropsContainer.transform);
+            }
         }
     }
 

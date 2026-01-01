@@ -5,7 +5,7 @@
         <AssemblyName>ScienceBird.ScienceBirdTweaks</AssemblyName>
         <Product>ScienceBirdTweaks</Product>
         <!-- Change to whatever version you're currently on. -->
-        <Version>4.5.0</Version>
+        <Version>4.6.0</Version>
     </PropertyGroup>
 
     <!-- Project Properties -->
@@ -62,6 +62,12 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Reference Include="ButteryFixes">
+        <HintPath>Dependencies\ButteryFixes.dll</HintPath>
+      </Reference>
+      <Reference Include="GeneralImprovements">
+        <HintPath>Dependencies\GeneralImprovements.dll</HintPath>
+      </Reference>
       <Reference Include="LethalLevelLoader">
         <HintPath>Dependencies\LethalLevelLoader.dll</HintPath>
       </Reference>

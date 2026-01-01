@@ -1,19 +1,17 @@
-using System.Linq;
-using HarmonyLib;
-using System.Text.RegularExpressions;
 using System.Collections;
-using UnityEngine;
-using Unity.Netcode;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using ScienceBirdTweaks.Patches;
-using System.ComponentModel;
+using Unity.Netcode;
+using UnityEngine;
 
 namespace ScienceBirdTweaks.Scripts
 {
     public class NullItemScript : NetworkBehaviour
     {
         public static bool doFix = false;
-        public Dictionary<GrabbableObject,Vector3> activeObjects = new Dictionary<GrabbableObject,Vector3>();
+        public Dictionary<GrabbableObject, Vector3> activeObjects = new Dictionary<GrabbableObject, Vector3>();
 
         public static NullItemScript Instance { get; set; }
 
@@ -30,15 +28,15 @@ namespace ScienceBirdTweaks.Scripts
         }
 
         [ClientRpc]
-        public void SpawnReplacementObjectClientRpc(NetworkObjectReference netObjectRef, int scrapValue, Vector3 position, Vector3 fallPosition, Vector3 floorPosition, bool usedUp, Quaternion rotation)
+        public void SpawnReplacementObjectClientRpc(NetworkObjectReference netObjectRef, int scrapValue, Vector3 position, Vector3 fallPosition, Vector3 floorPosition, bool usedUp, Quaternion rotation, bool inShip, bool inElev, bool inFactory, bool nullParent = false)
         {
             if (!base.IsServer)
             {
-                StartCoroutine(WaitForSpawn(netObjectRef, scrapValue, position, fallPosition, floorPosition, usedUp, rotation));
+                StartCoroutine(WaitForSpawn(netObjectRef, scrapValue, position, fallPosition, floorPosition, usedUp, rotation, inShip, inElev, inFactory, nullParent));
             }
         }
 
-        private IEnumerator WaitForSpawn(NetworkObjectReference netObjectRef, int scrapValue, Vector3 position, Vector3 fallPosition, Vector3 floorPosition, bool usedUp, Quaternion rotation)
+        private IEnumerator WaitForSpawn(NetworkObjectReference netObjectRef, int scrapValue, Vector3 position, Vector3 fallPosition, Vector3 floorPosition, bool usedUp, Quaternion rotation, bool inShip, bool inElev, bool inFactory, bool nullParent)
         {
             NetworkObject netObject = null;
             float startTime = Time.realtimeSinceStartup;
@@ -53,7 +51,11 @@ namespace ScienceBirdTweaks.Scripts
             }
             yield return new WaitForEndOfFrame();
             GrabbableObject component = netObject.GetComponent<GrabbableObject>();
-            if (component.gameObject.transform.parent == null)
+            if (nullParent)
+            {
+                component.gameObject.transform.SetParent(null, false);
+            }
+            else if (component.gameObject.transform.parent == null)
             {
                 component.gameObject.transform.SetParent(StartOfRound.Instance.elevatorTransform, false);
             }
@@ -65,9 +67,77 @@ namespace ScienceBirdTweaks.Scripts
             {
                 component.SetScrapValue(scrapValue);
             }
-            component.isInShipRoom = true;
-            component.isInElevator = true;
-            component.isInFactory = false;
+            component.isInShipRoom = inShip;
+            component.isInElevator = inElev;
+            component.isInFactory = inFactory;
         }
+
+        [ServerRpc(RequireOwnership = false)]
+        public void RequestReplacementObjectServerRpc(NetworkObjectReference netObjectRef)
+        {
+            if (netObjectRef.TryGet(out NetworkObject netObject))
+            {
+                GrabbableObject grabbable = netObject.GetComponent<GrabbableObject>();
+                string name = Regex.Replace(grabbable.gameObject.name, "\\(Clone\\)$", "");
+                Item[] replacementItems = Resources.FindObjectsOfTypeAll<Item>().Where(x => x.spawnPrefab != null && x.spawnPrefab.name == name && x.spawnPrefab.GetComponent<NetworkObject>().PrefabIdHash != 0).ToArray();
+                if (replacementItems != null && replacementItems.Length > 0)
+                {
+                    Item properties = replacementItems.First();
+                    GameObject newObject = UnityEngine.Object.Instantiate(properties.spawnPrefab, grabbable.transform.position, Quaternion.identity);
+                    GrabbableObject component = newObject.GetComponent<GrabbableObject>();
+                    component.itemUsedUp = grabbable.itemUsedUp;
+                    int value = -1;
+                    if (component.itemProperties.isScrap)
+                    {
+                        value = grabbable.scrapValue;
+                        component.SetScrapValue(value);
+                    }
+                    component.isInShipRoom = grabbable.isInShipRoom;
+                    component.isInElevator = grabbable.isInElevator;
+                    component.isInFactory = grabbable.isInFactory;
+                    component.gameObject.GetComponent<NetworkObject>().Spawn();
+                    component.gameObject.transform.SetParent(null, true);
+
+                    component.transform.position += Vector3.up * 0.5f;
+
+                    SetItemValsClientRpc(component.gameObject.GetComponent<NetworkObject>(), component.scrapValue, component.itemUsedUp, component.isInShipRoom, component.isInElevator, component.isInFactory);
+                    grabbable.NetworkObject.Despawn();
+                    NullItemPatches.triggered = false;
+                }
+            }
+        }
+
+        [ClientRpc]
+        public void SetItemValsClientRpc(NetworkObjectReference netObjectRef, int scrapValue, bool usedUp, bool inShip, bool inElev, bool inFactory)
+        {
+            if (netObjectRef.TryGet(out NetworkObject netObject))
+            {
+                GrabbableObject grabbable = netObject.GetComponent<GrabbableObject>();
+                grabbable.SetScrapValue(scrapValue);
+                grabbable.itemUsedUp = usedUp;
+                grabbable.isInShipRoom = inShip;
+                grabbable.isInElevator = inElev;
+                grabbable.isInFactory = inFactory;
+            }
+        }
+
+        //[ClientRpc]
+        //public void DestroyGrabbableClientRpc(GrabbableObject grabbable)
+        //{
+        //    int slot = -1;
+        //    if ((grabbable.isHeld || grabbable.isPocketed) && grabbable.playerHeldBy != null)
+        //    {
+        //        slot = System.Array.IndexOf(grabbable.playerHeldBy.ItemSlots, grabbable);
+        //        if (slot >= 0)
+        //        {
+        //            grabbable.playerHeldBy.DestroyItemInSlot(slot);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        Object.Destroy(grabbable.gameObject);
+        //    }
+        //}
+
     }
 }

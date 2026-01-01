@@ -1,5 +1,3 @@
-using Unity.Netcode;
-using LethalLevelLoader;
 using UnityEngine;
 
 namespace ScienceBirdTweaks.Scripts

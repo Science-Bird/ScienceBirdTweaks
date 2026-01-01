@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.Rendering;
 using ScienceBirdTweaks.ModPatches;
+using ScienceBirdTweaks.Scripts;
 
 namespace ScienceBirdTweaks.Patches
 {
@@ -249,6 +250,8 @@ namespace ScienceBirdTweaks.Patches
             }
 
             duplicate.transform.localScale = Vector3.Scale(duplicate.transform.localScale, scaleFactorUp);
+            ScanHighlight highlightScript = duplicate.AddComponent<ScanHighlight>();
+            highlightScript.parentTransform = sourceObject.transform;
 
             GameObject extraLayer = Object.Instantiate(duplicate, duplicate.transform.position, duplicate.transform.rotation, duplicate.transform);
             extraLayer.transform.localScale = scaleFactorDown;

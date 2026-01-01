@@ -1,14 +1,30 @@
+using System;
 using System.Reflection;
+using System.Text;
 using Dissonance.Config;
 using GameNetcodeStuff;
 using HarmonyLib;
-using System;
+using UnityEngine;
 
 namespace ScienceBirdTweaks.Patches
 {
     [HarmonyPatch]
     public class DebugMode
     {
+        private static string GetObjectPath(GameObject obj)
+        {
+            StringBuilder path = new StringBuilder(obj.name);
+            Transform current = obj.transform.parent;
+
+            while (current != null)
+            {
+                path.Insert(0, current.name + "/");
+                current = current.parent;
+            }
+
+            return path.ToString();
+        }
+
         [HarmonyPatch(typeof(Terminal), nameof(Terminal.LoadNewNodeIfAffordable))]
         [HarmonyPostfix]
         static void OnTerminalBuy(Terminal __instance, TerminalNode node)
@@ -26,7 +42,7 @@ namespace ScienceBirdTweaks.Patches
                 }
                 else
                 {
-                    ScienceBirdTweaks.Logger.LogInfo("Null terminal script!");
+                    ScienceBirdTweaks.Logger.LogWarning("Null terminal script!");
                 }
             }
         }

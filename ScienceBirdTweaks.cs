@@ -28,6 +28,8 @@ namespace ScienceBirdTweaks
     [BepInDependency("mborsh.LiveReaction", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("umno.QualityCompany", BepInDependency.DependencyFlags.SoftDependency)]
     [BepInDependency("Zaggy1024.TwoRadarMaps", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("butterystancakes.lethalcompany.butteryfixes", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency("ShaosilGaming.GeneralImprovements", BepInDependency.DependencyFlags.SoftDependency)]
 
     public class ScienceBirdTweaks : BaseUnityPlugin
     {
@@ -53,7 +55,7 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<bool> PlayGlobalDeathSFX, AutoTeleportBody, UnrecoverableNotification;
         public static ConfigEntry<string> Red1Tip, Red2Tip, Black1Tip, Black2Tip, Knob1Tip, Knob2Tip, Knob3Tip, SmallKnobTip, SmallRedTip, SmallGreenTip;
 
-        public static ConfigEntry<bool> MissingHoverTipFix, HandsFullFix, StretchedHoverIconFix, SmokeFix, BridgeItemsFix, ClientShipItems, LandmineFix, ApplianceInteractionFixes, MonitorTransitionFix,  PauseMenuFlickerFix, FallingRotationFix, ReplaceNullItems, CrouchDamageAnimation, CleanBeltBagUI, SpikesCooldownMute, FearfulBuilding, BigScrew, KiwiManeaterScream, ForceSunShadows, SunFade, OldHalloweenElevatorMusic;
+        public static ConfigEntry<bool> MissingHoverTipFix, HandsFullFix, StretchedHoverIconFix, SmokeFix, BridgeItemsFix, ClientShipItems, LandmineFix, ApplianceInteractionFixes, MonitorTransitionFix, LingeringLightningFix,  PauseMenuFlickerFix, FallingRotationFix, ReplaceNullItems, CrouchDamageAnimation, CleanBeltBagUI, SpikesCooldownMute, FearfulBuilding, BigScrew, KiwiManeaterScream, RadarPathAllExits, ForceSunShadows, SunFade, OldHalloweenElevatorMusic;
         public static ConfigEntry<string> StartingMoon, MuteScrapList, SingleItemBlacklist;
 
         public static ConfigEntry<bool> CoilheadElevatorFix, ManeaterAttackFix;
@@ -85,12 +87,12 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<int> BlackoutFloodLightIntensity, BlackoutFloodLightAngle, BlackoutFloodLightRange, ApparatusSpawnMin, ApparatusSpawnChance;
         public static ConfigEntry<string> TrueBlackoutNameBlacklist, TrueBlackoutHierarchyBlacklist, BlackoutSun;
 
-        public static ConfigEntry<bool> AlterPlayerCam, HideLocalCam, HideAllCams, ImprovedTextBox;
+        public static ConfigEntry<bool> AlterPlayerCam, TrueLocalCam, HideLocalCam, HideAllCams, ImprovedTextBox;
         public static ConfigEntry<float> PlayerCamAngleX, PlayerCamAngleY, PlayerCamPosVertical, PlayerCamPosHorizontal, PlayerCamClipping;
 
-        public static ConfigEntry<bool> LLLUnlockSyncing, LLLShipLeverFix, VideoTapeSkip, ShipWindowsShutterFix, SSSTerminalStock, MrovWeatherTweaksAnnouncement;
+        public static ConfigEntry<bool> LLLUnlockSyncing, LLLShipLeverFix, VideoTapeSkip, ShipWindowsShutterFix, MrovWeatherTweaksAnnouncement, SSSTerminalStock, SolarFlareTwoRadar;
         public static ConfigEntry<string> ShipWindowsShutterAudio;
-        public static ConfigEntry<bool> ClientsideMode, DebugMode, ClearOrphans, ExtraLogs, DisableWarnings, InteriorLogging, ScanHighlights, ZeroWeightCheck;
+        public static ConfigEntry<bool> ClientsideMode, DebugMode, ClearOrphans, ExtraLogs, DisableWarnings, InteriorLogging, ScanHighlights, ZeroWeightCheck, FixNaNColliders;
 
         public static bool doLobbyCompat = false;
         public static bool mrovPresent1 = false;
@@ -101,12 +103,13 @@ namespace ScienceBirdTweaks
         public static bool wesleyPresent = false;
         public static bool jacobPresent = false;
         public static bool batbyPresent = false;
-        //public static bool xuPresent = false;
         public static bool test1Present = false;
         public static bool test2Present = false;
         public static bool mborshPresent = false;
         public static bool qcfPresent = false;
         public static bool zaggyPresent = false;
+        public static bool butteryPresent = false;
+        public static bool shaosilPresent = false;
 
         public static Vector3 ConfigTeleporterSize;
 
@@ -185,7 +188,8 @@ namespace ScienceBirdTweaks
             ClientShipItems = base.Config.Bind("3. General Tweaks", "Joining Client Items Fix", true, "When clients join, items aren't normally registered as being inside the ship (meaning you'll see a 'collected' pop-up if you grab them). This fixes that.");
             LandmineFix = base.Config.Bind("3. General Tweaks", "Mine Explosion On Exit Fix", true, "Fixes a vanilla issue where mines would explode after being stepped on while deactivated then going outside.");
             ApplianceInteractionFixes = base.Config.Bind("3. General Tweaks", "Appliance Interaction Fixes", true, "Fixes some of the issues with placing and grabbing items from the fridge and microwave (mostly the fridge).");
-            MonitorTransitionFix = base.Config.Bind("3. General Tweaks", "Monitor Transition Fix", true, "Fixes some elements briefly appearing/lingering on the main ship monitor after taking off and going into orbit (mainly the ship and player icons and the video feed).");
+            MonitorTransitionFix = base.Config.Bind("3. General Tweaks", "Ship Monitor Fixes", true, "Fixes some elements briefly appearing/lingering on the main ship monitor after taking off and going into orbit (mainly the ship and player icons and the video feed), and does some other small things such as removing the black bars which appear on the video feed.");
+            LingeringLightningFix = base.Config.Bind("3. General Tweaks", "Lingering Lightning Fix", true, "Will stop all lightning effects on an object when it is brought indoors (so lightning particles and sounds will stop immediately).");
             FallingRotationFix = base.Config.Bind("3. General Tweaks", "Falling Rotation Fix", false, "Normally, if you ever drop an object from really high up, its rotation takes so long to change that it's still rotating when it hits the ground. This tweak properly scales the rotation so objects land normally.");
             PauseMenuFlickerFix = base.Config.Bind("3. General Tweaks", "Pause Menu Flicker Fix", false, "'Fixes' the resume button flickering when pausing the game by making the currently selected option always highlighted (will look slightly strange).");
             ReplaceNullItems = base.Config.Bind("3. General Tweaks", "Swap Null Items", true, "Attempts to swap out any grabbable objects which have null item properties with valid ones. This happens when a moon has items in it that are not registered properly and the those items are then taken to another moon (e.g. the shovel and boombox on Aquatis). Note that this is only a bandage fix and may not work consistently in all situations. This fix should only come into play as a last resort if a problem remains unfixed by the moon/interior.");
@@ -193,6 +197,7 @@ namespace ScienceBirdTweaks
             CleanBeltBagUI = base.Config.Bind("3. General Tweaks", "Clean Belt Bag UI", true, "Scan nodes currently on screen are cleared when opening the belt bag's inventory to reduce visual clutter.");
             BigScrew = base.Config.Bind("3. General Tweaks", "Big Screw", true, "'Big bolt' is accurately renamed to 'Big screw'.");
             KiwiManeaterScream = base.Config.Bind("3. General Tweaks", "Sapsucker Eggs Scream At Maneaters", true, "Giant sapsucker eggs will scream like they do on the company desk when a maneater baby is about to eat them.");
+            RadarPathAllExits = base.Config.Bind("3. General Tweaks", "Radar Pathfind To All Exits", false, "EXPERIMENTAL - The guiding line on the ship radar will path to the closest exit to the player, instead of always pathing them to the main entrance (note that this is the closest path in terms of direct distance, ignoring any walls or obstacles in the way).");
             ForceSunShadows = base.Config.Bind("3. General Tweaks", "Sun Always Casts Shadows", false, "Certain custom moons have a sun which does not cast shadows, leading to an overly bright ship interior. With this enabled, the sun will always cast shadows (beware any performance costs).");
             SpikesCooldownMute = base.Config.Bind("3. General Tweaks", "Mute Spike Trap Audio When Disabled", false, "Mutes the screeching sound which alerts players they're standing under a spike trap if that spike trap is disabled (e.g. on cooldown).");
             FearfulBuilding = base.Config.Bind("3. General Tweaks", "Place Furniture While Afraid", false, "Removes the inability to build above a certain fear level.");
@@ -281,16 +286,19 @@ namespace ScienceBirdTweaks
             PlayerCamPosVertical = base.Config.Bind("A. Player Cam Tweaks", "Player Cam Vertical Offset", -0.3f, new ConfigDescription("How far up or down the camera should be moved (relative to the player's standing position). You might need to change this if you change the rotation.", new AcceptableValueRange<float>(-2f, 2f)));
             PlayerCamPosHorizontal = base.Config.Bind("A. Player Cam Tweaks", "Player Cam Closeness", 0f, new ConfigDescription("How far away or towards the player the camera should be moved (positive values move the camera away).", new AcceptableValueRange<float>(-3f, 3f)));
             PlayerCamClipping = base.Config.Bind("A. Player Cam Tweaks", "Player Cam Extra Render Distance", 0f, new ConfigDescription("How much extra distance the camera should render (increase this to see more of the area surrounding the player). The vanilla base is 11, so if you set this to 11 as well you'll get double the render distance at 22.", new AcceptableValueRange<float>(0f, 60f)));
-            HideAllCams = base.Config.Bind("A. Player Cam Tweaks", "Hide All Cams", false, "Only names will display for each player instead of the body cam (position adjusted accordingly).");
+            TrueLocalCam = base.Config.Bind("A. Player Cam Tweaks", "See Your Own Cam", false, "EXPERIMENTAL - Instead of a static placeholder image, you can actually see your own model in realtime! This is a pretty involved change, so there may be issues with mods that change player models.");
             HideLocalCam = base.Config.Bind("A. Player Cam Tweaks", "Hide Your Own Cam", false, "Instead of a static placeholder image, you will just see your name (position adjusted accordingly).");
+            HideAllCams = base.Config.Bind("A. Player Cam Tweaks", "Hide All Cams", false, "Only names will display for each player instead of the body cam (position adjusted accordingly)."); 
             ImprovedTextBox = base.Config.Bind("A. Player Cam Tweaks", "Improved Name Text Box", false, "EXPERIMENTAL - Allows player names to expand onto multiple lines, split themselves at better places, and generally display better. This should be compatible with the 'Live Reaction' mod.");
 
             LLLUnlockSyncing = base.Config.Bind("X. Mod Tweaks", "LLL - Unlock Syncing", false, "Sends the host's unlocked moons to the clients after they load in, so any moons unlocked by the host will be unlocked by the client as well.");
+            LLLShipLeverFix = base.Config.Bind("X. Mod Tweaks", "LLL - Start Ship Lever Fix", false, "Fixes the ship lever remaining interactable while routing (WARNING: this may cause issues with mods changing ship routing, such as RandomMoonFX).");
             VideoTapeSkip = base.Config.Bind("X. Mod Tweaks", "Wesleys Moons - Video Tape Skip", false, "For Wesley's Moons: after inserting a casette tape on Galetry, you can interact with the cassette player again to skip the video and unlock the moon immediately.");
             ShipWindowsShutterFix = base.Config.Bind("X. Mod Tweaks", "ShipWindows - Shutter Fix", true, "Closes the ship window shutters when taking off from a planet (requires you to have 'Hide Moon Transitions' enabled in ShipWindowsBeta config).");
             ShipWindowsShutterAudio = base.Config.Bind("X. Mod Tweaks", "ShipWindows - Shutter Sound Effect", "Unchanged", new ConfigDescription("Allows you to change the sound effect of the shutter switch (unrelated to the voice lines) to either use only one of its two sound effects or make no noise at all.", new AcceptableValueList<string>(["Unchanged","Only Open", "Only Close", "Muted"])));
             MrovWeatherTweaksAnnouncement = base.Config.Bind("X. Mod Tweaks", "Weather Tweaks - Announcement Change", true, "Makes the wording more clear when a weather change is announced, stating the current weather and the weather it's going to be transitioned into.");
             SSSTerminalStock = base.Config.Bind("X. Mod Tweaks", "SSS Smart Cupboard + Mrov Terminal Stock", true, "If you are using both Self Sorting Storage (which adds the 'smart cupboard') and mrov's TerminalFormatter (which shows a count of items on the ship), items in the cupboard will be counted on the terminal display.");
+            SolarFlareTwoRadar = base.Config.Bind("X. Mod Tweaks", "No Signal Solar Flare", false, "The solar flare weather from LethalElements will cause the terminal's second radar map to show 'no signal', since the terminal is otherwise unaffected by the solar flare's technological interruptions.");
 
             ClientsideMode = base.Config.Bind("Z. Technical", "Client-side Mode", false, "EXPERIMENTAL - Enable this if you want to use the mod client-side (i.e. if other players don't have the mod).");
             DebugMode = base.Config.Bind("Z. Technical", "Dev Mode", false, "For testing certain interactions and resetting some variables. Do not enable unless you know what you're doing.");
@@ -300,7 +308,7 @@ namespace ScienceBirdTweaks
             InteriorLogging = base.Config.Bind("Z. Technical", "Interior Analysis", false, "LLL REQUIRED - Logs the area and scrap density of the generated interior and its tiles.");
             ScanHighlights = base.Config.Bind("Z. Technical", "Scanned Item Highlights", false, "EXPERIMENTAL - Creates a holographic highlight on scanned objects. This is still experimental, so use at your own risk and let me know what needs to be fixed or improved.");
             ZeroWeightCheck = base.Config.Bind("Z. Technical", "Zero Weight On Empty Inventory", false, "Sets your carrying weight to zero when your inventory is emptied (to solve potential bugs/mod issues where your weight would get offset and remain above 0 even with no items).");
-
+            FixNaNColliders = base.Config.Bind("Z. Technical", "Fix Collider Errors", false, "An experimental option which will attempt to catch and resolve errors when an item's collider encounters some catastrophic failure. Enable this if you sometimes encounter issues with players falling through the world alongside the error: 'Infinity or NaN floating point numbers appear when calculating the transform matrix for a Collider'. Even if this fix doesn't work, it might provide some useful logs you can send to me!");
 
 
             ConfigTeleporterSize = new Vector3(TinyTeleporterSizeX.Value, TinyTeleporterSizeY.Value, TinyTeleporterSizeZ.Value);
@@ -372,11 +380,6 @@ namespace ScienceBirdTweaks
                     Logger.LogDebug("Found batby!");
                     batbyPresent = true;
                 }
-                //else if (assembly.GetName().Name == "CodeRebirth")
-                //{
-                //    Logger.LogDebug("Found xu!");
-                //    xuPresent = true;
-                //}
                 else if (assembly.GetName().Name == "TestAccount666.ShipWindows")
                 {
                     Logger.LogDebug("Found test1!");
@@ -401,6 +404,16 @@ namespace ScienceBirdTweaks
                 {
                     Logger.LogDebug("Found zaggy!");
                     zaggyPresent = true;
+                }
+                else if (assembly.GetName().Name == "ButteryFixes")
+                {
+                    Logger.LogDebug("Found buttery!");
+                    butteryPresent = true;
+                }
+                else if (assembly.GetName().Name == "GeneralImprovements")
+                {
+                    Logger.LogDebug("Found shaosil!");
+                    shaosilPresent = true;
                 }
             }
 
@@ -441,7 +454,14 @@ namespace ScienceBirdTweaks
             {
                 QualityCompanyForkPatch.DoPatching();
             }
-
+            if (butteryPresent && RadarPathAllExits.Value)
+            {
+                ButteryFixesPatch.DoPatching();
+            }
+            if (shaosilPresent)
+            {
+                GeneralImprovementsPatch.DoPatching();
+            }
             if (DynamicOccupancySign.Value || OccupancyFixedValue.Value != "None")
             {
                 OccupancyPatch.LoadAssets();

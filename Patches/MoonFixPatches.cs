@@ -56,16 +56,27 @@ namespace ScienceBirdTweaks.Patches
 
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.SyncScrapValuesClientRpc))]
         [HarmonyPrefix]
-        static void TerrainFix(RoundManager __instance)// replace material with bugged shader to regular unity default
+        static void TerrainFix(RoundManager __instance)
         {
-            if (!done && StartOfRound.Instance.currentLevel.PlanetName == "2 Ganimedes" && defaultTerrainHD != null)
+            if (!done)
             {
                 done = true;
-                Terrain[] terrains = Object.FindObjectsOfType<Terrain>();
-                for (int i = 0; i < terrains.Length; i++)
+                if (StartOfRound.Instance.currentLevel.PlanetName == "2 Ganimedes" && defaultTerrainHD != null)// replace material with bugged shader to regular unity default
                 {
-                    terrains[i].materialTemplate = defaultTerrainHD;
-                    terrains[i].renderingLayerMask = 1797;
+                    Terrain[] terrains = Object.FindObjectsOfType<Terrain>();
+                    for (int i = 0; i < terrains.Length; i++)
+                    {
+                        terrains[i].materialTemplate = defaultTerrainHD;
+                        terrains[i].renderingLayerMask = 1797;
+                    }
+                }
+                else if (StartOfRound.Instance.currentLevel.PlanetName == "85 Rend")
+                {
+                    GameObject terrain = GameObject.Find("Environment/CompletedRendTerrain");
+                    if (terrain != null && terrain.GetComponent<MeshRenderer>())
+                    {
+                        terrain.GetComponent<MeshRenderer>().renderingLayerMask = 1797;
+                    }
                 }
             }
         }

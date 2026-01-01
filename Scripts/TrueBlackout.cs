@@ -447,6 +447,7 @@ namespace ScienceBirdTweaks.Scripts
                 {
                     GameObject lightObject = lightObjects[index];
 
+                    if (lightObject == null) { continue; }
                     foreach (Light light in lightObject.GetComponentsInChildren<Light>(true))
                     {
                         if (extraLogs)

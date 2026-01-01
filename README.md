@@ -341,7 +341,7 @@ Fixes some of the colliders on the fridge and microwave furniture items so you c
 
 </details>
 
-### Monitor Transition Fix
+### Ship Monitor Fixes
 
 <details>
 <summary>Details</summary>
@@ -349,7 +349,19 @@ Fixes some of the colliders on the fridge and microwave furniture items so you c
 
 >*Default: ON - Client-side*
 
-Fixes the monitor showing random elements (like ship icon and video feed) on the screen during the transition after taking off and in the results screen.
+Fixes the monitor showing random elements (like ship icon and video feed) on the screen during the transition after taking off and in the results screen, as well as removing the black boxes surrounding the video feed.
+
+</details>
+
+### Lingering Lightning Fix
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: ON - Client-side (?)*
+
+Cuts off all lightning particles and sounds when a conductive object is taken into the interior (no more phantom lightning effects when you bring in an item as it's about to be struck by lightning).
 
 </details>
 
@@ -450,6 +462,20 @@ Changes the name of the "big bolt" to reflect what it actually is (a big screw).
 >*Default: ON - Client-side (?)*
 
 I'll level with you on this one: this does not address anything that will come up in normal gameplay. However, it is fairly entertaining to watch the sapsucker eggs scream moments before meeting their demise at the hands of a baby maneater if you somehow end up in a situation where a maneater eats a sapsucker egg.
+
+</details>
+
+### Radar Pathfind To All Exits
+
+<details>
+<summary>Details</summary>
+<br />
+
+**WARNING: EXPERIMENTAL**
+
+>*Default: OFF - Client-side (?)*
+
+The blue guiding line on the radar will now route you to whatever exit is closest, instead of always showing the way to the main entrance. Note that "closest" here means the direct distance to it, not considering walls and walkable pathways. This should generally work with other mods changing the ship radar and exit pathing such as ButteryFixes and TwoRadarMaps.
 
 </details>
 
@@ -1070,6 +1096,20 @@ This can be used to increase how far out the player cam renders (by default it's
 
 </details>
 
+### Show Your Own Cam
+
+<details>
+<summary>Details</summary>
+<br />
+
+**WARNING: EXPERIMENTAL (WILL LIKELY CAUSE ISSUES WITH MODS CHANGING THE PLAYER MODEL)**
+
+>*Default: OFF - All clients*
+
+Replacing the generic placeholder graphic you normally see for your own cam, this will accurately render your own camera feed as if you were any other player! It might sound simple, but there's a reason why vanilla uses the placeholder (this was a massive headache to achieve). So, let me know if this causes any issues.
+
+</details>
+
 ### Hide Cams
 
 <details>
@@ -1080,11 +1120,11 @@ Some options for hiding player cams:
 
 - **Hide Your Own Cam**: Instead of using a placeholder graphic, your own player cam won't be displayed for you at all (name textbox adjusted accordingly).
 
->*Default: OFF - All clients*
+>*Default: OFF - Client-side (?)*
 
 - **Hide All Cams**: All player cams will not be shown at all (name textbox adjusted accordingly).
 
->*Default: OFF - All clients*
+>*Default: OFF - Client-side (?)*
 
 </details>
 
@@ -1142,6 +1182,9 @@ Some quick patches I put in for [Lethal Level Loader](https://thunderstore.io/c/
 
 - **LLL Unlock Syncing**: Manually applies the host's unlocked moons to all clients, so any moons the host has, the clients will have too (addressing an issue where unlocks in Wesley's Moons could become desynced). **This should be disabled when RandomMoonFX is installed**.
 >*Default: OFF - All clients*
+
+- **LLL Ship Lever Fix**: Fixes the ship lever being interactable while routing with LLL installed (note that this may cause issues with mods affecting the ship's routing, such as RandomMoonFX).
+>*Default: OFF - Client-side (?)*
 
 </details>
 
@@ -1206,6 +1249,18 @@ Try scrolling around or re-entering the store menu if you have any issues with t
 - **Shutter Switch Sound Effect**: There are two shutter sounds, one for the shutters opening and another for the shutters closing. This allows you to use one of the two sound effects for both opening and closing, or disable the sound effects playing altogether. Note that this refers to the noises made by the shutters/shutter switch themselves, and not the voice lines which play (those are configurable in ShipWindows config).
 
 >*Default: Unchanged - Client-side (?)*
+
+</details>
+
+### No Signal Solar Flare - LethalElements/TwoRadarMap
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: OFF - Client-side (?)*
+
+When using [TwoRadarMaps](https://thunderstore.io/c/lethal-company/p/Zaggy1024/TwoRadarMaps/) and [LethalElements](https://thunderstore.io/c/lethal-company/p/pacoito/LethalElementsTheta/), the radar map on the terminal will show the "no signal" screen during solar flares (since it's otherwise unaffected by the solar flare glitching effect).
 
 </details>
 
