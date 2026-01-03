@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using EasyTextEffects.Editor.MyBoxCopy.Extensions;
 using GameNetcodeStuff;
 using HarmonyLib;
 using TMPro;
@@ -243,17 +244,6 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
-        [HarmonyPatch(typeof(ManualCameraRenderer), nameof(ManualCameraRenderer.SwitchRadarTargetForward))]
-        [HarmonyPrefix]
-        public static void RadarTargets1(ManualCameraRenderer __instance)// runs just for the person pressing the button
-        {
-            if (ScienceBirdTweaks.ImprovedTextBox.Value && __instance.cam == __instance.mapCamera && __instance.radarTargets != null && __instance.radarTargets.Count > 0)
-            {
-                grabbedRadarTargets = __instance.radarTargets;
-                grabbedIndices[0] = (__instance.targetTransformIndex + 1) % __instance.radarTargets.Count;
-            }
-        }
-
         [HarmonyPatch(typeof(ManualCameraRenderer), nameof(ManualCameraRenderer.SwitchRadarTargetClientRpc))]
         [HarmonyPrefix]
         public static void RadarTargets2(ManualCameraRenderer __instance, int switchToIndex)// runs for all clients
@@ -330,7 +320,7 @@ namespace ScienceBirdTweaks.Patches
         public static void UpdateMapTargetPatch(ManualCameraRenderer __instance, bool __result)
         {
             if (ScienceBirdTweaks.ImprovedTextBox.Value && !__result && !StartOfRound.Instance.inShipPhase && nameText != null)// credit to mborsh for this unique kind of patch
-            {// what camera is this even patching? because it's not any of the ones that actually display the radar map. no idea what mborsh was cooking but it works I guess
+            {// but also I still don't really know how this works
                 ManualCameraRenderer[] radarMaps = [StartOfRound.Instance.mapScreen];
                 if (twoRadarCam != null)
                 {
