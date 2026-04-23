@@ -74,18 +74,9 @@ namespace ScienceBirdTweaks.Patches
 
         [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.Start))]
         [HarmonyPostfix]
-        [HarmonyAfter("ClaySurgeonMod")]
-        [HarmonyPriority(-10000)]
         static void MaterialSetupOnStart(QuickMenuManager __instance)
         {
             if (ScienceBirdTweaks.ScanHighlights.Value == "Disabled") { return; }
-            HDRenderPipelineAsset assetHDRP = QualitySettings.renderPipeline as HDRenderPipelineAsset;
-            if (assetHDRP != null)
-            {
-                RenderPipelineSettings settings = assetHDRP.currentPlatformRenderPipelineSettings;
-                settings.supportMotionVectors = false;// messes with the shader if enabled by ClaySurgeonOverhaul
-                assetHDRP.currentPlatformRenderPipelineSettings = settings;
-            }
             if (HUDManager.Instance != null)
             {
                 MaterialSetup(HUDManager.Instance.hologramMaterial, 0);
@@ -109,8 +100,8 @@ namespace ScienceBirdTweaks.Patches
                     Texture2D hologramTex3 = (Texture2D)ScienceBirdTweaks.TweaksAssets.LoadAsset("HologramTex3");
                     Texture2D hologramTex4 = (Texture2D)ScienceBirdTweaks.TweaksAssets.LoadAsset("HologramTex4");
                     greenHologramMat = new Material(holoMat);
-                    greenHologramMat.SetVector("_MainColor", new Vector4(3f, 30f, 3f, 0f));
-                    greenHologramMat.SetVector("_FresnelColor", new Vector4(0.1f, 0.1f, 0.1f, 0.1f));
+                    greenHologramMat.SetVector("_MainColor", new Vector4(0f, 0f, 0f, 0f));
+                    greenHologramMat.SetVector("_FresnelColor", new Vector4(0f, 0f, 0f, 0f));
                     LocalKeyword disableSSR = new LocalKeyword(greenHologramMat.shader, "_DISABLE_SSR_TRANSPARENT");
                     if (disableSSR != null)
                     {
@@ -146,8 +137,8 @@ namespace ScienceBirdTweaks.Patches
                     Texture2D hologramTexBlue3 = (Texture2D)ScienceBirdTweaks.TweaksAssets.LoadAsset("HologramTexBlue3");
                     Texture2D hologramTexBlue4 = (Texture2D)ScienceBirdTweaks.TweaksAssets.LoadAsset("HologramTexBlue4");
                     blueHologramMat = new Material(holoMat);
-                    blueHologramMat.SetVector("_MainColor", new Vector4(3f, 3f, 30f, 0f));
-                    blueHologramMat.SetVector("_FresnelColor", new Vector4(0.1f, 0.1f, 0.1f, 0.1f));
+                    blueHologramMat.SetVector("_MainColor", new Vector4(0f, 0f, 0f, 0f));
+                    blueHologramMat.SetVector("_FresnelColor", new Vector4(0f, 0f, 0f, 0f));
                     LocalKeyword disableSSRBlue = new LocalKeyword(blueHologramMat.shader, "_DISABLE_SSR_TRANSPARENT");
                     if (disableSSRBlue != null)
                     {
