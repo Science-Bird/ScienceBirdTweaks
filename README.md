@@ -361,7 +361,7 @@ Fixes the monitor showing random elements (like ship icon and video feed) on the
 
 >*Default: ON - Client-side (?)*
 
-Cuts off all lightning particles and sounds when a conductive object is taken into the interior (no more phantom lightning effects when you bring in an item as it's about to be struck by lightning).
+Cuts off all lightning particles and sounds when a conductive object is taken into the interior (no more phantom lightning effects when you bring in an item as it's about to be struck by lightning). Also makes some changes to GeneralImprovements lightning HUD indicators to improve accuracy and not linger inside.
 
 </details>
 
@@ -475,19 +475,31 @@ I'll level with you on this one: this does not address anything that will come u
 
 >*Default: OFF - Client-side (?)*
 
-The blue guiding line on the radar will now route you to whatever exit is closest, instead of always showing the way to the main entrance. Note that "closest" here means the direct distance to it, not considering walls and walkable pathways. This should generally work with other mods changing the ship radar and exit pathing such as ButteryFixes and TwoRadarMaps.
+The blue guiding line on the radar will now route you to whatever exit is closest, instead of always showing the way to the main entrance. Note that "closest" here means the direct distance to it, not considering walls and walkable pathways.
 
 </details>
 
-### Sun Always Casts Shadows
+### Apparatus Hazard Shutdown
 
 <details>
 <summary>Details</summary>
 <br />
 
->*Default: OFF - Client-side (?)*
+>*Default: OFF - All clients*
 
-Have you noticed the ship being way too bright inside when you land on certain modded moons? This is often because the sun isn't casting any shadows! There will be some performance hits, but this will enable sun shadows on every moon.
+Along with doors being opened, traps like turrets, mines, and spike traps will also be shut down when a power outage is triggered by removing the apparatus.
+
+</details>
+
+### Breaker Hazard Shutdown
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: OFF - All clients*
+
+Along with doors being opened, traps like turrets, mines, and spike traps will also be shut down when a power outage is triggered by switching the breaker (everything reactivates when the breaker is turned back on).
 
 </details>
 
@@ -500,6 +512,18 @@ Have you noticed the ship being way too bright inside when you land on certain m
 >*Default: OFF - Client-side*
 
 Disables the little warning screech sound effect when you're standing under a spike trap if that spike trap is disabled/on cooldown.
+
+</details>
+
+### Sun Always Casts Shadows
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: OFF - Client-side (?)*
+
+Have you noticed the ship being way too bright inside when you land on certain modded moons? This is often because the sun isn't casting any shadows! There will be some performance hits, but this will enable sun shadows on every moon.
 
 </details>
 
@@ -543,6 +567,35 @@ ButteryStancakes has a more [extensively customizable version of this feature](h
 
 </details>
 
+### Scanned Item Highlights
+
+<details>
+<summary>Details</summary>
+<br />
+
+**WARNING: EXPERIMENTAL**
+
+>*Default: Disabled - All clients*
+
+Creates holographic highlights around scanned scrap (also works with mods that give tools scan nodes). Can be adjusted to a more performant version if there are problems with lag.
+
+</details>
+
+### Apparatus Spawning Configuration
+
+<details>
+<summary>Details</summary>
+<br />
+
+- **Apparatus Increased Enemy Spawn Chance**: When the apparatus is pulled, there is a 70% chance for the spawn rate per hour to be increased. This chance can now be adusted using this config option.
+
+>*Default: 70% - All clients*
+
+- **Apparatus Minimum Enemy Spawns**: The new minimum enemy spawns per hour to set (if it's bigger than current minimum) when the spawn chance above succeeds.
+
+>*Default: 2 - All clients*
+
+</details>
 
 ### Configurable Starting Moon
 
@@ -862,7 +915,7 @@ A few tweaks to make dust clouds into a more interesting and gameplay-relevant w
 
 (Before and after)
 
-Since dust clouds is an unused weather in vanilla, you'll only see this weather if it's explicitly added on a modded moon, or you use a mod like [Dusted](https://thunderstore.io/c/lethal-company/p/ZetaArcade/Dusted/) to add them into the normal weather rotation (which I recommend if you're interested in these changes).
+Since dust clouds is an unused weather in vanilla, you'll only see this weather if it's explicitly added on a modded moon, or you use a mod like [WeatherInjector](https://thunderstore.io/c/lethal-company/p/ZetaArcade/WeatherInjector/) to add them into the normal weather rotation (which I recommend if you're interested in these changes).
 
 </details>
 
@@ -1022,15 +1075,17 @@ The same logic is used in the Apparatus True Blackout tweak in the following sec
 
 </details>
 
-### Vanilla True Blackout Options
+### Other True Blackout Options
 
 <details>
 <summary>Details</summary>
 <br />
 
-Options which apply outside of using MrovWeathers:
+- **Apparatus True Blackout**: When removing the apparatus, lights both inside and out will be shut off, along with any emissive textures (using the same logic as the above MrovWeathers True Blackout tweak). This of course does not include the sun.
 
-- **Apparatus True Blackout**: When removing the apparatus, lights both inside and out will be shut off, along with any emissive textures (using the same logic as the above Mrov Weathers True Blackout tweak). This of course does not include the sun.
+>*Default: OFF - All clients*
+
+- **True Blackout Hazard Shutdown**: During the MrovWeathers Blackout weather, power will be shut down and hazards shut off in the facility (making things generally much easier).
 
 >*Default: OFF - All clients*
 
@@ -1040,35 +1095,9 @@ Options which apply outside of using MrovWeathers:
 
 </details>
 
-### Other Related Options
-
-<details>
-<summary>Details</summary>
-<br />
-
-Some options related to power outages and the apparatus that aren't directly linked to the True Blackout mechanics.
-
-- **Apparatus Hazard Shutdown**: Along with doors being opened, traps like turrets, mines, and spike traps will also be shut down with the power outage.
-
->*Default: OFF - All clients*
-
-- **Breaker Hazard Shutdown**: Same as above, but when the breaker is switched off (everything reactivates when the breaker is turned back on).
-
->*Default: OFF - All clients*
-
-- **Apparatus Increased Enemy Spawn Chance**: When the apparatus is pulled, there is a 70% chance for the spawn rate per hour to be increased. This chance can now be adusted using this config option.
-
->*Default: 70% - All clients*
-
-- **Apparatus Minimum Enemy Spawns**: The new minimum enemy spawns per hour to set (if it's bigger than current minimum) when the spawn chance above succeeds.
-
->*Default: 2 - All clients*
-
-</details>
-
 *`Credit for most of these tweaks goes to xameryn`*
 
-## PLAYER CAM TWEAKS
+## HEAD CAM TWEAKS
 
 ### Adjustable Cam Direction and Position
 
@@ -1076,11 +1105,9 @@ Some options related to power outages and the apparatus that aren't directly lin
 <summary>Details</summary>
 <br />
 
->*Default: OFF - Client-side (?)*
+>*Default: No changes - Client-side (?)*
 
-By default, enabling this will have the player cam face upwards towards a player's head from under their chin. This makes the position of the camera slightly more plausible/realistic, shows a bit more of their surrounding environment, and still looks funny (as it should).
-
-However, the orientation and position of the camera are configurable, so you can do a lot of other things with it, like turning it 180 degrees to make it a forward-facing camera (though that will look a bit strange since the player cam wasn't intended to render a full environment and other players, try using the **Adjustable Cam Clipping** option below). You may have to play around with the position offsets a bit to get it to look exactly right.
+These include two angles and two position offsets allowing you to move the camera around, pitch it up or down, and turn it around to face the player. You'll probably need to play with these values a bit if you intend on changing the camera significantly.
 
 </details>
 
@@ -1092,21 +1119,27 @@ However, the orientation and position of the camera are configurable, so you can
 
 >*Default: 0 - Client-side (?)*
 
-This can be used to increase how far out the player cam renders (by default it's quite a small range). This might be useful if you use the above configuration to make the camera face forward, since normally that won't render very much.
+This can be used to increase how far out the player cam renders (to see more of what's in front of them).
 
 </details>
 
-### Show Your Own Cam
+### See Your Own Cam
 
 <details>
 <summary>Details</summary>
 <br />
 
-**WARNING: EXPERIMENTAL (WILL LIKELY CAUSE ISSUES WITH MODS CHANGING THE PLAYER MODEL)**
-
 >*Default: OFF - All clients*
 
-Replacing the generic placeholder graphic you normally see for your own cam, this will accurately render your own camera feed as if you were any other player! It might sound simple, but there's a reason why vanilla uses the placeholder (this was a massive headache to achieve). So, let me know if this causes any issues.
+Replacing the generic placeholder graphic you normally see for your own cam, this will accurately render your own camera feed as if you were any other player!
+
+If you rotate the camera to face towards you, your model will be a blocky low-poly version. This can be fixed by an extra experimental setting: 
+
+**WARNING: EXPERIMENTAL (WILL LIKELY CAUSE ISSUES WITH MODS CHANGING THE PLAYER MODEL)**
+
+- **See Your Own High Poly Model**: Renders your own player model at full quality. This is an involved change which caused me many headaches, so let me know if there's issues.
+
+>*Default: OFF - All clients*
 
 </details>
 
@@ -1125,6 +1158,18 @@ Some options for hiding player cams:
 - **Hide All Cams**: All player cams will not be shown at all (name textbox adjusted accordingly).
 
 >*Default: OFF - Client-side (?)*
+
+</details>
+
+### Cam Faces Player While Sprinting
+
+<details>
+<summary>Details</summary>
+<br />
+
+>*Default: OFF - Client-side (?)*
+
+Rotates the camera to face the player, but only while they're sprinting (for comedic effect).
 
 </details>
 

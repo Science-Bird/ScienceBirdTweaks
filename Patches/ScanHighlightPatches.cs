@@ -15,7 +15,18 @@ namespace ScienceBirdTweaks.Patches
         public static List<GrabbableObject> scanned = new List<GrabbableObject>();
         public static Dictionary<GrabbableObject, GameObject> highlights = new Dictionary<GrabbableObject, GameObject>();
         public static Material greenHologramMat;
+        public static Material greenHologramMat0;
+        public static Material greenHologramMat1;
+        public static Material greenHologramMat2;
+        public static Material greenHologramMat3;
+        public static Material greenHologramMat4;
         public static Material blueHologramMat;
+        public static Material blueHologramMat0;
+        public static Material blueHologramMat1;
+        public static Material blueHologramMat2;
+        public static Material blueHologramMat3;
+        public static Material blueHologramMat4;
+        private static bool fullEffect = false;
         private static readonly HashSet<System.Type> keepTypes = new HashSet<System.Type> { typeof(Transform), typeof(MeshFilter), typeof(MeshRenderer)};
         private static readonly HashSet<System.Type> disableTypes = new HashSet<System.Type> { typeof(AudioSource), typeof(Light), typeof(HDAdditionalLightData), typeof(SkinnedMeshRenderer), typeof(Animator)};
         private static readonly Vector3 scaleFactorUp = new Vector3(1.02f, 1.02f, 1.02f);
@@ -25,7 +36,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         static void OnGrabItem(GrabbableObject __instance)
         {
-            if (!ScienceBirdTweaks.ScanHighlights.Value) { return; }
+            if (ScienceBirdTweaks.ScanHighlights.Value == "Disabled") { return; }
 
             if (!ScienceBirdTweaks.test2Present && highlights.TryGetValue(__instance, out GameObject value1))
             {
@@ -45,7 +56,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         static void PutItemInBeltBag(BeltBagItem __instance, GrabbableObject gObject)
         {
-            if (!ScienceBirdTweaks.ScanHighlights.Value || gObject == null) { return; }
+            if (ScienceBirdTweaks.ScanHighlights.Value == "Disabled" || gObject == null) { return; }
 
             if (!ScienceBirdTweaks.test2Present && highlights.TryGetValue(gObject, out GameObject value1))
             {
@@ -67,7 +78,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPriority(-10000)]
         static void MaterialSetupOnStart(QuickMenuManager __instance)
         {
-            if (!ScienceBirdTweaks.ScanHighlights.Value) { return; }
+            if (ScienceBirdTweaks.ScanHighlights.Value == "Disabled") { return; }
             HDRenderPipelineAsset assetHDRP = QualitySettings.renderPipeline as HDRenderPipelineAsset;
             if (assetHDRP != null)
             {
@@ -90,7 +101,13 @@ namespace ScienceBirdTweaks.Patches
                 // I should probably make my own custom shader instead but this works for now
 
                 case 0:// green (scrap)
+                    fullEffect = ScienceBirdTweaks.ScanHighlights.Value == "Enabled (Full)";
                     Texture2D hologramTex = (Texture2D)ScienceBirdTweaks.TweaksAssets.LoadAsset("HologramTex");
+                    Texture2D hologramTex0 = (Texture2D)ScienceBirdTweaks.TweaksAssets.LoadAsset("HologramTex0");
+                    Texture2D hologramTex1 = (Texture2D)ScienceBirdTweaks.TweaksAssets.LoadAsset("HologramTex1");
+                    Texture2D hologramTex2 = (Texture2D)ScienceBirdTweaks.TweaksAssets.LoadAsset("HologramTex2");
+                    Texture2D hologramTex3 = (Texture2D)ScienceBirdTweaks.TweaksAssets.LoadAsset("HologramTex3");
+                    Texture2D hologramTex4 = (Texture2D)ScienceBirdTweaks.TweaksAssets.LoadAsset("HologramTex4");
                     greenHologramMat = new Material(holoMat);
                     greenHologramMat.SetVector("_MainColor", new Vector4(3f, 30f, 3f, 0f));
                     greenHologramMat.SetVector("_FresnelColor", new Vector4(0.1f, 0.1f, 0.1f, 0.1f));
@@ -101,9 +118,33 @@ namespace ScienceBirdTweaks.Patches
                     }
                     greenHologramMat.SetFloat("_ScrollSpeed", 0.04f);
                     greenHologramMat.SetTexture("_HologramScanlines", hologramTex);
-                    break;
+
+                    if (fullEffect)
+                    {
+                        greenHologramMat0 = new Material(greenHologramMat);
+                        greenHologramMat0.SetTexture("_HologramScanlines", hologramTex0);
+                        greenHologramMat1 = new Material(greenHologramMat);
+                        greenHologramMat1.SetTexture("_HologramScanlines", hologramTex1);
+                        greenHologramMat2 = new Material(greenHologramMat);
+                        greenHologramMat2.SetTexture("_HologramScanlines", hologramTex2);
+                        greenHologramMat3 = new Material(greenHologramMat);
+                        greenHologramMat3.SetTexture("_HologramScanlines", hologramTex3);
+                        greenHologramMat4 = new Material(greenHologramMat);
+                        greenHologramMat4.SetTexture("_HologramScanlines", hologramTex4);
+                    }
+                    else
+                    {
+                        greenHologramMat0 = greenHologramMat;
+                    }
+                        break;
                 case 1:// blue (equipment)
+                    fullEffect = ScienceBirdTweaks.ScanHighlights.Value == "Enabled (Full)";
                     Texture2D hologramTexBlue = (Texture2D)ScienceBirdTweaks.TweaksAssets.LoadAsset("HologramTexBlue");
+                    Texture2D hologramTexBlue0 = (Texture2D)ScienceBirdTweaks.TweaksAssets.LoadAsset("HologramTexBlue0");
+                    Texture2D hologramTexBlue1 = (Texture2D)ScienceBirdTweaks.TweaksAssets.LoadAsset("HologramTexBlue1");
+                    Texture2D hologramTexBlue2 = (Texture2D)ScienceBirdTweaks.TweaksAssets.LoadAsset("HologramTexBlue2");
+                    Texture2D hologramTexBlue3 = (Texture2D)ScienceBirdTweaks.TweaksAssets.LoadAsset("HologramTexBlue3");
+                    Texture2D hologramTexBlue4 = (Texture2D)ScienceBirdTweaks.TweaksAssets.LoadAsset("HologramTexBlue4");
                     blueHologramMat = new Material(holoMat);
                     blueHologramMat.SetVector("_MainColor", new Vector4(3f, 3f, 30f, 0f));
                     blueHologramMat.SetVector("_FresnelColor", new Vector4(0.1f, 0.1f, 0.1f, 0.1f));
@@ -114,6 +155,24 @@ namespace ScienceBirdTweaks.Patches
                     }
                     blueHologramMat.SetFloat("_ScrollSpeed", 0.04f);
                     blueHologramMat.SetTexture("_HologramScanlines", hologramTexBlue);
+
+                    if (fullEffect)
+                    {
+                        blueHologramMat0 = new Material(blueHologramMat);
+                        blueHologramMat0.SetTexture("_HologramScanlines", hologramTexBlue0);
+                        blueHologramMat1 = new Material(blueHologramMat);
+                        blueHologramMat1.SetTexture("_HologramScanlines", hologramTexBlue1);
+                        blueHologramMat2 = new Material(blueHologramMat);
+                        blueHologramMat2.SetTexture("_HologramScanlines", hologramTexBlue2);
+                        blueHologramMat3 = new Material(blueHologramMat);
+                        blueHologramMat3.SetTexture("_HologramScanlines", hologramTexBlue3);
+                        blueHologramMat4 = new Material(blueHologramMat);
+                        blueHologramMat4.SetTexture("_HologramScanlines", hologramTexBlue4);
+                    }
+                    else
+                    {
+                        blueHologramMat0 = blueHologramMat;
+                    }
                     break;
             }
         }
@@ -123,7 +182,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void OnScanUpdate(HUDManager __instance)
         {
-            if (!ScienceBirdTweaks.ScanHighlights.Value || ScienceBirdTweaks.test2Present) { return; }
+            if (ScienceBirdTweaks.ScanHighlights.Value == "Disabled"  || ScienceBirdTweaks.test2Present) { return; }
 
             if (greenHologramMat == null)
             {
@@ -162,7 +221,7 @@ namespace ScienceBirdTweaks.Patches
                 }
                 if (grabbable != null)
                 {
-                    if ((bool)grabbable.GetComponentInChildren<SkinnedMeshRenderer>() || (grabbable.itemProperties != null && (grabbable.itemProperties.itemId == 16 || grabbable.itemProperties.itemId == 5 || grabbable.itemProperties.itemId == 4)))// skinned mesh renderers and radar boosters are fucked
+                    if ((bool)grabbable.GetComponentInChildren<SkinnedMeshRenderer>() || (grabbable.itemProperties != null && (grabbable.itemProperties.itemId == 16 || grabbable.itemProperties.itemId == 5 || grabbable.itemProperties.itemId == 4 || grabbable.itemProperties.itemName == "Hypercube")))// skinned mesh renderers and radar boosters are fucked
                     {
                         continue;
                     }
@@ -174,7 +233,7 @@ namespace ScienceBirdTweaks.Patches
                         {
                             blue = true;
                         }
-                        GameObject meshHighlight = ScanHighlightPatches.DuplicateRenderersWithMaterial(grabbable.gameObject, blue);
+                        GameObject meshHighlight = DuplicateRenderersWithMaterial(grabbable.gameObject, blue);
                         highlightDict.Add(grabbable, meshHighlight);
                     }
                     newScannedObjects.Add(grabbable);
@@ -229,7 +288,7 @@ namespace ScienceBirdTweaks.Patches
                 Material[] materials = new Material[renderers[j].materials.Length];
                 for (int i = 0; i < materials.Length; i++)
                 {
-                    materials[i] = blue ? blueHologramMat : greenHologramMat;
+                    materials[i] = blue ? blueHologramMat0 : greenHologramMat0;
                 }
                 renderers[j].materials = materials;
 
@@ -250,23 +309,32 @@ namespace ScienceBirdTweaks.Patches
             }
 
             duplicate.transform.localScale = Vector3.Scale(duplicate.transform.localScale, scaleFactorUp);
-            ScanHighlight highlightScript = duplicate.AddComponent<ScanHighlight>();
-            highlightScript.parentTransform = sourceObject.transform;
 
-            GameObject extraLayer = Object.Instantiate(duplicate, duplicate.transform.position, duplicate.transform.rotation, duplicate.transform);
-            extraLayer.transform.localScale = scaleFactorDown;
-
-            Renderer[] extraRenderers = extraLayer.GetComponentsInChildren<Renderer>();
-            for (int j = 0; j < extraRenderers.Length; j++)
+            Renderer[] extraRenderers = renderers;
+            if (fullEffect)
             {
-                if (extraRenderers[j].gameObject.layer == 22) { continue; }
-                Material[] materials = new Material[extraRenderers[j].materials.Length];
-                for (int i = 0; i < materials.Length; i++)
+                GameObject extraLayer = Object.Instantiate(duplicate, duplicate.transform.position, duplicate.transform.rotation, duplicate.transform);
+                extraLayer.transform.localScale = scaleFactorDown;
+
+                extraRenderers = extraLayer.GetComponentsInChildren<Renderer>();
+                for (int j = 0; j < extraRenderers.Length; j++)
                 {
-                    materials[i] = blue ? blueHologramMat : greenHologramMat;
+                    if (extraRenderers[j].gameObject.layer == 22) { continue; }
+                    Material[] materials = new Material[extraRenderers[j].materials.Length];
+                    for (int i = 0; i < materials.Length; i++)
+                    {
+                        materials[i] = blue ? blueHologramMat0 : greenHologramMat0;
+                    }
+                    extraRenderers[j].materials = materials;
                 }
-                extraRenderers[j].materials = materials;
             }
+
+            ScanHighlight highlightScript = duplicate.AddComponent<ScanHighlight>();
+            highlightScript.full = fullEffect;
+            highlightScript.parentTransform = sourceObject.transform;
+            highlightScript.renderers = renderers;
+            highlightScript.extraRenderers = extraRenderers;
+            highlightScript.blue = blue;
 
             return duplicate;
         }

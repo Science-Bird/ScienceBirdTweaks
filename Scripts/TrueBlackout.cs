@@ -105,7 +105,7 @@ namespace ScienceBirdTweaks.Scripts
             }
         }
 
-        public static void DoBlackout(Boolean? disableSun)
+        public static void DoBlackout(bool disableSun)
         {
             var totalStopwatch = Stopwatch.StartNew();
 
@@ -138,7 +138,7 @@ namespace ScienceBirdTweaks.Scripts
             }
 
             
-            if (disableSun == true && ScienceBirdTweaks.BlackoutSun.Value != "Blackout Only Lights")
+            if (disableSun && ScienceBirdTweaks.BlackoutSun.Value != "Blackout Only Lights")
             {
                 try
                 {
@@ -402,14 +402,14 @@ namespace ScienceBirdTweaks.Scripts
                 }
             }
 
-            trueBlackoutInstance.StartCoroutine(trueBlackoutInstance.PlayAudioAfterWait());
+            trueBlackoutInstance.StartCoroutine(trueBlackoutInstance.PlayAudioAfterWait(disableSun));
             trueBlackoutInstance.StartCoroutine(trueBlackoutInstance.DisableLightsOverFrames(lightObjects));
 
             totalStopwatch.Stop();
             ScienceBirdTweaks.Logger.LogDebug($"[TIMER] Material Assignment finished at {totalStopwatch.ElapsedMilliseconds}ms");
         }
 
-        IEnumerator PlayAudioAfterWait()
+        IEnumerator PlayAudioAfterWait(bool blackoutWeather)
         {
             if (!StartOfRound.Instance.shipHasLanded)
             {
@@ -419,6 +419,11 @@ namespace ScienceBirdTweaks.Scripts
             {
                 HUDManager.Instance.UIAudio.PlayOneShot(BlackoutTriggerPatches.powerDownClip);
                 ScienceBirdTweaks.Logger.LogDebug($"Playing blackout audio!");
+            }
+            if (ScienceBirdTweaks.DisableTrapsOnTrueBlackout.Value && blackoutWeather)
+            {
+                BlackoutTriggerPatches.doingHazardShutdown = true;
+                RoundManager.Instance.SwitchPower(on: false);
             }
         }
 

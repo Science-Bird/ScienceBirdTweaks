@@ -3,8 +3,6 @@ using UnityEngine;
 using GameNetcodeStuff;
 using System.Collections;
 using UnityEngine.UI;
-using DunGen;
-using static UnityEngine.GraphicsBuffer;
 
 namespace ScienceBirdTweaks.ZapGun
 {

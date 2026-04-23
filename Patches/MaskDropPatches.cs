@@ -208,5 +208,16 @@ namespace ScienceBirdTweaks.Patches
                 }
             }
         }
+
+        [HarmonyPatch(typeof(MaskedPlayerEnemy), nameof(MaskedPlayerEnemy.SetMaskGlow))]
+        [HarmonyPrefix]
+        static bool SetGlowPrefix(MaskedPlayerEnemy __instance)
+        {
+            if (__instance.maskEyesGlow == null)
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }

@@ -14,6 +14,10 @@ namespace ScienceBirdTweaks.Patches
         {
             { ("9. Blackout", "Apparatus Hazard Blackout"), ("9. Blackout", "Apparatus Hazard Shutdown") },
             { ("9. Blackout", "Breaker Hazard Blackout"), ("9. Blackout", "Breaker Hazard Shutdown") },
+            { ("9. Blackout", "Apparatus Hazard Shutdown"), ("3. General Tweaks", "Apparatus Hazard Shutdown") },
+            { ("9. Blackout", "Breaker Hazard Shutdown"), ("3. General Tweaks", "Breaker Hazard Shutdown") },
+            { ("9. Blackout", "Apparatus Increased Enemy Spawn Chance"), ("3. General Tweaks", "Apparatus Increased Enemy Spawn Chance") },
+            { ("9. Blackout", "Apparatus Minimum Enemy Spawns"), ("3. General Tweaks", "Apparatus Minimum Enemy Spawns") },
             { ("Ship Tweaks", "Rotating Floodlight"), ("2. Ship Additions", "Rotating Floodlight") },
             { ("Ship Tweaks", "Rotate Floodlight Upon Landing"), ("2. Ship Additions", "Rotate Floodlight Upon Landing") },
             { ("Ship Tweaks", "Ship Floodlight Rotation Speed"), ("2. Ship Additions", "Ship Floodlight Rotation Speed") },
@@ -50,6 +54,7 @@ namespace ScienceBirdTweaks.Patches
             { "A. Mod Tweaks", "X. Mod Tweaks" },
             { "B. Interior Scrap Bonus", "Y. Interior Scrap Bonus" },
             { "C. Technical", "Z. Technical" },
+            { "A. Player Cam Tweaks", "A. Head Cam Tweaks" }
         };
 
         [HarmonyPatch(typeof(QuickMenuManager), nameof(QuickMenuManager.Start))]

@@ -17,7 +17,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void ReEnable(TimeOfDay __instance)
         {
-            if ((!ScienceBirdTweaks.ThickDustClouds.Value && !ScienceBirdTweaks.DustCloudsNoise.Value) || StartOfRound.Instance.currentLevel.PlanetName == "115 Wither")
+            if ((!ScienceBirdTweaks.ThickDustClouds.Value && !ScienceBirdTweaks.DustCloudsNoise.Value) || (StartOfRound.Instance != null && StartOfRound.Instance.currentLevel != null && StartOfRound.Instance.currentLevel.PlanetName == "115 Wither"))
             {
                 return;
             }

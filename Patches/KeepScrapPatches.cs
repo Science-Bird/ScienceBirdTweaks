@@ -157,8 +157,7 @@ namespace ScienceBirdTweaks.Patches
                     case 2:
                         if (!__instance.itemProperties.syncDiscardFunction)
                         {
-                            __instance.isSendingItemRPC++;
-                            __instance.DiscardItemServerRpc();
+                            __instance.DiscardItemRpc();
                         }
                         break;
                 }

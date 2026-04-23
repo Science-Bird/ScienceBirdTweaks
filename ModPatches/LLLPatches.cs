@@ -5,6 +5,7 @@ using ScienceBirdTweaks.Scripts;
 using DunGen;
 using LethalLevelLoader;
 using System.Linq;
+using System.Reflection;
 using System.Collections.Generic;
 using BepInEx.Configuration;
 
@@ -20,9 +21,12 @@ namespace ScienceBirdTweaks.ModPatches
                 ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartOfRound), nameof(StartOfRound.OnPlayerConnectedClientRpc)), postfix: new HarmonyMethod(typeof(LLLSyncPatch).GetMethod("OnLateClientSync")));
             }
 
+            List<MethodInfo> methods = AccessTools.GetDeclaredMethods(typeof(RoundManager));
+            MethodInfo targetMethod = methods.Where(x => x.Name == "GetRandomNavMeshPositionInBoxPredictable" && x.GetParameters()[2].ParameterType != typeof(float)).First();
+
             ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(DungeonGenerator), "Generate"), prefix: new HarmonyMethod(typeof(InteriorPatches).GetMethod("OnGeneration")));
             ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(RoundManager), "SpawnScrapInLevel"), prefix: new HarmonyMethod(typeof(InteriorPatches).GetMethod("BeforeScrapSpawn")), postfix: new HarmonyMethod(typeof(InteriorPatches).GetMethod("AfterScrapSpawn")));
-            ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(RoundManager), "GetRandomNavMeshPositionInBoxPredictable"), postfix: new HarmonyMethod(typeof(InteriorPatches).GetMethod("NavBoxPatch")));
+            ScienceBirdTweaks.Harmony?.Patch(targetMethod, postfix: new HarmonyMethod(typeof(InteriorPatches).GetMethod("NavBoxPatch")));
 
             ScienceBirdTweaks.Harmony?.Patch(AccessTools.Method(typeof(StartOfRound), "Start"), prefix: new HarmonyMethod(typeof(InteriorConfigPatch).GetMethod("OnStart"), after: ["imabatby.lethallevelloader"]));
 

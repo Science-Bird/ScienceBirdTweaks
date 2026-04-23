@@ -1,7 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
-using GeneralImprovements;
+using UnityEngine;
 
 namespace ScienceBirdTweaks.ModPatches
 {
@@ -17,23 +18,30 @@ namespace ScienceBirdTweaks.ModPatches
     public static class LightningFix
     {
         private static Type hudPatches;
-        private static FieldInfo lightningTarget;
+        private static FieldInfo lightningSlots;
 
         public static void StartSetup()
         {
             hudPatches = AccessTools.TypeByName("GeneralImprovements.Patches.HUDManagerPatch");
             if (hudPatches != null)
             {
-                lightningTarget = AccessTools.Field(hudPatches, "CurrentLightningTarget");
+                lightningSlots = AccessTools.Field(hudPatches, "_lightningSlotsToOverlays");
 
             }
         }
 
         public static void UpdatePatch(StormyWeather __instance)
         {
-            if (lightningTarget != null && __instance.setStaticToObject == null)
+            if (lightningSlots != null && __instance.targetingMetalObject != null && __instance.setStaticToObject == null)
             {
-                lightningTarget.SetValue(hudPatches, null);
+                Dictionary<int, SpriteRenderer> lightningDict = (Dictionary<int, SpriteRenderer>)lightningSlots.GetValue(hudPatches);
+                if (lightningDict != null)
+                {
+                    foreach (SpriteRenderer sprite in lightningDict.Values)
+                    {
+                        sprite.enabled = false;
+                    }
+                }
             }
         }
     }

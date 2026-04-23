@@ -1,5 +1,6 @@
 using UnityEngine;
 using HarmonyLib;
+using UnityEngine.Rendering.HighDefinition;
 
 namespace ScienceBirdTweaks.Patches
 {
@@ -91,15 +92,51 @@ namespace ScienceBirdTweaks.Patches
             }
             if (ScienceBirdTweaks.RemoveExteriorCam.Value)
             {
-                DestroyObject("Cameras/FrontDoorSecurityCam", true);
+                GameObject shipObject = GameObject.Find("/Environment/HangarShip/Cameras/FrontDoorSecurityCam");
+                if (shipObject != null)
+                {
+                    MeshRenderer renderer = shipObject.GetComponent<MeshRenderer>();
+                    Camera cam = shipObject.GetComponentInChildren<Camera>();
+                    if (renderer != null)
+                    {
+                        renderer.enabled = false;
+                    }
+                    if (cam != null)
+                    {
+                        cam.enabled = false;
+                    }
+                }
             }
             if (ScienceBirdTweaks.RemoveInteriorCam.Value)
             {
-                DestroyObject("Cameras/ShipCamera", true);
+                GameObject shipObject = GameObject.Find("/Environment/HangarShip/ShipModels2b/MonitorWall/Cube");
+                if (shipObject != null)
+                {
+                    MeshRenderer renderer = shipObject.GetComponent<MeshRenderer>();
+                    if (renderer.sharedMaterials.Length == 3)
+                    {
+                        Material[] mats = renderer.materials;
+                        mats[2] = mats[1];
+                        renderer.materials = mats;
+                    }
+                }
             }
             if (ScienceBirdTweaks.RemoveDoorMonitor.Value)
             {
-                DestroyObject("ShipModels2b/MonitorWall/SingleScreen", true);
+                GameObject shipObject = GameObject.Find("/Environment/HangarShip/ShipModels2b/MonitorWall/SingleScreen");
+                if (shipObject != null)
+                {
+                    MeshRenderer renderer = shipObject.GetComponent<MeshRenderer>();
+                    Light light = shipObject.GetComponentInChildren<Light>();
+                    if (renderer != null)
+                    {
+                        renderer.enabled = false;
+                    }
+                    if (light != null)
+                    {
+                        light.enabled = false;
+                    }
+                }
             }
         }
     }

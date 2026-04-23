@@ -178,7 +178,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         public static void SetPowerSwitchable(TerminalAccessibleObject __instance)
         {
-            if ((ScienceBirdTweaks.DisableTrapsOnApparatusRemoval.Value || ScienceBirdTweaks.DisableTrapsOnBreakerSwitch.Value) && !__instance.isBigDoor)
+            if ((ScienceBirdTweaks.DisableTrapsOnApparatusRemoval.Value || ScienceBirdTweaks.DisableTrapsOnBreakerSwitch.Value || ScienceBirdTweaks.DisableTrapsOnTrueBlackout.Value) && !__instance.isBigDoor)
             {
                 PowerSwitchable powerSwitch = __instance.gameObject.AddComponent<PowerSwitchable>();
                 OnSwitchPowerEvent switchEvent = new OnSwitchPowerEvent();
@@ -191,7 +191,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         public static bool PowerSwitchPrefix(TerminalAccessibleObject __instance, bool switchedOn)
         {
-            if ((!ScienceBirdTweaks.DisableTrapsOnApparatusRemoval.Value && !ScienceBirdTweaks.DisableTrapsOnBreakerSwitch.Value) || __instance.isBigDoor)
+            if ((!ScienceBirdTweaks.DisableTrapsOnApparatusRemoval.Value && !ScienceBirdTweaks.DisableTrapsOnBreakerSwitch.Value && !ScienceBirdTweaks.DisableTrapsOnTrueBlackout.Value) || __instance.isBigDoor)
                 return true;
 
             HazardShutdown(__instance, switchedOn);

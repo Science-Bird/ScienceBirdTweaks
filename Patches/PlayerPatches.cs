@@ -21,7 +21,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void OnDrop(PlayerControllerB __instance)// check carry inventory on item dropped
         {
-            if (ScienceBirdTweaks.ZeroWeightCheck.Value && __instance.ItemSlots.All(x => x == null))
+            if (ScienceBirdTweaks.ZeroWeightCheck.Value && __instance.ItemSlots.All(x => x == null) && __instance.ItemOnlySlot == null)
             {
                 if (__instance.carryWeight != 1f)
                 {

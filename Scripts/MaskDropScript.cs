@@ -62,7 +62,7 @@ namespace ScienceBirdTweaks.Scripts
                     yield return null;
                 }
                 MaskDropPatches.MaskDropSync(obj.GetComponent<HauntedMaskItem>(), (int)grabbable.GetComponent<NetworkObject>().NetworkObjectId, activeMask.position, activeMask.rotation, activeMask.value);// since patched clientrpc won't run on server, the sync function is ran directly here
-                grabbable.DiscardItemClientRpc();// artificially induce discard function to get clients to run discard routine
+                grabbable.DiscardItemRpc();// artificially induce discard function to get clients to run discard routine
             }
         }
     }

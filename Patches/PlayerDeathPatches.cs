@@ -1,14 +1,10 @@
 using GameNetcodeStuff;
 using HarmonyLib;
 using UnityEngine;
-using UnityEngine.AI;
-using UnityEngine.EventSystems;
-using System.Collections;
 using ScienceBirdTweaks.Scripts;
 using Unity.Netcode;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Services.Authentication.Internal;
 
 namespace ScienceBirdTweaks.Patches
 {
@@ -29,7 +25,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         public static void InitializeAssets()
         {
-            if (ScienceBirdTweaks.PlayGlobalDeathSFX.Value)
+            if (!ScienceBirdTweaks.ClientsideMode.Value && ScienceBirdTweaks.PlayGlobalDeathSFX.Value)
             {
                 globalDeathSFX = (AudioClip)ScienceBirdTweaks.TweaksAssets.LoadAsset("GlobalDeathSound");
             }
@@ -46,7 +42,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void SpawnTeleportScript(StartOfRound __instance, string sceneName)
         {
-            if (ScienceBirdTweaks.ClientsideMode.Value || (!ScienceBirdTweaks.AutoTeleportBody.Value && !ScienceBirdTweaks.UnrecoverableNotification.Value)) { return; }
+            if (ScienceBirdTweaks.ClientsideMode.Value || (!ScienceBirdTweaks.AutoTeleportBody.Value && !ScienceBirdTweaks.UnrecoverableNotification.Value && !ScienceBirdTweaks.PlayGlobalDeathSFX.Value)) { return; }
             if (teleportScript == null && __instance.IsServer)
             {
                 GameObject teleportScriptObj = UnityEngine.Object.Instantiate(teleportScriptPrefab, Vector3.zero, Quaternion.identity);
@@ -69,19 +65,9 @@ namespace ScienceBirdTweaks.Patches
                 teleportScript = GameObject.FindObjectOfType<AutoTeleportScript>();
             }
 
-            if (ScienceBirdTweaks.PlayGlobalDeathSFX.Value && !GameNetworkManager.Instance.localPlayerController.isPlayerDead)
+            if (ScienceBirdTweaks.PlayGlobalDeathSFX.Value)
             {
-                PlayerControllerB dyingPlayer = StartOfRound.Instance.allPlayerObjects[playerId].GetComponent<PlayerControllerB>();
-                if (dyingPlayer.redirectToEnemy == null || !dyingPlayer.redirectToEnemy.isActiveAndEnabled)
-                {
-                    //ScienceBirdTweaks.Logger.LogDebug("PLAYING GLOBAL DEATH SFX");
-                    HUDManager.Instance.UIAudio.PlayOneShot(globalDeathSFX, 0.45f);
-                    if (ScienceBirdTweaks.FancyPanel.Value && ButtonPanelController.Instance != null)
-                    {
-                        ButtonPanelController.Instance.BlueLight2Set(true);
-                        ButtonPanelController.Instance.SetLightAfterDelay(1, 1f, false);
-                    }
-                }
+                teleportScript.StartSFXRoutine(playerId);
             }
             if (ScienceBirdTweaks.AutoTeleportBody.Value && ShipTeleporter.hasBeenSpawnedThisSession)
             {
@@ -95,7 +81,7 @@ namespace ScienceBirdTweaks.Patches
                 }
                 if (teleporter != null)
                 {
-                    teleportScript.StartTeleportRoutine(teleporter, playerId);// teleporter stuff offloaded to a network behaviour
+                    teleportScript.StartTeleportRoutine(teleporter, playerId);
                 }
             }
         }

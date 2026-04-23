@@ -29,6 +29,7 @@ namespace ScienceBirdTweaks.Patches
         public static ManualCameraRenderer twoRadarCam;
         private static List<HDAdditionalCameraData> radarCamData = new List<HDAdditionalCameraData>();
         public static bool internalCamDisable = false;
+        private static bool alterPlayerCam = false;
 
         [HarmonyPatch(typeof(StartOfRound), nameof(StartOfRound.Start))]
         [HarmonyPrefix]
@@ -45,7 +46,11 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         static void PlayerCamOverride(ManualCameraRenderer __instance)
         {
-            if (ScienceBirdTweaks.TrueLocalCam.Value && __instance.cam == __instance.mapCamera && __instance.headMountedCam != null && !ScienceBirdTweaks.ClientsideMode.Value)
+            if (ScienceBirdTweaks.PlayerCamAngleX.Value != 0f || ScienceBirdTweaks.PlayerCamAngleY.Value != 0f || ScienceBirdTweaks.PlayerCamPosHorizontal.Value != 0f || ScienceBirdTweaks.PlayerCamPosVertical.Value != 0f)
+            {
+                alterPlayerCam = true;
+            }
+            if (ScienceBirdTweaks.LocalCam.Value && ScienceBirdTweaks.TrueLocalCam.Value && __instance.cam == __instance.mapCamera && __instance.headMountedCam != null && !ScienceBirdTweaks.ClientsideMode.Value)
             {
                 GameObject CamObject = __instance.headMountedCam.gameObject;
                 HDAdditionalCameraData cameraData = CamObject.GetComponent<HDAdditionalCameraData>();
@@ -73,7 +78,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         static void OnPlayerSpawn(PlayerControllerB __instance, bool specialAnimation)
         {
-            if (ScienceBirdTweaks.TrueLocalCam.Value && !setupDone && !specialAnimation && __instance == StartOfRound.Instance.localPlayerController && !ScienceBirdTweaks.ClientsideMode.Value)
+            if (ScienceBirdTweaks.LocalCam.Value && ScienceBirdTweaks.TrueLocalCam.Value && !setupDone && !specialAnimation && __instance == StartOfRound.Instance.localPlayerController && !ScienceBirdTweaks.ClientsideMode.Value)
             {
                 __instance.thisPlayerModelArms.gameObject.layer = 5;
                 LODGroup lodGroup = __instance.meshContainer.gameObject.GetComponentInChildren<LODGroup>();
@@ -87,9 +92,16 @@ namespace ScienceBirdTweaks.Patches
             }
         }
 
+        [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.DespawnPropsAtEndOfRound))]
+        [HarmonyPrefix]
+        static void BeforePlayersRevive(RoundManager __instance)
+        {
+            setupDone = false;
+        }
+
         public static void SetCamBias(bool on, int camIndex)
         {
-            //ScienceBirdTweaks.Logger.LogDebug($"SET CAM BIAS: {on}");
+            //ScienceBirdTweaks.Logger.LogInfo($"SET CAM BIAS: {on}");
             for (int i = 0; i < radarCamData.Count; i++)
             {
                 if (i != camIndex && camIndex != -100) { continue; }// special value -100 will set all cam biases (e.g. at start of round)
@@ -196,19 +208,19 @@ namespace ScienceBirdTweaks.Patches
                     SetBoxPos(index, withCam: false);
                 }
             }
-            else if (ScienceBirdTweaks.HideAllCams.Value && __instance.headMountedCam.enabled)
+            else if (ScienceBirdTweaks.HideAllCams.Value)
             {
                 if (__instance.headMountedCamUI != null)
                 {
                     __instance.headMountedCamUI.enabled = false;
                 }
-                __instance.headMountedCam.enabled = false;
+                //__instance.headMountedCam.enabled = false;
                 SetBoxPos(index, withCam: false);
             }
-            if (!internalCamDisable && ScienceBirdTweaks.TrueLocalCam.Value && !ScienceBirdTweaks.ClientsideMode.Value && !ScienceBirdTweaks.HideAllCams.Value && !ScienceBirdTweaks.HideLocalCam.Value && !StartOfRound.Instance.inShipPhase && __instance.targetedPlayer == GameNetworkManager.Instance.localPlayerController && !__instance.targetedPlayer.isPlayerDead && __instance.targetedPlayer.isPlayerControlled && !__instance.overrideRadarCameraOnAlways)
+            if (!internalCamDisable && ScienceBirdTweaks.LocalCam.Value && !ScienceBirdTweaks.ClientsideMode.Value && !ScienceBirdTweaks.HideAllCams.Value && !ScienceBirdTweaks.HideLocalCam.Value && !StartOfRound.Instance.inShipPhase && __instance.targetedPlayer == GameNetworkManager.Instance.localPlayerController && !__instance.targetedPlayer.isPlayerDead && __instance.targetedPlayer.isPlayerControlled && !__instance.overrideRadarCameraOnAlways)
             {
                 __instance.enableHeadMountedCam = true;
-                __instance.headMountedCam.enabled = true;
+                //__instance.headMountedCam.enabled = true;
                 if (__instance.headMountedCamUI != null)
                 {
                     __instance.headMountedCamUI.enabled = true;
@@ -217,36 +229,46 @@ namespace ScienceBirdTweaks.Patches
                 {
                     __instance.localPlayerPlaceholder.enabled = false;
                 }
-                if (__instance.targetedPlayer == null)
+                if (__instance.headMountedCamTarget != null)
                 {
-                    __instance.headMountedCam.transform.position = __instance.headMountedCamTarget.transform.position + __instance.headMountedCamTarget.up * 1.557f + __instance.headMountedCamTarget.forward * 0.449f;
+                    __instance.headMountedCam.transform.position = __instance.headMountedCamTarget.transform.position + __instance.headMountedCamTarget.up * 0.237f + __instance.headMountedCamTarget.forward * 0.1f;
                     __instance.headMountedCam.transform.rotation = __instance.headMountedCamTarget.transform.rotation;
-                    __instance.headMountedCam.transform.Rotate(8.941f, -177.83f, 0f, Space.Self);
-                }
-                else if (__instance.headMountedCamTarget != null)
-                {
-                    __instance.headMountedCam.transform.position = __instance.headMountedCamTarget.transform.position + __instance.headMountedCamTarget.up * 0.237f + __instance.headMountedCamTarget.forward * 0.4f;
-                    __instance.headMountedCam.transform.rotation = __instance.headMountedCamTarget.transform.rotation;
-                    __instance.headMountedCam.transform.Rotate(14.656f, -184.93f, 0f, Space.Self);
+                    __instance.headMountedCam.transform.Rotate(14.656f, -4.93f, 0f, Space.Self);
+                    if (__instance.targetedPlayer.isInsideFactory)
+                    {
+                        __instance.headMountedCamData.clearColorMode = HDAdditionalCameraData.ClearColorMode.Color;
+                    }
+                    else
+                    {
+                        __instance.headMountedCamData.clearColorMode = HDAdditionalCameraData.ClearColorMode.Sky;
+                    }
                 }
             }
-            else if (internalCamDisable && ScienceBirdTweaks.TrueLocalCam.Value && !ScienceBirdTweaks.ClientsideMode.Value && !ScienceBirdTweaks.HideAllCams.Value && !ScienceBirdTweaks.HideLocalCam.Value && !__instance.targetedPlayer.isPlayerDead && __instance.targetedPlayer.isPlayerControlled)
-            {
-                __instance.enableHeadMountedCam = false;
-                __instance.headMountedCam.enabled = false;
-                __instance.headMountedCamUI.enabled = false;
-            }
-            if (ScienceBirdTweaks.AlterPlayerCam.Value && __instance.enableHeadMountedCam && !__instance.playerIsInCaves && __instance.headMountedCamTarget != null)
+            //else if (internalCamDisable && ScienceBirdTweaks.TrueLocalCam.Value && !ScienceBirdTweaks.ClientsideMode.Value && !ScienceBirdTweaks.HideAllCams.Value && !ScienceBirdTweaks.HideLocalCam.Value && !__instance.targetedPlayer.isPlayerDead && __instance.targetedPlayer.isPlayerControlled && __instance.headMountedCamUI != null)
+            //{
+            //    __instance.enableHeadMountedCam = false;
+            //    __instance.headMountedCam.enabled = false;
+            //    __instance.headMountedCamUI.enabled = false;
+            //}
+            if (!internalCamDisable && __instance.enableHeadMountedCam && !__instance.playerIsInCaves && __instance.headMountedCamTarget != null)
             {
                 SetBoxPos(index, withCam: true);
-                __instance.headMountedCam.transform.Rotate(camRotX, camRotY, 0f, Space.Self);
-                __instance.headMountedCam.transform.position += __instance.headMountedCamTarget.up * camPosY + __instance.headMountedCamTarget.forward * camPosF;
+                if (ScienceBirdTweaks.SprintCam.Value && __instance.targetedPlayer != null && ((__instance.targetedPlayer == GameNetworkManager.Instance.localPlayerController && __instance.targetedPlayer.isSprinting) || __instance.targetedPlayer.playerBodyAnimator.GetCurrentAnimatorStateInfo(0).IsTag("Sprinting")))
+                {
+                    __instance.headMountedCam.transform.Rotate(15f, 180f, 0f, Space.Self);
+                    __instance.headMountedCam.transform.position += __instance.headMountedCamTarget.up * -0.05f + __instance.headMountedCamTarget.forward * 0.3f;
+                }
+                else if (alterPlayerCam)
+                {
+                    __instance.headMountedCam.transform.Rotate(camRotX, camRotY, 0f, Space.Self);
+                    __instance.headMountedCam.transform.position += __instance.headMountedCamTarget.up * camPosY + __instance.headMountedCamTarget.forward * camPosF;
+                }
             }
         }
 
         [HarmonyPatch(typeof(ManualCameraRenderer), nameof(ManualCameraRenderer.SwitchRadarTargetClientRpc))]
         [HarmonyPrefix]
-        public static void RadarTargets2(ManualCameraRenderer __instance, int switchToIndex)// runs for all clients
+        public static void RadarTargets(ManualCameraRenderer __instance, int switchToIndex)// runs for all clients
         {
             if (ScienceBirdTweaks.ImprovedTextBox.Value && __instance.cam == __instance.mapCamera && __instance.radarTargets != null && __instance.radarTargets.Count > 0)
             {
@@ -259,7 +281,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPrefix]
         public static void UpdateMapTargetPrefix(ManualCameraRenderer __instance, int setRadarTargetIndex, bool calledFromRPC)
         {
-            if (ScienceBirdTweaks.TrueLocalCam.Value && !ScienceBirdTweaks.ClientsideMode.Value && __instance.cam == __instance.mapCamera && __instance.radarTargets != null && __instance.radarTargets.Count > 0)
+            if (ScienceBirdTweaks.LocalCam.Value && ScienceBirdTweaks.TrueLocalCam.Value && !ScienceBirdTweaks.ClientsideMode.Value && __instance.cam == __instance.mapCamera && __instance.radarTargets != null && __instance.radarTargets.Count > 0)
             {
                 //ScienceBirdTweaks.Logger.LogDebug($"SWITCH {__instance.targetTransformIndex}->{setRadarTargetIndex}; RPC {calledFromRPC}");
                 int targetIndex = setRadarTargetIndex;
@@ -316,70 +338,81 @@ namespace ScienceBirdTweaks.Patches
 
         [HarmonyPatch(typeof(ManualCameraRenderer), nameof(ManualCameraRenderer.updateMapTarget), MethodType.Enumerator)]
         [HarmonyPostfix]
-        [HarmonyAfter("mborsh.LiveReaction")]
         public static void UpdateMapTargetPatch(ManualCameraRenderer __instance, bool __result)
         {
             if (ScienceBirdTweaks.ImprovedTextBox.Value && !__result && !StartOfRound.Instance.inShipPhase && nameText != null)// credit to mborsh for this unique kind of patch
             {// but also I still don't really know how this works
-                ManualCameraRenderer[] radarMaps = [StartOfRound.Instance.mapScreen];
-                if (twoRadarCam != null)
-                {
-                    radarMaps = [StartOfRound.Instance.mapScreen, twoRadarCam];
-                }
-                for (int i = 0; i < nameText.Length; i++)
-                {
-                    if (nameText[i] == null) { continue; }
+                NameBoxUpdate();
+            }
+        }
 
-                    if (i == 1 && grabbedIndices[1] != radarMaps[1].targetTransformIndex)
+        [HarmonyPatch(typeof(ManualCameraRenderer), nameof(ManualCameraRenderer.UpdateRadarTargetName))]
+        [HarmonyPostfix]
+        public static void RadarNameUpdatePatch(ManualCameraRenderer __instance)
+        {
+            if (ScienceBirdTweaks.ImprovedTextBox.Value && !StartOfRound.Instance.inShipPhase && nameText != null && __instance.headMountedCam != null)
+            {
+                ScienceBirdTweaks.Logger.LogInfo("NAME BOX SHOULD BE UPDATED");
+                grabbedRadarTargets = __instance.radarTargets;
+                grabbedIndices[0] = __instance.targetTransformIndex;
+                NameBoxUpdate();
+            }
+        }
+
+        public static void NameBoxUpdate()
+        {
+            ManualCameraRenderer[] radarMaps = [StartOfRound.Instance.mapScreen];
+            if (twoRadarCam != null)
+            {
+                radarMaps = [StartOfRound.Instance.mapScreen, twoRadarCam];
+            }
+            for (int i = 0; i < nameText.Length; i++)
+            {
+                if (nameText[i] == null) { continue; }
+
+                if (i == 1 && grabbedIndices[1] != radarMaps[1].targetTransformIndex)
+                {
+                    grabbedIndices[1] = radarMaps[1].targetTransformIndex;
+                }
+                string nameString = "Player";
+                if (grabbedRadarTargets != null && grabbedIndices[i] >= 0 && grabbedIndices[i] < grabbedRadarTargets.Count && grabbedRadarTargets[grabbedIndices[i]] != null)
+                {
+                    nameString = grabbedRadarTargets[grabbedIndices[i]].name;
+                }
+                else
+                {
+                    return;
+                }
+                string newName = nameString;
+                if (nameShortcuts.TryGetValue(nameString, out string value))
+                {
+                    nameString = value;
+                }
+                else
+                {
+                    if (nameString.Length > 11)
                     {
-                        grabbedIndices[1] = radarMaps[1].targetTransformIndex;
-                    }
-                    string nameString = "Player";
-                    if (grabbedRadarTargets != null && grabbedIndices[i] >= 0 && grabbedIndices[i] < grabbedRadarTargets.Count && grabbedRadarTargets[grabbedIndices[i]] != null)
-                    {
-                        nameString = grabbedRadarTargets[grabbedIndices[i]].name;
-                    }
-                    else
-                    {
-                        return;
-                    }
-                    string newName = nameString;
-                    if (nameShortcuts.TryGetValue(nameString, out string value))
-                    {
-                        nameString = value;
-                    }
-                    else
-                    {
-                        if (nameString.Length > 11)
+                        string[] words = nameString.Split(" ");
+                        foreach (string word in words)
                         {
-                            string[] words = nameString.Split(" ");
-                            foreach (string word in words)
+                            if (word.Length > 11)
                             {
-                                if (word.Length > 11)
-                                {
-                                    string newWord = System.Text.RegularExpressions.Regex.Replace(word, "[A-Z]", " $0");
-                                    newName = nameString.Replace(word, newWord);
-                                }
+                                string newWord = System.Text.RegularExpressions.Regex.Replace(word, "[A-Z]", " $0");
+                                newName = nameString.Replace(word, newWord);
                             }
                         }
-                        ScienceBirdTweaks.Logger.LogDebug($"Assigning shortcut: {nameString} > {newName}");
-                        nameShortcuts.Add(nameString, newName);
                     }
-                    int minIndex = 0;
-                    if (ScienceBirdTweaks.mborshPresent && (!ScienceBirdTweaks.HideLocalCam.Value || radarMaps[i].targetedPlayer != GameNetworkManager.Instance.localPlayerController))
-                    {
-                        nameString = "LIVE " + nameString.ToUpper() + " REACTION";
-                        minIndex = 2;
-                    }
-                    int sizeIndex = Mathf.Clamp(Mathf.FloorToInt((float)nameString.Length / 11), minIndex, 4);
-                    nameText[i].fontSizeMin = 15f;
-                    nameText[i].lineSpacing = -9.6f;
-                    nameText[i].text = nameString;
-                    if (nameText[i].rectTransform == null || nameBG[i].rectTransform == null) { return; }
-                    nameText[i].rectTransform.sizeDelta = textBoxSizes[sizeIndex];
-                    nameBG[i].rectTransform.sizeDelta = textBoxSizes[sizeIndex];
-                    yOffsets[i] = (textBoxSizes[sizeIndex].y - 26f) / 2;
+                    ScienceBirdTweaks.Logger.LogDebug($"Assigning shortcut: {nameString} > {newName}");
+                    nameShortcuts.Add(nameString, newName);
                 }
+                int sizeIndex = Mathf.Clamp(Mathf.FloorToInt((float)nameString.Length / 11), 0, 4);
+                nameText[i].fontSizeMin = 15f;
+                nameText[i].lineSpacing = -9.6f;
+                nameText[i].text = nameString;
+                if (nameText[i].rectTransform == null || nameBG[i].rectTransform == null) { return; }
+                nameText[i].rectTransform.sizeDelta = textBoxSizes[sizeIndex];
+                nameBG[i].rectTransform.sizeDelta = textBoxSizes[sizeIndex];
+                yOffsets[i] = (textBoxSizes[sizeIndex].y - 26f) / 2;
             }
         }
 

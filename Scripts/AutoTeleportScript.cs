@@ -1,7 +1,5 @@
 using GameNetcodeStuff;
-using HarmonyLib;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using System.Collections;
 using Unity.Netcode;
 using ScienceBirdTweaks.Patches;
@@ -13,12 +11,45 @@ namespace ScienceBirdTweaks.Scripts
     public class AutoTeleportScript : NetworkBehaviour
     {
         private bool doingRoutine = false;
-
         public static ShipTeleporter teleporter;
-
         public int currentPlayer = -1;
-
         public List<int> playerQueue = new List<int>();
+
+        public void StartSFXRoutine(int player)
+        {
+            if (!base.IsServer) { return; }
+            if (StartOfRound.Instance.allPlayerScripts[player].redirectToEnemy == null || !StartOfRound.Instance.allPlayerScripts[player].redirectToEnemy.isActiveAndEnabled)
+            {
+                StartCoroutine(WaitBeforeSFX(player));
+            }
+        }
+
+        private IEnumerator WaitBeforeSFX(int player)
+        {
+            yield return new WaitForSeconds(0.5f);
+            if (StartOfRound.Instance.allPlayerScripts[player].redirectToEnemy == null || !StartOfRound.Instance.allPlayerScripts[player].redirectToEnemy.isActiveAndEnabled)
+            {
+                PlaySFXClientRpc();
+            }
+            else
+            {
+                ScienceBirdTweaks.Logger.LogDebug("Found enemy!");
+            }
+        }
+
+        [ClientRpc]
+        public void PlaySFXClientRpc()
+        {
+            if (!GameNetworkManager.Instance.localPlayerController.isPlayerDead)
+            {
+                HUDManager.Instance.UIAudio.PlayOneShot(PlayerDeathPatches.globalDeathSFX, 0.45f);
+            }
+            if (ScienceBirdTweaks.FancyPanel.Value && ButtonPanelController.Instance != null)
+            {
+                ButtonPanelController.Instance.BlueLight2Set(true);
+                ButtonPanelController.Instance.SetLightAfterDelay(1, 1f, false);
+            }
+        }
 
         public void StartTeleportRoutine(ShipTeleporter shipTeleporter, int player)
         {
@@ -37,31 +68,6 @@ namespace ScienceBirdTweaks.Scripts
             }
         }
 
-        [ClientRpc]
-        public void DoTeleportRoutineClientRpc(int player)
-        {
-            if (teleporter == null)
-            {
-                ShipTeleporter[] teleporters = Object.FindObjectsOfType<ShipTeleporter>().Where(x => !x.isInverseTeleporter).ToArray();
-                if (teleporters.Length > 0)
-                {
-                    teleporter = teleporters.First();
-                }
-            }
-            StartCoroutine(TeleportBodyToShip(player));
-        }
-
-        private void AfterTeleport()
-        {
-            if (!base.IsServer) { return; }
-            if (playerQueue.Count > 0)
-            {
-                int nextPlayer = playerQueue.Last();
-                StartTeleportRoutine(teleporter, nextPlayer);
-                playerQueue.Remove(nextPlayer);
-            }
-        }
-
         private IEnumerator WaitBeforeTeleport(int player)
         {
             yield return new WaitForSeconds(3f);
@@ -75,6 +81,29 @@ namespace ScienceBirdTweaks.Scripts
             }
         }
 
+        [ClientRpc]
+        public void DoTeleportRoutineClientRpc(int player)
+        {
+            if (teleporter == null)
+            {
+                ShipTeleporter[] teleporters = Object.FindObjectsOfType<ShipTeleporter>().Where(x => !x.isInverseTeleporter).ToArray();
+                if (teleporters.Length > 0)
+                {
+                    teleporter = teleporters.First();
+                }
+            }
+            StartCoroutine(TeleportBodyToShip(player));
+        }
+        private void AfterTeleport()
+        {
+            if (!base.IsServer) { return; }
+            if (playerQueue.Count > 0)
+            {
+                int nextPlayer = playerQueue.Last();
+                StartTeleportRoutine(teleporter, nextPlayer);
+                playerQueue.Remove(nextPlayer);
+            }
+        }
         private IEnumerator TeleportBodyToShip(int player)// recreation of vanilla teleport routine, but only containing what's needed for dead bodies
         {
             doingRoutine = true;

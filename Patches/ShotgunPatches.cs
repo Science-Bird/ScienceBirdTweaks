@@ -66,7 +66,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         public static void TooltipSet(ShotgunItem __instance)
         {
-            if (ScienceBirdTweaks.ShotgunMasterDisable.Value) { return; }
+            if (ScienceBirdTweaks.ShotgunMasterDisable.Value || __instance.gunCompatibleAmmoID != 211) { return; }
             TooltipUpdate(__instance);
         }
 
@@ -74,7 +74,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         public static void SafetySet(ShotgunItem __instance)
         {
-            if (ScienceBirdTweaks.ShotgunMasterDisable.Value || !ShotgunPatches.HasValidHolder(__instance)) { return; }
+            if (ScienceBirdTweaks.ShotgunMasterDisable.Value || __instance.gunCompatibleAmmoID != 211 || !ShotgunPatches.HasValidHolder(__instance)) { return; }
 
             string changeTo = ((!__instance.safetyOn) ? safetyOffText : safetyOnText);
             if (__instance.IsOwner)
@@ -94,7 +94,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         public static void PostReload(ShotgunItem __instance)
         {
-            if (ScienceBirdTweaks.ShotgunMasterDisable.Value) { return; }
+            if (ScienceBirdTweaks.ShotgunMasterDisable.Value || __instance.gunCompatibleAmmoID != 211) { return; }
             ScienceBirdTweaks.Logger.LogDebug("Reload ended, updating tooltip!");
             TooltipUpdate(__instance);
         }
@@ -103,7 +103,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         public static void PostShot(ShotgunItem __instance)
         {
-            if (ScienceBirdTweaks.ShotgunMasterDisable.Value) { return; }
+            if (ScienceBirdTweaks.ShotgunMasterDisable.Value || __instance.gunCompatibleAmmoID != 211) { return; }
             ScienceBirdTweaks.Logger.LogDebug("Shot fired, updating tooltip!");
             TooltipUpdate(__instance);
         }
@@ -122,12 +122,15 @@ namespace ScienceBirdTweaks.Patches
             {
                 shotgun = __instance.currentlyHeldObjectServer.GetComponent<ShotgunItem>();
             }
-            TooltipUpdate(shotgun);
+            if (shotgun != null)
+            {
+                TooltipUpdate(shotgun);
+            }
         }
 
         public static void TooltipUpdate(ShotgunItem shotgun)
         {
-            if (ScienceBirdTweaks.ShotgunMasterDisable.Value || !ShotgunPatches.HasValidHolder(shotgun, false)) { return; }
+            if (ScienceBirdTweaks.ShotgunMasterDisable.Value || !ShotgunPatches.HasValidHolder(shotgun, false) || shotgun.gunCompatibleAmmoID != 211) { return; }
 
             if (shotgun.IsOwner)
             {
@@ -321,6 +324,7 @@ namespace ScienceBirdTweaks.Patches
             if (!ScienceBirdTweaks.ClientsideMode.Value && !ScienceBirdTweaks.ShotgunMasterDisable.Value && (unloadEnabled || ammoCheck) && __instance.GetComponent<ShotgunItem>() && right && !__instance.GetComponent<ShotgunItem>().isReloading && (!AmmoInInventory(__instance.GetComponent<ShotgunItem>()) || __instance.GetComponent<ShotgunItem>().shellsLoaded >= 2))
             {
                 ShotgunItem shotgun = __instance.GetComponent<ShotgunItem>();
+                if (shotgun.gunCompatibleAmmoID != 211) { return; }
                 bool ejecting = AllowedToEject(shotgun);
                 if (LocalPlayerNotInteracting(shotgun))// make sure player isn't doing some other kind of ongoing interaction
                 {
@@ -360,7 +364,7 @@ namespace ScienceBirdTweaks.Patches
         [HarmonyPostfix]
         public static void StopUsingGunPrefix(ShotgunItem __instance)
         {
-            if (!ScienceBirdTweaks.ClientsideMode.Value && !ScienceBirdTweaks.ShotgunMasterDisable.Value && (ammoCheck || unloadEnabled))
+            if (!ScienceBirdTweaks.ClientsideMode.Value && !ScienceBirdTweaks.ShotgunMasterDisable.Value && __instance.gunCompatibleAmmoID == 211 && (ammoCheck || unloadEnabled))
             {
                 PlayerControllerB player = __instance.playerHeldBy ?? __instance.previousPlayerHeldBy;
                 if (ammoCheck)
