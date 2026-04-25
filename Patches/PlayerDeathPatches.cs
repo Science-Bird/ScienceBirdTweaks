@@ -29,7 +29,7 @@ namespace ScienceBirdTweaks.Patches
             {
                 globalDeathSFX = (AudioClip)ScienceBirdTweaks.TweaksAssets.LoadAsset("GlobalDeathSound");
             }
-            if (!ScienceBirdTweaks.ClientsideMode.Value && (ScienceBirdTweaks.UnrecoverableNotification.Value || ScienceBirdTweaks.AutoTeleportBody.Value))
+            if (!ScienceBirdTweaks.ClientsideMode.Value && (ScienceBirdTweaks.UnrecoverableNotification.Value || ScienceBirdTweaks.AutoTeleportBody.Value || ScienceBirdTweaks.PlayGlobalDeathSFX.Value))
             {
                 HUDWarning = (AudioClip)ScienceBirdTweaks.TweaksAssets.LoadAsset("HUDWarningSFX");
                 questionMark = (GameObject)ScienceBirdTweaks.TweaksAssets.LoadAsset("QuestionMarkObj");
@@ -60,7 +60,7 @@ namespace ScienceBirdTweaks.Patches
             usedPlayerIDs.Add(playerId);
             startTime = Time.realtimeSinceStartup;
 
-            if (ScienceBirdTweaks.AutoTeleportBody.Value && teleportScript == null)
+            if ((ScienceBirdTweaks.AutoTeleportBody.Value || ScienceBirdTweaks.PlayGlobalDeathSFX.Value) && teleportScript == null)
             {
                 teleportScript = GameObject.FindObjectOfType<AutoTeleportScript>();
             }
