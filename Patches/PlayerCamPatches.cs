@@ -207,6 +207,7 @@ namespace ScienceBirdTweaks.Patches
                     __instance.headMountedCamUI.enabled = false;
                     SetBoxPos(index, withCam: false);
                 }
+                return;
             }
             else if (ScienceBirdTweaks.HideAllCams.Value)
             {
@@ -216,6 +217,7 @@ namespace ScienceBirdTweaks.Patches
                 }
                 //__instance.headMountedCam.enabled = false;
                 SetBoxPos(index, withCam: false);
+                return;
             }
             if (!internalCamDisable && ScienceBirdTweaks.LocalCam.Value && !ScienceBirdTweaks.ClientsideMode.Value && !ScienceBirdTweaks.HideAllCams.Value && !ScienceBirdTweaks.HideLocalCam.Value && !StartOfRound.Instance.inShipPhase && __instance.targetedPlayer == GameNetworkManager.Instance.localPlayerController && !__instance.targetedPlayer.isPlayerDead && __instance.targetedPlayer.isPlayerControlled && !__instance.overrideRadarCameraOnAlways)
             {

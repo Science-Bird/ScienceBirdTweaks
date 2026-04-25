@@ -157,6 +157,7 @@ namespace ScienceBirdTweaks.ModPatches
 
         public static void UpdateDictionary(Terminal terminal)
         {
+            if (terminal == null) { return; }
             MethodInfo method = AccessTools.Method(typeof(SSSDataRequest), nameof(SSSDataRequest.CollectDataServerRpc));
             smartDict = new Dictionary<string, int>();
             SSSDataRequest dataScript = terminal.gameObject.GetComponent<SSSDataRequest>();
