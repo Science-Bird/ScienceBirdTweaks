@@ -1,7 +1,7 @@
 using GameNetcodeStuff;
 using HarmonyLib;
-using UnityEngine;
 using ScienceBirdTweaks.Patches;
+using UnityEngine;
 
 namespace ScienceBirdTweaks.ZapGun
 {
@@ -188,7 +188,37 @@ namespace ScienceBirdTweaks.ZapGun
             }
         }
 
-        [HarmonyPatch(typeof(Landmine), nameof(Landmine.ToggleMineEnabledLocalClient))]
+        [HarmonyPatch(typeof(Turret), nameof(Turret.Update))]
+        [HarmonyPrefix]
+        public static void TurretUpdatePatch(Turret __instance)
+        {
+            if (ScienceBirdTweaks.TurretFiringFix.Value && !__instance.turretActive && __instance.turretModeLastFrame != TurretMode.Detection)
+            {
+                __instance.turretMode = TurretMode.Detection;
+                __instance.turretModeLastFrame = TurretMode.Detection;
+                __instance.mainAudio.clip = null;
+                __instance.farAudio.Stop();
+                TurretZapper zapper = __instance.GetComponent<TurretZapper>();
+                if (((!ScienceBirdTweaks.ZappableTurrets.Value || !ScienceBirdTweaks.ZapGunRework.Value) && zapper == null) || (zapper != null && !zapper.panicMode))
+                {
+                    __instance.rotatingClockwise = false;
+                    __instance.berserkAudio.Stop();
+                    __instance.rotationSpeed = 28f;
+                }
+
+                if (__instance.fadeBulletAudioCoroutine != null)
+                {
+                    __instance.StopCoroutine(__instance.fadeBulletAudioCoroutine);
+                }
+                __instance.fadeBulletAudioCoroutine = __instance.StartCoroutine(__instance.FadeBulletAudio());
+                __instance.bulletParticles.Stop(withChildren: true, ParticleSystemStopBehavior.StopEmitting);
+                __instance.rotatingSmoothly = true;
+                __instance.turretAnimator.SetInteger("TurretMode", 0);
+                __instance.turretInterval = Random.Range(0f, 0.15f);
+            }
+        }
+
+            [HarmonyPatch(typeof(Landmine), nameof(Landmine.ToggleMineEnabledLocalClient))]
         [HarmonyPostfix]
         public static void MineCooldownPatch(Landmine __instance, bool enabled)
         {

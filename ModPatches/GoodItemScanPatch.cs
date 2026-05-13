@@ -52,7 +52,7 @@ namespace ScienceBirdTweaks.ModPatches
 
         public static void OnNodeDisable(Scanner __instance, ScannedNode scannedNode)
         {
-            if (scannedNode.rectTransform != null)
+            if (scannedNode.RectTransform != null)
             {
                 staleData = true;
             }

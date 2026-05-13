@@ -98,11 +98,8 @@ namespace ScienceBirdTweaks.Patches
     public class CentipedePatch
     {
         public static bool multiplayerSecondChanceGiven = false;
-
         private static int maxHealth = 100;
-
         private static int damageAccumulated = 0;
-
         private static bool subtractInterval = false;
 
         [HarmonyPatch(typeof(RoundManager), nameof(RoundManager.FinishGeneratingNewLevelClientRpc))]
@@ -142,17 +139,13 @@ namespace ScienceBirdTweaks.Patches
 
         [HarmonyPatch(typeof(CentipedeAI), nameof(CentipedeAI.DamagePlayerOnIntervals))]
         [HarmonyPrefix]
-        static void CentipedeDamage(CentipedeAI __instance)
+        static void CentipedeDamage(CentipedeAI __instance, out float __state)
         {
+            __state = __instance.damagePlayerInterval;
             if (ScienceBirdTweaks.CentipedeMode.Value == "Vanilla")
             {
                 return;
             }
-            if (subtractInterval)// vanilla method for doing damage on a certain interval, this patch essentially replaces vanilla logic
-            {
-                __instance.damagePlayerInterval -= Time.deltaTime;
-            }
-            subtractInterval = false;
             if (__instance.damagePlayerInterval <= 0f && !__instance.inDroppingOffPlayerAnim)
             {
                 if (__instance.stunNormalizedTimer > 0f || (((ScienceBirdTweaks.CentipedeMode.Value == "Second Chance" && !multiplayerSecondChanceGiven) || (StartOfRound.Instance.connectedPlayersAmount <= 0 && !__instance.singlePlayerSecondChanceGiven && ScienceBirdTweaks.CentipedeMode.Value != "Fixed Damage")) && __instance.clingingToPlayer.health <= ScienceBirdTweaks.CentipedeSecondChanceThreshold.Value))
@@ -189,12 +182,20 @@ namespace ScienceBirdTweaks.Patches
             }
             else
             {
-                subtractInterval = true;
+                __instance.damagePlayerInterval -= Time.deltaTime;
             }
-            if (__instance.damagePlayerInterval <= 0f && !__instance.inDroppingOffPlayerAnim)
+            __state = __instance.damagePlayerInterval;
+        }
+
+        [HarmonyPatch(typeof(CentipedeAI), nameof(CentipedeAI.DamagePlayerOnIntervals))]
+        [HarmonyPostfix]
+        static void CentipedeDamagePostfix(CentipedeAI __instance, float __state)
+        {
+            if (ScienceBirdTweaks.CentipedeMode.Value == "Vanilla")
             {
-                __instance.damagePlayerInterval = 0.01f;// ensure actual game code never runs
+                return;
             }
+            __instance.damagePlayerInterval = __state;
         }
     }
 

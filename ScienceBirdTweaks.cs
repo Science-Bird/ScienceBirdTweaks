@@ -54,7 +54,7 @@ namespace ScienceBirdTweaks
         public static ConfigEntry<bool> PlayGlobalDeathSFX, AutoTeleportBody, UnrecoverableNotification;
         public static ConfigEntry<string> Red1Tip, Red2Tip, Black1Tip, Black2Tip, Knob1Tip, Knob2Tip, Knob3Tip, SmallKnobTip, SmallRedTip, SmallGreenTip;
 
-        public static ConfigEntry<bool> MissingHoverTipFix, HandsFullFix, StretchedHoverIconFix, SmokeFix, BridgeItemsFix, ClientShipItems, LandmineFix, ApplianceInteractionFixes, MonitorTransitionFix, LingeringLightningFix,  PauseMenuFlickerFix, FallingRotationFix, ReplaceNullItems, CrouchDamageAnimation, CleanBeltBagUI, BigScrew, KiwiManeaterScream, RadarPathAllExits, DisableTrapsOnApparatusRemoval, DisableTrapsOnBreakerSwitch, SpikesCooldownMute, ForceSunShadows, SunFade, FearfulBuilding, OldHalloweenElevatorMusic;
+        public static ConfigEntry<bool> MissingHoverTipFix, HandsFullFix, StretchedHoverIconFix, SmokeFix, BridgeItemsFix, ClientShipItems, LandmineFix, ApplianceInteractionFixes, MonitorTransitionFix, LingeringLightningFix, TurretFiringFix,  PauseMenuFlickerFix, FallingRotationFix, ReplaceNullItems, CrouchDamageAnimation, CleanBeltBagUI, BigScrew, KiwiManeaterScream, RadarPathAllExits, DisableTrapsOnApparatusRemoval, DisableTrapsOnBreakerSwitch, SpikesCooldownMute, ForceSunShadows, SunFade, FearfulBuilding, OldHalloweenElevatorMusic;
         public static ConfigEntry<string> ScanHighlights, StartingMoon, MuteScrapList, SingleItemBlacklist;
 
         public static ConfigEntry<bool> CoilheadElevatorFix, ManeaterAttackFix;
@@ -188,6 +188,7 @@ namespace ScienceBirdTweaks
             ApplianceInteractionFixes = base.Config.Bind("3. General Tweaks", "Appliance Interaction Fixes", true, "Fixes some of the issues with placing and grabbing items from the fridge and microwave (mostly the fridge).");
             MonitorTransitionFix = base.Config.Bind("3. General Tweaks", "Ship Monitor Fixes", true, "Fixes some elements briefly appearing/lingering on the main ship monitor after taking off and going into orbit (mainly the ship and player icons and the video feed), and does some other small things such as removing the black bars which appear on the video feed.");
             LingeringLightningFix = base.Config.Bind("3. General Tweaks", "Lingering Lightning Fix", true, "Will stop all lightning effects on an object when it is brought indoors (so lightning particles and sounds will stop immediately). This also makes some changes to the HUD indicators added by GeneralImprovements to make them more accurate (and not linger indoors).");
+            TurretFiringFix = base.Config.Bind("3. General Tweaks", "Turret Stuck Firing Fix", true, "Attempts to stop the turret from shooting if it's disabled (by terminal or otherwise) while firing.");
             FallingRotationFix = base.Config.Bind("3. General Tweaks", "Falling Rotation Fix", false, "Normally, if you ever drop an object from really high up, its rotation takes so long to change that it's still rotating when it hits the ground. This tweak properly scales the rotation so objects land normally.");
             PauseMenuFlickerFix = base.Config.Bind("3. General Tweaks", "Pause Menu Flicker Fix", false, "'Fixes' the resume button flickering when pausing the game by making the currently selected option always highlighted (will look slightly strange).");
             ReplaceNullItems = base.Config.Bind("3. General Tweaks", "Swap Null Items", true, "Attempts to swap out any grabbable objects which have null item properties with valid ones. This happens when a moon has items in it that are not registered properly and the those items are then taken to another moon (e.g. the shovel and boombox on Aquatis). Note that this is only a bandage fix and may not work consistently in all situations. This fix should only come into play as a last resort if a problem remains unfixed by the moon/interior.");
@@ -494,6 +495,10 @@ namespace ScienceBirdTweaks
                         continue;
                     }
                     if ((method.Name.Contains("StopTapeServerRpc") || method.Name.Contains("StopTapeClientRpc")) && !wesleyPresent)
+                    {
+                        continue;
+                    }
+                    if (method.Name.Contains("ScanUpdatePatch") && !test2Present)
                     {
                         continue;
                     }

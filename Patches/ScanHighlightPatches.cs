@@ -220,7 +220,7 @@ namespace ScienceBirdTweaks.Patches
                     {
                         //ScienceBirdTweaks.Logger.LogDebug($"New scanned object! {grabbable.name}");
                         bool blue = false;
-                        if (grabbable.itemProperties != null && !grabbable.itemProperties.isScrap && grabbable.itemProperties.itemId != 14)// keys and radar boosters have green scan nodes so they're excluded from the blue equipment thingy
+                        if (scanProps.nodeType == 0)// keys and radar boosters have green scan nodes so they're excluded from the blue equipment thingy
                         {
                             blue = true;
                         }
