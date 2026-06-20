@@ -107,18 +107,19 @@ namespace ScienceBirdTweaks.ZapGun
 
             GameObject mainObj = __instance.gameObject.transform.parent.parent.gameObject;
             SpikesZapper zapper = mainObj.GetComponentInChildren<SpikesZapper>();
-            if (zapper != null && !zapper.tempStun)
+            if (zapper != null)
             {
                 if (!enabled)
                 {
                     if (BlackoutTriggerPatches.doingHazardShutdown)
                     {
+                        zapper.tempStun = false;
                         zapper.light.intensity = 0f;
                         Material[] materials = zapper.supportLights.GetComponent<MeshRenderer>().materials;
                         materials[0] = offMat;
                         zapper.supportLights.GetComponent<MeshRenderer>().materials = materials;
                     }
-                    else
+                    else if (!zapper.tempStun)
                     {
                         ScienceBirdTweaks.Logger.LogDebug($"Starting spike trap special animation!");
                         zapper.light.intensity = 2f;
@@ -218,26 +219,28 @@ namespace ScienceBirdTweaks.ZapGun
             }
         }
 
-            [HarmonyPatch(typeof(Landmine), nameof(Landmine.ToggleMineEnabledLocalClient))]
+        [HarmonyPatch(typeof(Landmine), nameof(Landmine.ToggleMineEnabledLocalClient))]
         [HarmonyPostfix]
         public static void MineCooldownPatch(Landmine __instance, bool enabled)
         {
             if (!ScienceBirdTweaks.MineDisableAnimation.Value && !ScienceBirdTweaks.ZapGunRework.Value) { return; }
 
             MineZapper zapper = __instance.GetComponent<MineZapper>();
-            if (zapper != null && !zapper.tempStun && !zapper.disabled)
+            if (zapper != null && !zapper.disabled)
             {
                 if (!enabled)
                 {
                     if (BlackoutTriggerPatches.doingHazardShutdown)
                     {
+                        zapper.tempStun = false;
+                        __instance.mineAnimator.SetBool("disabled", false);
                         __instance.mineAudio.Stop();
                         __instance.mineAudio.volume = 0f;
                         zapper.light1.intensity = 0f;
                         zapper.light2.intensity = 0f;
                         zapper.indirectLight.intensity = 0f;
                     }
-                    else
+                    else if (!zapper.tempStun)
                     {
                         ScienceBirdTweaks.Logger.LogDebug($"Starting landmine special animation!");
                         __instance.mineAnimator.SetBool("disabled", true);

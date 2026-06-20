@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
-using ScienceBirdTweaks.ModPatches;
 using ScienceBirdTweaks.Scripts;
+using ScienceBirdTweaks.ZapGun;
 using UnityEngine;
 
 namespace ScienceBirdTweaks.Patches
@@ -210,16 +210,53 @@ namespace ScienceBirdTweaks.Patches
                 terminalObj.mapRadarBox.color = Color.gray;
                 if (mine != null)
                 {
-                    mine.ToggleMine(false);
+                    // check if mine is already disabled but needs to be disabled in a way which shuts off the temp disabled animation
+                    if ((ScienceBirdTweaks.ZapGunRework.Value || ScienceBirdTweaks.MineDisableAnimation.Value) && mine.mineAnimator.GetBool("disabled") && mine.mineActivated == false)
+                    {
+                        MineZapper zapper = mine.GetComponent<MineZapper>();
+                        if (zapper != null)
+                        {
+                            zapper.tempStun = false;
+                            mine.mineAnimator.SetBool("disabled", false);
+                            mine.mineAudio.Stop();
+                            mine.mineAudio.volume = 0f;
+                            zapper.light1.intensity = 0f;
+                            zapper.light2.intensity = 0f;
+                            zapper.indirectLight.intensity = 0f;
+                        }
+                    }
+                    else
+                    {
+                        mine.ToggleMine(false);
+                    }
                 }
                 else if (turret != null)
                 {
                     turret.ToggleTurretEnabled(false);
                 }
-                else if (parent != null && parent.gameObject.GetComponentInChildren<SpikeRoofTrap>())
+                else if (parent != null)
                 {
                     SpikeRoofTrap spikes = parent.gameObject.GetComponentInChildren<SpikeRoofTrap>();
-                    spikes.ToggleSpikesEnabled(false);
+                    if (spikes != null)
+                    {
+                        // check if spikes are already disabled but need to be disabled in a way which changes the temp disabled materials
+                        if ((ScienceBirdTweaks.ZapGunRework.Value || ScienceBirdTweaks.SpikeTrapDisableAnimation.Value) && spikes.trapActive == false)
+                        {
+                            SpikesZapper zapper = parent.gameObject.GetComponentInChildren<SpikesZapper>();
+                            if (zapper != null)
+                            {
+                                zapper.tempStun = false;
+                                zapper.light.intensity = 0f;
+                                Material[] materials = zapper.supportLights.GetComponent<MeshRenderer>().materials;
+                                materials[0] = HazardPatches.offMat;
+                                zapper.supportLights.GetComponent<MeshRenderer>().materials = materials;
+                            }
+                        }
+                        else
+                        {
+                            spikes.ToggleSpikesEnabled(false);
+                        }
+                    }
                 }
                 terminalObj.inCooldown = true;
                 terminalObj.StopAllCoroutines();
